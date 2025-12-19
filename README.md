@@ -1,36 +1,240 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🔥 Streaky - Habit Tracker App
 
-## Getting Started
+A minimalist, fast, and user-friendly habit tracking application built with Next.js and Supabase. Focus on consistency, not complexity.
 
-First, run the development server:
+## 📱 About
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+Streaky is a Progressive Web App (PWA) designed for daily habit tracking with extreme simplicity and zero friction. The goal is to make tracking habits as easy as a single tap, encouraging daily consistency without overwhelming users with features.
+
+### Core Principles
+
+- ✨ **One-tap habit tracking** - Mark habits as complete with a single action
+- 🎯 **Minimal UI** - No unnecessary steps or complexity
+- ⚡ **Fast load time** - Optimized for quick access
+- 📱 **Works offline** - Basic offline support via PWA
+- 🔄 **Focus on consistency** - Track streaks and build lasting habits
+
+## ✨ Features
+
+### MVP Features
+
+- 🔐 **Authentication** - Google OAuth and email/password login
+- 📝 **Habit Management** - Create, edit, and delete habits
+- ✅ **Daily Tracking** - Mark habits as completed each day
+- 🔥 **Streak Calculation** - Track consecutive days of completion
+- 📊 **Basic Statistics** - View completion rates and progress
+- 📅 **Calendar View** - Visual representation of habit completion
+- 📱 **PWA Support** - Installable on mobile devices
+- 🎨 **Responsive Design** - Works seamlessly on desktop and mobile
+
+### Coming Soon (Future Versions)
+
+- Push notifications
+- Social features
+- Gamification
+- Health integrations
+- Templates & routines
+- Advanced analytics
+
+## 🛠️ Tech Stack
+
+### Frontend
+- **React 19** - UI library
+- **Next.js 16** - React framework with App Router
+- **TypeScript** - Type safety
+- **TailwindCSS** - Utility-first CSS
+- **shadcn/ui** - UI component library
+
+### State Management
+- **React Query** - Server state management
+- **Zustand** - UI and local state
+
+### Backend
+- **Supabase** - Backend as a Service
+  - Authentication (Google OAuth + Email)
+  - PostgreSQL Database
+  - Row Level Security (RLS)
+  - Edge Functions (optional)
+
+### Mobile
+- **Progressive Web App (PWA)** - Installable on mobile devices
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js 18+ and npm/yarn/pnpm
+- A Supabase account ([sign up here](https://supabase.com))
+- Git
+
+### Installation
+
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/BrayanMQ/streaky-app.git
+   cd streaky-app
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
+
+3. **Set up environment variables**
+   
+   Create a `.env.local` file in the root directory:
+   ```env
+   SUPABASE_URL=your_supabase_project_url
+   SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+   
+   You can find these values in your Supabase project settings:
+   - Go to your [Supabase Dashboard](https://app.supabase.com)
+   - Select your project
+   - Go to Settings → API
+   - Copy the "Project URL" and "anon public" key
+
+4. **Set up the database**
+   
+   Run the SQL schema in your Supabase SQL Editor. See `docs/database-schema.sql` for the complete schema.
+   
+   The schema includes:
+   - `habits` table - Stores user habits
+   - `habit_logs` table - Stores daily completion records
+   - Row Level Security (RLS) policies for data protection
+
+5. **Run the development server**
+   ```bash
+   npm run dev
+   # or
+   yarn dev
+   # or
+   pnpm dev
+   ```
+
+6. **Open your browser**
+   
+   Navigate to [http://localhost:3000](http://localhost:3000)
+
+## 📁 Project Structure
+
+```
+streaky-app/
+├── app/                    # Next.js App Router
+│   ├── auth/              # Authentication pages
+│   │   ├── login/         # Login page
+│   │   └── callback/      # OAuth callback
+│   ├── dashboard/         # Dashboard page
+│   ├── habits/            # Habits management pages
+│   └── globals.css        # Global styles
+├── components/            # React components
+│   ├── HabitCard.tsx
+│   ├── HabitList.tsx
+│   ├── AddHabitModal.tsx
+│   ├── CalendarGrid.tsx
+│   ├── Header.tsx
+│   └── BottomNav.tsx
+├── hooks/                 # Custom React hooks
+│   ├── useHabits.ts
+│   ├── useHabitLogs.ts
+│   └── useAuth.ts
+├── lib/                   # Utility functions
+│   ├── supabaseClient.ts
+│   ├── auth.ts
+│   ├── streaks.ts
+│   └── stats.ts
+├── store/                 # Zustand stores
+│   ├── ui.ts
+│   └── habits.ts
+├── public/                # Static assets
+│   ├── manifest.json      # PWA manifest
+│   └── icons/             # App icons
+├── docs/                  # Documentation
+│   └── context.md         # Technical context
+├── issues/                # Development issues/tasks
+└── scripts/               # Utility scripts
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📜 Available Scripts
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔧 Configuration
 
-## Learn More
+### Supabase Setup
 
-To learn more about Next.js, take a look at the following resources:
+1. **Create a Supabase project**
+   - Sign up at [supabase.com](https://supabase.com)
+   - Create a new project
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Configure Authentication**
+   - Go to Authentication → Providers
+   - Enable Email provider
+   - Enable Google OAuth (requires OAuth credentials)
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+3. **Set up the database**
+   - Go to SQL Editor
+   - Run the schema from `docs/database-schema.sql`
+   - Verify RLS policies are enabled
 
-## Deploy on Vercel
+4. **Get your credentials**
+   - Go to Settings → API
+   - Copy Project URL and anon key to `.env.local`
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Environment Variables
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Required environment variables:
+
+```env
+SUPABASE_URL=your_supabase_project_url
+SUPABASE_ANON_KEY=your_supabase_anon_key
+```
+
+Optional (for production):
+
+```env
+NEXT_PUBLIC_APP_URL=https://your-domain.com
+```
+
+## 🧩 Development
+
+### Code Style
+
+- TypeScript strict mode enabled
+- ESLint configured with Next.js rules
+- Prefer functional components with hooks
+- Use TypeScript for type safety
+
+### State Management Guidelines
+
+- **React Query**: Use for all server state (API calls, Supabase queries)
+- **Zustand**: Use for UI state (modals, selected items, local preferences)
+- **Local State**: Use `useState` for component-specific state
+
+## 📚 Documentation
+
+- [Technical Context](./docs/context.md) - Full technical documentation
+- [Development Issues](./issues/README.md) - Development plan and issues
+- [Supabase Docs](https://supabase.com/docs) - Supabase documentation
+- [Next.js Docs](https://nextjs.org/docs) - Next.js documentation
+
+## 📝 License
+
+This project is private and proprietary.
+
+## 🙏 Acknowledgments
+
+- Built with [Next.js](https://nextjs.org)
+- Backend powered by [Supabase](https://supabase.com)
+- UI components from [shadcn/ui](https://ui.shadcn.com)
+
+---
+
+**Made with ❤️ for building better habits**
