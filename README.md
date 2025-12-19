@@ -86,17 +86,25 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
 
 3. **Set up environment variables**
    
-   Create a `.env.local` file in the root directory:
-   ```env
-   SUPABASE_URL=your_supabase_project_url
-   SUPABASE_ANON_KEY=your_supabase_anon_key
+   Copy the example environment file and fill in your Supabase credentials:
+   ```bash
+   cp .env.example .env.local
    ```
    
-   You can find these values in your Supabase project settings:
+   Then edit `.env.local` and replace the placeholder values with your actual Supabase credentials:
+   ```env
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   ```
+   
+   **How to get your Supabase credentials:**
    - Go to your [Supabase Dashboard](https://app.supabase.com)
-   - Select your project
-   - Go to Settings → API
-   - Copy the "Project URL" and "anon public" key
+   - Select your project (or create a new one)
+   - Navigate to **Settings** → **API**
+   - Copy the **Project URL** and paste it as `NEXT_PUBLIC_SUPABASE_URL`
+   - Copy the **anon public** key and paste it as `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   
+   > **Note:** The `NEXT_PUBLIC_` prefix is required for these variables to be accessible in both server and client components in Next.js.
 
 4. **Set up the database**
    
@@ -187,21 +195,41 @@ streaky-app/
 4. **Get your credentials**
    - Go to Settings → API
    - Copy Project URL and anon key to `.env.local`
+   - Make sure to use the `NEXT_PUBLIC_` prefix for both variables
 
 ### Environment Variables
 
-Required environment variables:
+**Required environment variables:**
+
+The project uses `NEXT_PUBLIC_` prefixed variables so they work in both Server and Client Components:
 
 ```env
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_ANON_KEY=your_supabase_anon_key
+NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 ```
 
-Optional (for production):
+> **Why `NEXT_PUBLIC_`?** In Next.js, only environment variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Since our Supabase client (`lib/supabaseClient.ts`) is used in both Server and Client Components, we use this prefix to ensure it works everywhere.
+
+**Optional (for production):**
 
 ```env
 NEXT_PUBLIC_APP_URL=https://your-domain.com
 ```
+
+### Using the Supabase Client
+
+The Supabase client is configured in `lib/supabaseClient.ts` and can be used in both Server and Client Components:
+
+```tsx
+// In a Server Component
+import { supabase } from '@/lib/supabaseClient'
+
+// In a Client Component
+'use client'
+import { supabase } from '@/lib/supabaseClient'
+```
+
+The client automatically validates that the required environment variables are set and will throw helpful error messages if they're missing.
 
 ## 🧩 Development
 
