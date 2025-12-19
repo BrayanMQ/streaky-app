@@ -95,6 +95,7 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
    ```env
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+   SUPABASE_PROJECT_ID=your_supabase_project_id
    ```
    
    **How to get your Supabase credentials:**
@@ -103,6 +104,7 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
    - Navigate to **Settings** → **API**
    - Copy the **Project URL** and paste it as `NEXT_PUBLIC_SUPABASE_URL`
    - Copy the **anon public** key and paste it as `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - Copy the **Project ID** (found in the project URL or Settings → General) and paste it as `SUPABASE_PROJECT_ID`
    
    > **Note:** The `NEXT_PUBLIC_` prefix is required for these variables to be accessible in both server and client components in Next.js.
 
@@ -115,7 +117,18 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
    - `habit_logs` table - Stores daily completion records
    - Row Level Security (RLS) policies for data protection
 
-5. **Run the development server**
+5. **Generate TypeScript types** (Optional but recommended)
+   
+   After setting up your database schema, generate TypeScript types from your Supabase database:
+   ```bash
+   npm run generate:types
+   ```
+   
+   This command uses the `SUPABASE_PROJECT_ID` environment variable from your `.env.local` file to generate type-safe database types in `types/database.ts`. Run this command whenever you make changes to your database schema.
+   
+   > **Note:** Make sure you have set `SUPABASE_PROJECT_ID` in your `.env.local` file before running this command.
+
+6. **Run the development server**
    ```bash
    npm run dev
    # or
@@ -124,7 +137,7 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
    pnpm dev
    ```
 
-6. **Open your browser**
+7. **Open your browser**
    
    Navigate to [http://localhost:3000](http://localhost:3000)
 
@@ -173,6 +186,7 @@ streaky-app/
 - `npm run build` - Build for production
 - `npm run start` - Start production server
 - `npm run lint` - Run ESLint
+- `npm run generate:types` - Generate TypeScript types from Supabase database schema (requires `SUPABASE_PROJECT_ID` in `.env.local`)
 
 ## 🔧 Configuration
 
@@ -206,7 +220,10 @@ The project uses `NEXT_PUBLIC_` prefixed variables so they work in both Server a
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+SUPABASE_PROJECT_ID=your_supabase_project_id
 ```
+
+> **Note:** `SUPABASE_PROJECT_ID` is required for the `generate:types` script to automatically generate TypeScript types from your Supabase database schema.
 
 > **Why `NEXT_PUBLIC_`?** In Next.js, only environment variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Since our Supabase client (`lib/supabaseClient.ts`) is used in both Server and Client Components, we use this prefix to ensure it works everywhere.
 
