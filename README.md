@@ -221,7 +221,6 @@ NEXT_PUBLIC_APP_URL=https://your-domain.com
 ## 📚 Documentation
 
 - [Technical Context](./docs/context.md) - Full technical documentation
-- [Development Issues](./issues/README.md) - Development plan and issues
 - [Supabase Docs](https://supabase.com/docs) - Supabase documentation
 - [Next.js Docs](https://nextjs.org/docs) - Next.js documentation
 
