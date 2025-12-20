@@ -87,3 +87,15 @@ CHECK (trim(title) != '');
 --   - Prevents duplicate log entries for the same habit on the same date
 -- ============================================================================
 
+-- ============================================================================
+-- ROW LEVEL SECURITY (RLS)
+-- ============================================================================
+-- Enable RLS on both tables to ensure users can only access their own data
+-- ============================================================================
+
+-- Enable RLS on habits table
+ALTER TABLE public.habits ENABLE ROW LEVEL SECURITY;
+
+-- Enable RLS on habit_logs table
+ALTER TABLE public.habit_logs ENABLE ROW LEVEL SECURITY;
+
