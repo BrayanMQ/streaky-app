@@ -191,3 +191,125 @@ USING (
     )
 );
 
+-- ============================================================================
+-- EXECUTION INSTRUCTIONS
+-- ============================================================================
+-- Follow these steps to execute this schema in your Supabase project:
+--
+-- STEP 1: Access Supabase SQL Editor
+--   1. Go to https://supabase.com/dashboard
+--   2. Select your project
+--   3. Navigate to "SQL Editor" in the left sidebar
+--   4. Click "New query" to create a new SQL query
+--
+-- STEP 2: Execute the Schema
+--   1. Copy the entire contents of this file (from line 1 to the end)
+--   2. Paste it into the SQL Editor
+--   3. Click the "Run" button (or press Ctrl+Enter / Cmd+Enter)
+--   4. Wait for the execution to complete
+--
+-- STEP 3: Verify Execution
+--   After execution, verify that everything was created successfully:
+--   
+--   Check tables exist:
+--   SELECT table_name 
+--   FROM information_schema.tables 
+--   WHERE table_schema = 'public' 
+--   AND table_name IN ('habits', 'habit_logs');
+--
+--   Check RLS is enabled:
+--   SELECT tablename, rowsecurity 
+--   FROM pg_tables 
+--   WHERE schemaname = 'public' 
+--   AND tablename IN ('habits', 'habit_logs');
+--
+--   Check policies exist:
+--   SELECT schemaname, tablename, policyname 
+--   FROM pg_policies 
+--   WHERE schemaname = 'public' 
+--   AND tablename IN ('habits', 'habit_logs');
+--
+-- STEP 4: Regenerate TypeScript Types
+--   After successfully executing the schema, regenerate your TypeScript types:
+--   
+--   Option A: Using npm script (recommended)
+--   npm run generate:types
+--
+--   Option B: Manual command
+--   npx supabase gen types typescript --project-id YOUR_PROJECT_ID > types/database.ts
+--
+--   Note: Replace YOUR_PROJECT_ID with your actual Supabase project ID
+--   You can find it in your Supabase project settings or use the environment variable
+--
+-- STEP 5: Test the Schema (Optional)
+--   You can test the schema by creating a test habit and log:
+--   
+--   -- This will only work if you're authenticated
+--   INSERT INTO public.habits (user_id, title, icon, color)
+--   VALUES (auth.uid(), 'Test Habit', '🏃', '#FF5733');
+--
+--   -- Get the habit ID from the previous insert, then:
+--   INSERT INTO public.habit_logs (habit_id, date, completed)
+--   VALUES ('<habit-id-from-above>', CURRENT_DATE, true);
+--
+-- ============================================================================
+-- TROUBLESHOOTING
+-- ============================================================================
+--
+-- Issue: "relation already exists"
+--   Solution: The tables already exist. You can either:
+--   - Drop existing tables first (WARNING: This deletes all data):
+--     DROP TABLE IF EXISTS public.habit_logs CASCADE;
+--     DROP TABLE IF EXISTS public.habits CASCADE;
+--   - Or modify the CREATE TABLE statements to use CREATE TABLE IF NOT EXISTS
+--     (already included in this script)
+--
+-- Issue: "policy already exists"
+--   Solution: Drop existing policies first:
+--   DROP POLICY IF EXISTS "Users can view own habits" ON public.habits;
+--   DROP POLICY IF EXISTS "Users can insert own habits" ON public.habits;
+--   DROP POLICY IF EXISTS "Users can update own habits" ON public.habits;
+--   DROP POLICY IF EXISTS "Users can delete own habits" ON public.habits;
+--   DROP POLICY IF EXISTS "Users can view own habit logs" ON public.habit_logs;
+--   DROP POLICY IF EXISTS "Users can insert own habit logs" ON public.habit_logs;
+--   DROP POLICY IF EXISTS "Users can update own habit logs" ON public.habit_logs;
+--   DROP POLICY IF EXISTS "Users can delete own habit logs" ON public.habit_logs;
+--
+-- Issue: "constraint already exists"
+--   Solution: Drop the constraint first:
+--   ALTER TABLE public.habits DROP CONSTRAINT IF EXISTS check_title_not_empty;
+--
+-- Issue: RLS policies not working
+--   Solution: Verify that:
+--   1. RLS is enabled: Check with the verification query in STEP 3
+--   2. User is authenticated: Make sure auth.uid() returns a valid UUID
+--   3. Policies are correctly created: Check with the verification query in STEP 3
+--
+-- ============================================================================
+-- SCHEMA SUMMARY
+-- ============================================================================
+--
+-- Tables Created:
+--   - habits: Stores user habits (id, user_id, title, icon, color, frequency, created_at)
+--   - habit_logs: Stores daily completion logs (id, habit_id, date, completed)
+--
+-- Indexes Created:
+--   - idx_habits_user_id: Optimizes queries filtering by user_id
+--   - idx_habit_logs_habit_id: Optimizes joins with habits table
+--   - idx_habit_logs_date: Optimizes date-based queries
+--
+-- Constraints:
+--   - Primary keys on both tables (id columns)
+--   - Foreign key: habits.user_id -> auth.users(id) with CASCADE
+--   - Foreign key: habit_logs.habit_id -> habits(id) with CASCADE
+--   - Unique constraint: (habit_id, date) on habit_logs
+--   - Check constraint: habits.title cannot be empty
+--
+-- Security:
+--   - RLS enabled on both tables
+--   - 4 policies on habits table (SELECT, INSERT, UPDATE, DELETE)
+--   - 4 policies on habit_logs table (SELECT, INSERT, UPDATE, DELETE)
+--   - All policies enforce user ownership of data
+--
+-- ============================================================================
+
