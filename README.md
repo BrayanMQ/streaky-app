@@ -110,12 +110,19 @@ Streaky is a Progressive Web App (PWA) designed for daily habit tracking with ex
 
 4. **Set up the database**
    
-   Run the SQL schema in your Supabase SQL Editor. See `docs/database-schema.sql` for the complete schema.
+   Apply the database migrations using Supabase CLI:
+   ```bash
+   npx supabase db push
+   ```
    
-   The schema includes:
+   This will apply all migrations from `supabase/migrations/` in chronological order. The migrations include:
    - `habits` table - Stores user habits
    - `habit_logs` table - Stores daily completion records
+   - Indexes for query optimization
+   - Constraints for data validation
    - Row Level Security (RLS) policies for data protection
+   
+   > **Alternative:** You can also run the SQL schema manually in Supabase SQL Editor. See `docs/database-schema.sql` for the complete schema.
 
 5. **Generate TypeScript types** (Optional but recommended)
    
@@ -202,8 +209,8 @@ streaky-app/
    - Enable Google OAuth (requires OAuth credentials)
 
 3. **Set up the database**
-   - Go to SQL Editor
-   - Run the schema from `docs/database-schema.sql`
+   - Apply migrations using: `npx supabase db push`
+   - Or manually run the schema from `docs/database-schema.sql` in SQL Editor
    - Verify RLS policies are enabled
 
 4. **Get your credentials**
@@ -262,6 +269,24 @@ The client automatically validates that the required environment variables are s
 - **React Query**: Use for all server state (API calls, Supabase queries)
 - **Zustand**: Use for UI state (modals, selected items, local preferences)
 - **Local State**: Use `useState` for component-specific state
+
+## 🗄️ Database Migrations
+
+The project uses Supabase migrations to manage database schema changes. Migrations are located in `supabase/migrations/` and are applied using:
+
+```bash
+npx supabase db push
+```
+
+Migrations are executed in chronological order based on their timestamp. Each migration is idempotent and can be safely re-run.
+
+### Migration Structure
+
+- `20251220100000_create_habits_table.sql` - Creates the habits table with indexes and constraints
+- `20251220100001_create_habit_logs_table.sql` - Creates the habit_logs table with indexes
+- `20251220100002_enable_rls.sql` - Enables Row Level Security on both tables
+- `20251220100003_create_habits_rls_policies.sql` - RLS policies for habits table
+- `20251220100004_create_habit_logs_rls_policies.sql` - RLS policies for habit_logs table
 
 ## 📚 Documentation
 
