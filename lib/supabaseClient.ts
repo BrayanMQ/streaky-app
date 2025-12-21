@@ -34,13 +34,19 @@ export const supabase = createClient<Database>(
   supabaseAnonKey
 );
 
+// Singleton instance for browser client
+let browserClientInstance: SupabaseClient<Database> | null = null;
+
 /**
- * Creates a Supabase client optimized for browser usage with session management
+ * Creates or returns the singleton Supabase client optimized for browser usage with session management
  * 
  * This client is configured with:
  * - Automatic session persistence (localStorage)
  * - Auth state change listeners
  * - Optimized for authentication flows
+ * 
+ * Uses a singleton pattern to ensure only one instance exists in the browser context,
+ * preventing the "Multiple GoTrueClient instances detected" warning.
  * 
  * Usage:
  * ```tsx
@@ -51,10 +57,16 @@ export const supabase = createClient<Database>(
  * const supabase = createBrowserClient()
  * ```
  * 
- * @returns {SupabaseClient<Database>} A Supabase client instance for browser use
+ * @returns {SupabaseClient<Database>} A Supabase client instance for browser use (singleton)
  */
 export function createBrowserClient(): SupabaseClient<Database> {
-  return createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+  // Return existing instance if it exists (singleton pattern)
+  if (browserClientInstance) {
+    return browserClientInstance;
+  }
+  
+  // Create new instance only if it doesn't exist
+  browserClientInstance = createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
@@ -62,4 +74,6 @@ export function createBrowserClient(): SupabaseClient<Database> {
       storage: typeof window !== 'undefined' ? window.localStorage : undefined,
     },
   });
+  
+  return browserClientInstance;
 }
