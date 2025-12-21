@@ -124,3 +124,22 @@ export async function getSession(): Promise<{ session: Session | null; error: Au
   return { session, error };
 }
 
+/**
+ * Resends the email confirmation link
+ * 
+ * @param email - User's email address
+ * @returns Promise with error if resend fails
+ */
+export async function resendConfirmationEmail(
+  email: string
+): Promise<{ error: AuthError | null }> {
+  const supabase = createBrowserClient();
+  
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+  });
+
+  return { error };
+}
+

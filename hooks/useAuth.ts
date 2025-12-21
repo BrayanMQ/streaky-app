@@ -10,6 +10,7 @@ import {
   signOut,
   getCurrentUser,
   getSession,
+  resendConfirmationEmail,
 } from '@/lib/auth';
 import type { User, Session, AuthError } from '@supabase/supabase-js';
 
@@ -121,6 +122,11 @@ export function useAuth() {
     },
   });
 
+  // Mutation for resending confirmation email
+  const resendConfirmationMutation = useMutation({
+    mutationFn: (email: string) => resendConfirmationEmail(email),
+  });
+
   // Listen to auth state changes and sync with React Query
   useEffect(() => {
     const supabase = createBrowserClient();
@@ -176,6 +182,10 @@ export function useAuth() {
     signOut: signOutMutation.mutateAsync,
     signOutPending: signOutMutation.isPending,
     signOutError: signOutMutation.error as AuthError | null,
+
+    resendConfirmationEmail: resendConfirmationMutation.mutateAsync,
+    resendConfirmationPending: resendConfirmationMutation.isPending,
+    resendConfirmationError: resendConfirmationMutation.error as AuthError | null,
   };
 }
 
