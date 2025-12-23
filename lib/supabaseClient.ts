@@ -37,6 +37,10 @@ export const supabase = createClient<Database>(
 // Singleton instance for browser client
 let browserClientInstance: SupabaseClient<Database> | null = null;
 
+// Use a unique key to identify our singleton instance in window object
+// This ensures true singleton across all module boundaries in Next.js
+const BROWSER_CLIENT_KEY = '__SUPABASE_BROWSER_CLIENT_SINGLETON__';
+
 /**
  * Creates or returns the singleton Supabase client optimized for browser usage with session management
  * 
@@ -45,8 +49,8 @@ let browserClientInstance: SupabaseClient<Database> | null = null;
  * - Auth state change listeners
  * - Optimized for authentication flows
  * 
- * Uses a singleton pattern to ensure only one instance exists in the browser context,
- * preventing the "Multiple GoTrueClient instances detected" warning.
+ * Uses a robust singleton pattern that stores the instance in both module scope and window object
+ * to prevent the "Multiple GoTrueClient instances detected" warning across different module boundaries.
  * 
  * Usage:
  * ```tsx
@@ -60,20 +64,39 @@ let browserClientInstance: SupabaseClient<Database> | null = null;
  * @returns {SupabaseClient<Database>} A Supabase client instance for browser use (singleton)
  */
 export function createBrowserClient(): SupabaseClient<Database> {
-  // Return existing instance if it exists (singleton pattern)
+  // Check if we're in browser environment
+  if (typeof window === 'undefined') {
+    throw new Error('createBrowserClient can only be used in browser environment');
+  }
+
+  // First, check window object for existing instance (prevents cross-module duplicates)
+  if ((window as any)[BROWSER_CLIENT_KEY]) {
+    // Also update module-level reference for consistency
+    browserClientInstance = (window as any)[BROWSER_CLIENT_KEY];
+    return browserClientInstance;
+  }
+
+  // Then check module-level singleton
   if (browserClientInstance) {
+    // Store in window for cross-module access
+    (window as any)[BROWSER_CLIENT_KEY] = browserClientInstance;
     return browserClientInstance;
   }
   
-  // Create new instance only if it doesn't exist
+  // Create new instance only if it doesn't exist anywhere
   browserClientInstance = createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
     auth: {
       persistSession: true,
       autoRefreshToken: true,
       detectSessionInUrl: true,
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
+      storage: window.localStorage,
+      // Use a consistent storage key to avoid conflicts
+      storageKey: 'sb-auth-token',
     },
   });
+
+  // Store in window object immediately to prevent race conditions
+  (window as any)[BROWSER_CLIENT_KEY] = browserClientInstance;
   
   return browserClientInstance;
 }
