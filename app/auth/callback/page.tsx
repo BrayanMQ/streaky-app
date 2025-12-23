@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabaseClient';
 
 /**
@@ -12,6 +12,7 @@ import { createBrowserClient } from '@/lib/supabaseClient';
  */
 export default function AuthCallbackPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
@@ -19,6 +20,16 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         const supabase = createBrowserClient();
+        
+        // Get redirectTo from query params
+        const redirectTo = searchParams.get('redirectTo');
+        // Validate redirectTo to prevent open redirects
+        const isValidRedirect = redirectTo && 
+          redirectTo.startsWith('/') && 
+          !redirectTo.includes('://') &&
+          !redirectTo.toLowerCase().startsWith('javascript:') &&
+          !redirectTo.toLowerCase().startsWith('data:');
+        const redirectPath = isValidRedirect ? redirectTo : '/dashboard';
         
         // Check for OAuth errors in the hash
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -49,9 +60,9 @@ export default function AuthCallbackPage() {
         }
 
         if (session) {
-          // Success! Clean up the URL and redirect to dashboard
+          // Success! Clean up the URL and redirect to the original page or dashboard
           window.history.replaceState({}, document.title, window.location.pathname);
-          router.push('/dashboard');
+          router.push(redirectPath);
         } else {
           // If no session after a short delay, try once more
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -66,7 +77,7 @@ export default function AuthCallbackPage() {
 
           if (retrySession) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            router.push('/dashboard');
+            router.push(redirectPath);
           } else {
             setError('No session found. Please try signing in again.');
             setIsProcessing(false);
@@ -83,7 +94,7 @@ export default function AuthCallbackPage() {
     };
 
     handleCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   if (isProcessing) {
     return (
