@@ -163,7 +163,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-primary/20 hover:border-2 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20 rounded-lg transition-all duration-200 hover:scale-110"
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <Calendar className="h-5 w-5 relative z-10" />
               </Button>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-primary/20 hover:border-2 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20 rounded-lg transition-all duration-200 hover:scale-110"
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <TrendingUp className="h-5 w-5 relative z-10" />
               </Button>
@@ -181,7 +181,7 @@ export default function DashboardPage() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="relative hover:bg-primary/20 hover:border-2 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20 rounded-lg transition-all duration-200 hover:scale-110"
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
               >
                 <Settings className="h-5 w-5 relative z-10" />
               </Button>
@@ -192,7 +192,7 @@ export default function DashboardPage() {
               onClick={handleSignOut}
               disabled={signOutPending}
               title="Sign out"
-              className="relative hover:bg-primary/20 hover:border-2 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20 rounded-lg transition-all duration-200 hover:scale-110 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:border-0 disabled:hover:shadow-none"
+              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:border-0 disabled:hover:shadow-none"
             >
               {signOutPending ? (
                 <Loader2 className="h-5 w-5 animate-spin relative z-10" />
@@ -203,7 +203,7 @@ export default function DashboardPage() {
             <Button
               variant="ghost"
               size="icon"
-              className="md:hidden relative hover:bg-primary/20 hover:border-2 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/20 rounded-lg transition-all duration-200 hover:scale-110"
+              className="md:hidden relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
             >
               <Menu className="h-5 w-5 relative z-10" />
             </Button>
