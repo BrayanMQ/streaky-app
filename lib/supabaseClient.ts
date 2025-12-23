@@ -70,10 +70,11 @@ export function createBrowserClient(): SupabaseClient<Database> {
   }
 
   // First, check window object for existing instance (prevents cross-module duplicates)
-  if ((window as any)[BROWSER_CLIENT_KEY]) {
+  const windowInstance = (window as any)[BROWSER_CLIENT_KEY] as SupabaseClient<Database> | undefined;
+  if (windowInstance) {
     // Also update module-level reference for consistency
-    browserClientInstance = (window as any)[BROWSER_CLIENT_KEY];
-    return browserClientInstance;
+    browserClientInstance = windowInstance;
+    return windowInstance;
   }
 
   // Then check module-level singleton
