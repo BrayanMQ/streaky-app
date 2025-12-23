@@ -1,17 +1,15 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useEffect, useState, Suspense } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { createBrowserClient } from '@/lib/supabaseClient';
 
 /**
- * OAuth callback page
- * 
- * This page handles the OAuth callback from Supabase after Google authentication.
- * It processes the tokens from the URL hash and establishes the session.
+ * Callback handler component that uses useSearchParams
  */
-export default function AuthCallbackPage() {
+function CallbackHandler() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [error, setError] = useState<string | null>(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
@@ -19,6 +17,16 @@ export default function AuthCallbackPage() {
     const handleCallback = async () => {
       try {
         const supabase = createBrowserClient();
+        
+        // Get redirectTo from query params
+        const redirectTo = searchParams.get('redirectTo');
+        // Validate redirectTo to prevent open redirects
+        const isValidRedirect = redirectTo && 
+          redirectTo.startsWith('/') && 
+          !redirectTo.includes('://') &&
+          !redirectTo.toLowerCase().startsWith('javascript:') &&
+          !redirectTo.toLowerCase().startsWith('data:');
+        const redirectPath = isValidRedirect ? redirectTo : '/dashboard';
         
         // Check for OAuth errors in the hash
         const hashParams = new URLSearchParams(window.location.hash.substring(1));
@@ -49,9 +57,9 @@ export default function AuthCallbackPage() {
         }
 
         if (session) {
-          // Success! Clean up the URL and redirect to dashboard
+          // Success! Clean up the URL and redirect to the original page or dashboard
           window.history.replaceState({}, document.title, window.location.pathname);
-          router.push('/dashboard');
+          router.push(redirectPath);
         } else {
           // If no session after a short delay, try once more
           await new Promise(resolve => setTimeout(resolve, 500));
@@ -66,7 +74,7 @@ export default function AuthCallbackPage() {
 
           if (retrySession) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            router.push('/dashboard');
+            router.push(redirectPath);
           } else {
             setError('No session found. Please try signing in again.');
             setIsProcessing(false);
@@ -83,7 +91,7 @@ export default function AuthCallbackPage() {
     };
 
     handleCallback();
-  }, [router]);
+  }, [router, searchParams]);
 
   if (isProcessing) {
     return (
@@ -129,5 +137,28 @@ export default function AuthCallbackPage() {
   }
 
   return null;
+}
+
+/**
+ * OAuth callback page
+ * 
+ * This page handles the OAuth callback from Supabase after Google authentication.
+ * It processes the tokens from the URL hash and establishes the session.
+ */
+export default function AuthCallbackPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto mb-4"></div>
+            <p className="text-lg">Loading...</p>
+          </div>
+        </div>
+      }
+    >
+      <CallbackHandler />
+    </Suspense>
+  );
 }
 
