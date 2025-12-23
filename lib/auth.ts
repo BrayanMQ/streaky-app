@@ -64,7 +64,7 @@ export async function signUpWithEmail(
  * This will redirect the user to Google's OAuth consent screen.
  * After authentication, the user will be redirected back to the app.
  * 
- * @param redirectTo - Optional URL to redirect to after authentication (defaults to current URL)
+ * @param redirectTo - Optional URL to redirect to after authentication (defaults to /dashboard)
  * @returns Promise that resolves when redirect is initiated, or error
  */
 export async function signInWithGoogle(
@@ -72,13 +72,28 @@ export async function signInWithGoogle(
 ): Promise<{ error: AuthError | null }> {
   const supabase = createBrowserClient();
   
-  // Use the current origin if redirectTo is not provided
-  const redirectUrl = redirectTo || (typeof window !== 'undefined' ? window.location.origin : '');
+  // Get the origin for the callback URL
+  const origin = typeof window !== 'undefined' ? window.location.origin : '';
+  
+  // Build the callback URL with redirectTo as a query parameter if provided
+  // Extract just the path from redirectTo if it's a full URL
+  let redirectPath = redirectTo || '/dashboard';
+  if (redirectTo && redirectTo.startsWith('http')) {
+    try {
+      const url = new URL(redirectTo);
+      redirectPath = url.pathname;
+    } catch {
+      redirectPath = '/dashboard';
+    }
+  }
+  
+  // Build callback URL with redirectTo as query parameter
+  const callbackUrl = `${origin}/auth/callback${redirectPath !== '/dashboard' ? `?redirectTo=${encodeURIComponent(redirectPath)}` : ''}`;
   
   const { error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${redirectUrl}/auth/callback`,
+      redirectTo: callbackUrl,
     },
   });
 
