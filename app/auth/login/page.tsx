@@ -13,7 +13,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Flame } from 'lucide-react';
+import { Flame, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -132,16 +132,30 @@ function LoginContent() {
           setFormError(getErrorMessage(result.error));
           return;
         }
-        // Success - redirect will happen via auth state change
-        router.push(getValidRedirectPath());
+        // Success - wait a moment for session to be established, then redirect
+        if (result.user && result.session) {
+          // Small delay to ensure session is properly set
+          setTimeout(() => {
+            router.push(getValidRedirectPath());
+          }, 100);
+        } else {
+          router.push(getValidRedirectPath());
+        }
       } else {
         const result = await signUp({ email: email.trim(), password });
         if (result.error) {
           setFormError(getErrorMessage(result.error));
           return;
         }
-        // Success - redirect will happen via auth state change
-        router.push(getValidRedirectPath());
+        // Success - wait a moment for session to be established, then redirect
+        if (result.user && result.session) {
+          // Small delay to ensure session is properly set
+          setTimeout(() => {
+            router.push(getValidRedirectPath());
+          }, 100);
+        } else {
+          router.push(getValidRedirectPath());
+        }
       }
     } catch (error) {
       setFormError(getErrorMessage(error));
@@ -169,13 +183,13 @@ function LoginContent() {
   const displayError = formError || signInError?.message || signUpError?.message;
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4">
-      <Link href="/" className="mb-8 flex items-center gap-2 font-bold text-2xl">
-        <Flame className="h-8 w-8 text-primary" />
+    <div className="flex min-h-screen flex-col items-center justify-center bg-muted/30 p-4 sm:p-6">
+      <Link href="/" className="mb-6 sm:mb-8 flex items-center gap-2 font-bold text-xl sm:text-2xl">
+        <Flame className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
         <span>Streaky</span>
       </Link>
 
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md shadow-lg">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl">
             {isLogin ? 'Welcome back' : 'Create account'}
@@ -272,11 +286,16 @@ function LoginContent() {
               className="w-full"
               disabled={signInPending || signUpPending}
             >
-              {signInPending || signUpPending
-                ? 'Processing...'
-                : isLogin
-                  ? 'Sign In'
-                  : 'Sign Up'}
+              {signInPending || signUpPending ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : isLogin ? (
+                'Sign In'
+              ) : (
+                'Sign Up'
+              )}
             </Button>
           </form>
 
@@ -299,7 +318,10 @@ function LoginContent() {
             type="button"
           >
             {signInWithGooglePending ? (
-              'Connecting...'
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Connecting...
+              </>
             ) : (
               <>
                 <svg
