@@ -1,15 +1,12 @@
 'use client';
 
+import { Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 
 /**
- * Login page
- * 
- * This page will be fully implemented in a future issue.
- * For now, it's a placeholder that reads the redirectTo parameter
- * to be used when the login functionality is implemented.
+ * Login content component that uses useSearchParams
  */
-export default function LoginPage() {
+function LoginContent() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirectTo');
 
@@ -23,6 +20,26 @@ export default function LoginPage() {
         </p>
       )}
     </div>
+  );
+}
+
+/**
+ * Login page
+ * 
+ * This page will be fully implemented in a future issue.
+ * For now, it's a placeholder that reads the redirectTo parameter
+ * to be used when the login functionality is implemented.
+ */
+export default function LoginPage() {
+  return (
+    <Suspense fallback={
+      <div>
+        <h1>Login Page</h1>
+        <p>Loading...</p>
+      </div>
+    }>
+      <LoginContent />
+    </Suspense>
   );
 }
 
