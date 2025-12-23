@@ -166,9 +166,7 @@ function LoginContent() {
     setFormError(null);
     try {
       const redirectPath = getValidRedirectPath();
-      const result = await signInWithGoogle(
-        `${window.location.origin}${redirectPath}`
-      );
+      const result = await signInWithGoogle(redirectPath);
       if (result.error) {
         setFormError(result.error.message || 'Failed to sign in with Google');
       }
