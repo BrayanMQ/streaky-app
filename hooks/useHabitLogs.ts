@@ -64,7 +64,9 @@ export function useHabitLogs(options?: {
       ? includeTodayOnly
         ? habitLogsKeys.today(habitId)
         : habitLogsKeys.habit(habitId)
-      : habitLogsKeys.userToday(user?.id ?? null),
+      : includeTodayOnly
+        ? habitLogsKeys.userToday(user?.id ?? null)
+        : habitLogsKeys.user(user?.id ?? null),
     queryFn: async () => {
       if (!user?.id) {
         return [];
@@ -182,6 +184,9 @@ export function useHabitLogs(options?: {
       await queryClient.cancelQueries({
         queryKey: habitLogsKeys.userToday(user?.id ?? null),
       });
+      await queryClient.cancelQueries({
+        queryKey: habitLogsKeys.user(user?.id ?? null),
+      });
 
       // Snapshot previous values
       const previousLogs = queryClient.getQueryData<HabitLog[]>(
@@ -192,6 +197,9 @@ export function useHabitLogs(options?: {
       );
       const previousUserTodayLogs = queryClient.getQueryData<HabitLog[]>(
         habitLogsKeys.userToday(user?.id ?? null)
+      );
+      const previousUserLogs = queryClient.getQueryData<HabitLog[]>(
+        habitLogsKeys.user(user?.id ?? null)
       );
 
       const targetDate = params.date ?? getTodayDate();
@@ -255,10 +263,28 @@ export function useHabitLogs(options?: {
         }
       }
 
+      // Update user logs query (all logs, not just today)
+      if (previousUserLogs) {
+        const existingIndex = previousUserLogs.findIndex(
+          (log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate
+        );
+        if (existingIndex >= 0) {
+          const updated = [...previousUserLogs];
+          updated[existingIndex] = optimisticLog;
+          queryClient.setQueryData(habitLogsKeys.user(user?.id ?? null), updated);
+        } else {
+          queryClient.setQueryData(habitLogsKeys.user(user?.id ?? null), [
+            optimisticLog,
+            ...previousUserLogs,
+          ]);
+        }
+      }
+
       return {
         previousLogs,
         previousTodayLogs,
         previousUserTodayLogs,
+        previousUserLogs,
       };
     },
     onError: (err, params, context) => {
@@ -275,6 +301,12 @@ export function useHabitLogs(options?: {
           context.previousUserTodayLogs
         );
       }
+      if (context?.previousUserLogs) {
+        queryClient.setQueryData(
+          habitLogsKeys.user(user?.id ?? null),
+          context.previousUserLogs
+        );
+      }
     },
     onSettled: (data, error, params) => {
       // Refetch to ensure consistency
@@ -286,6 +318,9 @@ export function useHabitLogs(options?: {
       });
       queryClient.invalidateQueries({
         queryKey: habitLogsKeys.userToday(user?.id ?? null),
+      });
+      queryClient.invalidateQueries({
+        queryKey: habitLogsKeys.user(user?.id ?? null),
       });
       // Also invalidate habits to refresh streak calculations
       queryClient.invalidateQueries({
@@ -299,6 +334,7 @@ export function useHabitLogs(options?: {
     if (!user?.id) {
       // Clear logs cache when user logs out
       queryClient.setQueryData(habitLogsKeys.userToday(null), []);
+      queryClient.setQueryData(habitLogsKeys.user(null), []);
       queryClient.removeQueries({ queryKey: habitLogsKeys.all });
     } else {
       // Invalidate logs when user changes (login)
