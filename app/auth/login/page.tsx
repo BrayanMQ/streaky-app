@@ -28,6 +28,10 @@ function LoginContent() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [formError, setFormError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<{
+    email?: string;
+    password?: string;
+  }>({});
 
   const {
     signIn,
@@ -55,38 +59,92 @@ function LoginContent() {
     return '/dashboard';
   };
 
+  // Email validation
+  const validateEmail = (email: string): boolean => {
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
+
+  // Get user-friendly error message from Supabase error
+  const getErrorMessage = (error: any): string => {
+    if (!error) return 'An unexpected error occurred';
+
+    const errorMessage = error.message || error.toString();
+
+    // Map common Supabase errors to user-friendly messages
+    if (errorMessage.includes('Invalid login credentials') || 
+        errorMessage.includes('email') && errorMessage.includes('password')) {
+      return 'Invalid email or password. Please try again.';
+    }
+    if (errorMessage.includes('Email not confirmed')) {
+      return 'Please check your email and confirm your account before signing in.';
+    }
+    if (errorMessage.includes('User already registered')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    if (errorMessage.includes('Password')) {
+      if (errorMessage.includes('weak')) {
+        return 'Password is too weak. Please use a stronger password.';
+      }
+      if (errorMessage.includes('length')) {
+        return 'Password must be at least 6 characters long.';
+      }
+    }
+    if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
+      return 'Network error. Please check your connection and try again.';
+    }
+
+    return errorMessage;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setFormError(null);
+    setFieldErrors({});
 
-    // Basic validation
-    if (!email || !password) {
-      setFormError('Please fill in all fields');
+    // Validation
+    const errors: { email?: string; password?: string } = {};
+
+    // Email validation
+    if (!email.trim()) {
+      errors.email = 'Email is required';
+    } else if (!validateEmail(email)) {
+      errors.email = 'Please enter a valid email address';
+    }
+
+    // Password validation
+    if (!password) {
+      errors.password = 'Password is required';
+    } else if (!isLogin && password.length < 6) {
+      errors.password = 'Password must be at least 6 characters long';
+    }
+
+    // If there are field errors, show them and stop
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
     try {
       if (isLogin) {
-        const result = await signIn({ email, password });
+        const result = await signIn({ email: email.trim(), password });
         if (result.error) {
-          setFormError(result.error.message || 'Failed to sign in');
+          setFormError(getErrorMessage(result.error));
           return;
         }
         // Success - redirect will happen via auth state change
         router.push(getValidRedirectPath());
       } else {
-        const result = await signUp({ email, password });
+        const result = await signUp({ email: email.trim(), password });
         if (result.error) {
-          setFormError(result.error.message || 'Failed to sign up');
+          setFormError(getErrorMessage(result.error));
           return;
         }
         // Success - redirect will happen via auth state change
         router.push(getValidRedirectPath());
       }
     } catch (error) {
-      setFormError(
-        error instanceof Error ? error.message : 'An unexpected error occurred'
-      );
+      setFormError(getErrorMessage(error));
     }
   };
 
@@ -143,10 +201,29 @@ function LoginContent() {
                 type="email"
                 placeholder="you@example.com"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  // Clear email error when user starts typing
+                  if (fieldErrors.email) {
+                    setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                  }
+                }}
+                onBlur={() => {
+                  // Validate email on blur
+                  if (email && !validateEmail(email)) {
+                    setFieldErrors((prev) => ({
+                      ...prev,
+                      email: 'Please enter a valid email address',
+                    }));
+                  }
+                }}
                 required
                 disabled={signInPending || signUpPending}
+                className={fieldErrors.email ? 'border-destructive' : ''}
               />
+              {fieldErrors.email && (
+                <p className="text-sm text-destructive">{fieldErrors.email}</p>
+              )}
             </div>
 
             <div className="space-y-2">
@@ -156,10 +233,25 @@ function LoginContent() {
                 type="password"
                 placeholder="••••••••"
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  // Clear password error when user starts typing
+                  if (fieldErrors.password) {
+                    setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                  }
+                }}
                 required
                 disabled={signInPending || signUpPending}
+                className={fieldErrors.password ? 'border-destructive' : ''}
               />
+              {fieldErrors.password && (
+                <p className="text-sm text-destructive">{fieldErrors.password}</p>
+              )}
+              {!isLogin && (
+                <p className="text-xs text-muted-foreground">
+                  Password must be at least 6 characters long
+                </p>
+              )}
             </div>
 
             {isLogin && (
@@ -201,7 +293,7 @@ function LoginContent() {
 
           <Button
             variant="outline"
-            className="w-full bg-transparent"
+            className="w-full bg-transparent hover:bg-muted/50 hover:border-input/80 transition-all duration-200"
             onClick={handleGoogleLogin}
             disabled={signInWithGooglePending}
             type="button"
@@ -236,6 +328,7 @@ function LoginContent() {
                   onClick={() => {
                     setIsLogin(false);
                     setFormError(null);
+                    setFieldErrors({});
                   }}
                 >
                   Sign up
@@ -251,6 +344,7 @@ function LoginContent() {
                   onClick={() => {
                     setIsLogin(true);
                     setFormError(null);
+                    setFieldErrors({});
                   }}
                 >
                   Sign in
