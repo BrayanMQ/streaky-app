@@ -1,9 +1,36 @@
 @import "tailwindcss";
 
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
+@theme {
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+
+  /* Define colors for Tailwind classes - use hyphen for nested colors */
+  --color-background: 220 14% 98%; /* #F9FAFB */
+  --color-foreground: 222 47% 11%; /* #111827 */
+  --color-card: 0 0% 100%; /* #FFFFFF */
+  --color-card-foreground: 222 47% 11%; /* #111827 */
+  --color-popover: 0 0% 100%;
+  --color-popover-foreground: 222 47% 11%;
+  --color-primary: 217 91% 60%; /* #2563EB - Blue primary */
+  --color-primary-foreground: 0 0% 100%;
+  --color-secondary: 220 14% 96%;
+  --color-secondary-foreground: 222 47% 11%;
+  --color-muted: 220 14% 96%;
+  --color-muted-foreground: 220 5% 65%; /* More grey and lighter for placeholders */
+  --color-accent: 25 95% 53%; /* #F97316 - Orange for streaks */
+  --color-accent-foreground: 0 0% 100%;
+  --color-destructive: 0 84.2% 60.2%;
+  --color-destructive-foreground: 0 0% 98%;
+  --color-border: 220 13% 91%; /* #E5E7EB */
+  --color-input: 220 13% 91%;
+  --color-ring: 217 91% 60%;
+  --color-success: 142 71% 45%; /* #22C55E - Green for completed */
+  --color-chart-1: 217 91% 60%;
+  --color-chart-2: 25 95% 53%;
+  --color-chart-3: 142 71% 45%;
+  --color-chart-4: 220 9% 46%;
+  --color-chart-5: 222 47% 11%;
+  --radius: 1.25rem;
 }
 
 @layer base {
@@ -11,7 +38,7 @@
     --font-sans: var(--font-geist-sans);
     --font-mono: var(--font-geist-mono);
 
-    /* Updated to new color palette with blue primary and orange accent */
+    /* CSS variables for shadcn/ui components (they use these directly with hsl()) */
     --background: 220 14% 98%; /* #F9FAFB */
     --foreground: 222 47% 11%; /* #111827 */
     --card: 0 0% 100%; /* #FFFFFF */
@@ -23,7 +50,7 @@
     --secondary: 220 14% 96%;
     --secondary-foreground: 222 47% 11%;
     --muted: 220 14% 96%;
-    --muted-foreground: 220 9% 46%; /* #6B7280 */
+    --muted-foreground: 220 5% 65%; /* More grey and lighter for placeholders */
     --accent: 25 95% 53%; /* #F97316 - Orange for streaks */
     --accent-foreground: 0 0% 100%;
     --destructive: 0 84.2% 60.2%;
@@ -37,7 +64,7 @@
     --chart-3: 142 71% 45%;
     --chart-4: 220 9% 46%;
     --chart-5: 222 47% 11%;
-    --radius: 1rem;
+    --radius: 1.25rem;
   }
 
   .dark {
@@ -67,14 +94,115 @@
     --chart-3: 142 71% 45%;
     --chart-4: 220 9% 60%;
     --chart-5: 220 14% 98%;
+
+    /* Also update @theme colors for dark mode */
+    --color-background: 222 47% 11%;
+    --color-foreground: 220 14% 98%;
+    --color-card: 217 33% 17%;
+    --color-card-foreground: 220 14% 98%;
+    --color-popover: 217 33% 17%;
+    --color-popover-foreground: 220 14% 98%;
+    --color-primary: 217 91% 60%;
+    --color-primary-foreground: 0 0% 100%;
+    --color-secondary: 217 33% 20%;
+    --color-secondary-foreground: 220 14% 98%;
+    --color-muted: 217 33% 20%;
+    --color-muted-foreground: 220 9% 60%;
+    --color-accent: 25 95% 53%;
+    --color-accent-foreground: 0 0% 100%;
+    --color-destructive: 0 62.8% 30.6%;
+    --color-destructive-foreground: 0 0% 98%;
+    --color-border: 217 33% 25%;
+    --color-input: 217 33% 25%;
+    --color-ring: 217 91% 60%;
+    --color-success: 142 71% 45%;
+    --color-chart-1: 217 91% 60%;
+    --color-chart-2: 25 95% 53%;
+    --color-chart-3: 142 71% 45%;
+    --color-chart-4: 220 9% 60%;
+    --color-chart-5: 220 14% 98%;
+  }
+
+  * {
+    border-color: hsl(var(--border));
+  }
+  body {
+    background-color: hsl(var(--background));
+    color: hsl(var(--foreground));
   }
 }
 
-@layer base {
-  * {
-    @apply border-border;
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
   }
-  body {
-    @apply bg-background text-foreground;
+
+  /* Ensure Tailwind v4 recognizes these color utilities */
+  .bg-background {
+    background-color: hsl(var(--background));
+  }
+  .text-foreground {
+    color: hsl(var(--foreground));
+  }
+  .bg-card {
+    background-color: hsl(var(--card));
+  }
+  .text-card-foreground {
+    color: hsl(var(--card-foreground));
+  }
+  .bg-primary {
+    background-color: hsl(var(--primary));
+  }
+  .text-primary {
+    color: hsl(var(--primary));
+  }
+  .text-primary-foreground {
+    color: hsl(var(--primary-foreground));
+  }
+  .bg-secondary {
+    background-color: hsl(var(--secondary));
+  }
+  .text-secondary-foreground {
+    color: hsl(var(--secondary-foreground));
+  }
+  .bg-muted {
+    background-color: hsl(var(--muted));
+  }
+  .text-muted-foreground {
+    color: hsl(var(--muted-foreground));
+  }
+  input::placeholder,
+  input::-webkit-input-placeholder,
+  input::-moz-placeholder,
+  input:-ms-input-placeholder {
+    color: hsl(var(--muted-foreground));
+    opacity: 0.8;
+  }
+  .bg-accent {
+    background-color: hsl(var(--accent));
+  }
+  .text-accent-foreground {
+    color: hsl(var(--accent-foreground));
+  }
+  .bg-destructive {
+    background-color: hsl(var(--destructive));
+  }
+  .text-destructive {
+    color: hsl(var(--destructive));
+  }
+  .text-destructive-foreground {
+    color: hsl(var(--destructive-foreground));
+  }
+  .border-border {
+    border-color: hsl(var(--border));
+  }
+  .border-input {
+    border-color: hsl(var(--input));
+  }
+  .ring-ring {
+    --tw-ring-color: hsl(var(--ring));
+  }
+  .ring-offset-background {
+    --tw-ring-offset-color: hsl(var(--background));
   }
 }
