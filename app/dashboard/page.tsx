@@ -4,9 +4,8 @@ import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { HabitCard } from '@/components/HabitCard';
 import { Flame, Plus, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut, AlertCircle, X } from 'lucide-react';
-import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabits } from '@/hooks/useHabits';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
@@ -305,46 +304,15 @@ export default function DashboardPage() {
         {/* Habits List */}
         {totalHabits > 0 ? (
           <div className="mb-8 space-y-4">
-            {habitsWithData.map((habit) => {
-              const habitColor = getHabitColor(habit);
-              const isTogglingThisHabit = isToggling;
-
-              return (
-                <Card
-                  key={habit.id}
-                  className={cn(
-                    'cursor-pointer transition-all hover:shadow-md',
-                    habit.completedToday && 'border-primary bg-primary/5',
-                    isTogglingThisHabit && 'opacity-50 pointer-events-none',
-                  )}
-                  onClick={() => handleToggleHabit(habit.id)}
-                >
-                  <CardContent className="flex items-center justify-between p-6">
-                    <div className="flex items-center gap-4">
-                      <div
-                        className={cn(
-                          'flex h-12 w-12 items-center justify-center rounded-full',
-                          habit.completedToday ? habitColor : 'bg-muted',
-                        )}
-                      >
-                        {habit.completedToday ? (
-                          <span className="text-2xl">✓</span>
-                        ) : (
-                          <span className="text-2xl opacity-30">○</span>
-                        )}
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{habit.title}</h3>
-                        <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                          <Flame className="h-4 w-4 text-primary" />
-                          <span>{habit.streak ?? 0} day streak</span>
-                        </div>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+            {habitsWithData.map((habit) => (
+              <HabitCard
+                key={habit.id}
+                habit={habit}
+                onToggle={handleToggleHabit}
+                isToggling={isToggling}
+                getHabitColor={getHabitColor}
+              />
+            ))}
           </div>
         ) : (
           /* Empty State */
