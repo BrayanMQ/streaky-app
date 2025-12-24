@@ -25,6 +25,37 @@ export const habitLogsKeys = {
 };
 
 /**
+ * Internal hook used by useHabitLogs to get toggle functionality
+ * This maintains backward compatibility with the existing API
+ */
+function useHabitLogsToggle(habitId?: string) {
+  const { toggleCompletion: baseToggleCompletion, isToggling, toggleError } = useToggleHabitLog();
+
+  const toggleCompletion = async (params: {
+    habitId?: string;
+    date?: string;
+    completed?: boolean;
+  }) => {
+    const targetHabitId = params.habitId ?? habitId;
+    if (!targetHabitId) {
+      throw new Error('habitId is required');
+    }
+
+    return baseToggleCompletion({
+      habitId: targetHabitId,
+      date: params.date,
+      completed: params.completed,
+    });
+  };
+
+  return {
+    toggleCompletion,
+    isToggling,
+    toggleError,
+  };
+}
+
+/**
  * Custom hook for fetching and mutating habit logs using React Query
  * 
  * This hook provides:
@@ -165,6 +196,77 @@ export function useHabitLogs(options?: {
     staleTime: 30 * 1000, // 30 seconds
     retry: 1,
   });
+
+  // Use the internal toggle hook that maintains backward compatibility
+  const { toggleCompletion, isToggling, toggleError } = useHabitLogsToggle(habitId);
+
+  // Invalidate logs query when auth state changes
+  useEffect(() => {
+    if (!user?.id) {
+      // Clear logs cache when user logs out
+      queryClient.setQueryData(habitLogsKeys.userToday(null), []);
+      queryClient.setQueryData(habitLogsKeys.user(null), []);
+      queryClient.removeQueries({ queryKey: habitLogsKeys.all });
+    } else {
+      // Invalidate logs when user changes (login)
+      queryClient.invalidateQueries({ queryKey: habitLogsKeys.user(user.id) });
+      queryClient.invalidateQueries({ queryKey: habitLogsKeys.userToday(user.id) });
+    }
+  }, [user?.id, queryClient]);
+
+  return {
+    logs: logs ?? [],
+    isLoading,
+    error: error as PostgrestError | null,
+    refetch,
+    toggleCompletion,
+    isToggling,
+    toggleError,
+  };
+}
+
+/**
+ * Custom hook for toggling habit completion status using React Query
+ * 
+ * This hook provides a mutation for marking/unmarking habits as completed on a specific date.
+ * It includes optimistic updates and automatically invalidates related queries.
+ * 
+ * @returns Object containing:
+ *   - toggleCompletion: Function to toggle habit completion
+ *   - isToggling: Loading state of the mutation
+ *   - toggleError: Error object if mutation failed
+ * 
+ * @example
+ * ```tsx
+ * 'use client'
+ * import { useToggleHabitLog } from '@/hooks/useHabitLogs'
+ * 
+ * function HabitButton({ habitId }) {
+ *   const { toggleCompletion, isToggling } = useToggleHabitLog()
+ *   
+ *   const handleClick = async () => {
+ *     try {
+ *       await toggleCompletion({ 
+ *         habitId, 
+ *         date: '2025-01-15', // optional, defaults to today
+ *         completed: true // optional, defaults to toggle
+ *       })
+ *     } catch (error) {
+ *       console.error('Failed to toggle habit:', error)
+ *     }
+ *   }
+ *   
+ *   return (
+ *     <button onClick={handleClick} disabled={isToggling}>
+ *       {isToggling ? 'Updating...' : 'Toggle Habit'}
+ *     </button>
+ *   )
+ * }
+ * ```
+ */
+export function useToggleHabitLog() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   // Mutation for toggling habit completion
   const toggleMutation = useMutation({
@@ -398,38 +500,28 @@ export function useHabitLogs(options?: {
     },
   });
 
-  // Invalidate logs query when auth state changes
-  useEffect(() => {
-    if (!user?.id) {
-      // Clear logs cache when user logs out
-      queryClient.setQueryData(habitLogsKeys.userToday(null), []);
-      queryClient.setQueryData(habitLogsKeys.user(null), []);
-      queryClient.removeQueries({ queryKey: habitLogsKeys.all });
-    } else {
-      // Invalidate logs when user changes (login)
-      queryClient.invalidateQueries({ queryKey: habitLogsKeys.user(user.id) });
-      queryClient.invalidateQueries({ queryKey: habitLogsKeys.userToday(user.id) });
-    }
-  }, [user?.id, queryClient]);
-
   /**
    * Toggle completion for a habit on a specific date (defaults to today)
+   * 
+   * @param params - Object containing:
+   *   - habitId: Required habit ID
+   *   - date: Optional date string (YYYY-MM-DD), defaults to today
+   *   - completed: Optional boolean to set specific state, defaults to toggle
    */
   const toggleCompletion = async (params: {
     habitId: string;
     date?: string;
     completed?: boolean;
   }) => {
-    if (!habitId && !params.habitId) {
+    if (!params.habitId) {
       throw new Error('habitId is required');
     }
 
-    const targetHabitId = params.habitId ?? habitId!;
     const targetDate = params.date ?? getTodayDate();
 
     // Get current log to determine toggle state
     const currentLogs = queryClient.getQueryData<HabitLog[]>(
-      habitLogsKeys.habit(targetHabitId)
+      habitLogsKeys.habit(params.habitId)
     );
     const todayLog = currentLogs?.find((log) => formatDate(log.date) === targetDate);
     const currentCompleted = todayLog?.completed ?? false;
@@ -438,22 +530,19 @@ export function useHabitLogs(options?: {
     const newCompleted = params.completed ?? !currentCompleted;
 
     return toggleMutation.mutateAsync({
-      habitId: targetHabitId,
+      habitId: params.habitId,
       completed: newCompleted,
       date: targetDate,
     });
   };
 
   return {
-    logs: logs ?? [],
-    isLoading,
-    error: error as PostgrestError | null,
-    refetch,
     toggleCompletion,
     isToggling: toggleMutation.isPending,
     toggleError: toggleMutation.error as PostgrestError | null,
   };
 }
+
 
 /**
  * Custom hook for fetching today's habit logs using React Query
