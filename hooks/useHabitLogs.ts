@@ -455,3 +455,47 @@ export function useHabitLogs(options?: {
   };
 }
 
+/**
+ * Custom hook for fetching today's habit logs using React Query
+ * 
+ * This is a convenience hook that wraps useHabitLogs with includeTodayOnly: true.
+ * It provides a simpler API for getting only today's logs.
+ * 
+ * @param habitId - Optional habit ID. If provided, returns today's logs for that habit only.
+ *                  If not provided, returns today's logs for all user habits.
+ * 
+ * @returns Object containing:
+ *   - logs: Array of today's habit logs
+ *   - isLoading: Loading state
+ *   - error: Error object if query failed
+ *   - refetch: Function to manually refetch logs
+ * 
+ * @example
+ * ```tsx
+ * 'use client'
+ * import { useTodayLogs } from '@/hooks/useHabitLogs'
+ * 
+ * function TodayHabits() {
+ *   // Get today's logs for all habits
+ *   const { logs, isLoading } = useTodayLogs()
+ *   
+ *   // Get today's logs for a specific habit
+ *   const { logs: habitLogs } = useTodayLogs('habit-id-123')
+ *   
+ *   return (
+ *     <div>
+ *       {logs.map(log => (
+ *         <div key={log.id}>{log.habit_id} - {log.completed ? 'Done' : 'Not done'}</div>
+ *       ))}
+ *     </div>
+ *   )
+ * }
+ * ```
+ */
+export function useTodayLogs(habitId?: string) {
+  return useHabitLogs({
+    habitId,
+    includeTodayOnly: true,
+  });
+}
+
