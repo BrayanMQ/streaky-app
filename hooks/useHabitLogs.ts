@@ -693,10 +693,19 @@ export function useToggleHabitLog() {
       : getTodayDate();
 
     // Get current log to determine toggle state
-    const currentLogs = queryClient.getQueryData<HabitLog[]>(
+    // Try multiple query keys since different parts of the app may use different queries
+    let currentLogs = queryClient.getQueryData<HabitLog[]>(
       habitLogsKeys.habit(params.habitId)
     );
-    const todayLog = currentLogs?.find((log) => formatDate(log.date) === targetDate);
+    
+    // If not found, try user logs query (used by dashboard)
+    if (!currentLogs) {
+      currentLogs = queryClient.getQueryData<HabitLog[]>(
+        habitLogsKeys.user(user?.id ?? null)
+      );
+    }
+    
+    const todayLog = currentLogs?.find((log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate);
     const currentCompleted = todayLog?.completed ?? false;
 
     // Toggle: if currently completed, set to false, otherwise set to true
