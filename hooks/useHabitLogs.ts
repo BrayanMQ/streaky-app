@@ -10,6 +10,159 @@ import type { HabitLog, HabitLogInsert } from '@/types/database';
 import type { PostgrestError } from '@supabase/supabase-js';
 
 /**
+ * Validates and normalizes a date string to YYYY-MM-DD format
+ * @param date - Date string or Date object to validate and normalize
+ * @returns Normalized date string in YYYY-MM-DD format
+ * @throws Error if date is invalid
+ */
+function validateAndNormalizeDate(date: string | Date): string {
+  const normalized = formatDate(date);
+  
+  // Validate that the date is in correct format (YYYY-MM-DD)
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(normalized)) {
+    throw new Error(`Invalid date format: ${date}. Expected YYYY-MM-DD format.`);
+  }
+  
+  // Validate that it's a valid date
+  const dateObj = new Date(normalized);
+  if (isNaN(dateObj.getTime())) {
+    throw new Error(`Invalid date: ${date}. The date does not exist.`);
+  }
+  
+  // Check if the normalized date matches the input (to catch invalid dates like 2025-13-45)
+  const normalizedCheck = formatDate(dateObj);
+  if (normalized !== normalizedCheck) {
+    throw new Error(`Invalid date: ${date}. The date is not valid.`);
+  }
+  
+  return normalized;
+}
+
+/**
+ * Validates a date range
+ * @param startDate - Start date string
+ * @param endDate - End date string
+ * @throws Error if dates are invalid or startDate > endDate
+ */
+function validateDateRange(startDate: string, endDate: string): void {
+  const normalizedStart = validateAndNormalizeDate(startDate);
+  const normalizedEnd = validateAndNormalizeDate(endDate);
+  
+  const start = new Date(normalizedStart);
+  const end = new Date(normalizedEnd);
+  
+  if (start > end) {
+    throw new Error(
+      `Invalid date range: startDate (${normalizedStart}) must be less than or equal to endDate (${normalizedEnd}).`
+    );
+  }
+}
+
+/**
+ * Checks if a date is within a date range (inclusive)
+ * @param date - Date to check (YYYY-MM-DD format)
+ * @param startDate - Start date of range (YYYY-MM-DD format)
+ * @param endDate - End date of range (YYYY-MM-DD format)
+ * @returns true if date is within the range
+ */
+function isDateInRange(date: string, startDate: string, endDate: string): boolean {
+  const dateObj = new Date(date);
+  const start = new Date(startDate);
+  const end = new Date(endDate);
+  return dateObj >= start && dateObj <= end;
+}
+
+/**
+ * Updates all date range queries optimistically if the target date is within their range
+ * @param queryClient - React Query client
+ * @param habitId - Habit ID
+ * @param userId - User ID
+ * @param targetDate - Date being updated (YYYY-MM-DD format)
+ * @param optimisticLog - Optimistic log to insert/update
+ * @returns Map of query keys to previous data for rollback
+ */
+function updateDateRangeQueriesOptimistically(
+  queryClient: ReturnType<typeof useQueryClient>,
+  habitId: string,
+  userId: string | null,
+  targetDate: string,
+  optimisticLog: HabitLog
+): Map<readonly unknown[], HabitLog[] | undefined> {
+  const previousData = new Map<readonly unknown[], HabitLog[] | undefined>();
+
+  // Get all queries for habit date ranges
+  const habitRangeQueries = queryClient.getQueriesData<HabitLog[]>({
+    queryKey: ['habit_logs', 'habit', habitId, 'range'],
+    exact: false,
+  });
+
+  for (const [queryKey, data] of habitRangeQueries) {
+    // Extract startDate and endDate from query key
+    // Format: ['habit_logs', 'habit', habitId, 'range', startDate, endDate]
+    const keyArray = queryKey as readonly unknown[];
+    if (keyArray.length >= 6) {
+      const startDate = String(keyArray[4]);
+      const endDate = String(keyArray[5]);
+      
+      if (isDateInRange(targetDate, startDate, endDate)) {
+        // Save previous data for rollback
+        previousData.set(queryKey, data);
+        
+        if (data) {
+          const existingIndex = data.findIndex(
+            (log) => log.habit_id === habitId && formatDate(log.date) === targetDate
+          );
+          if (existingIndex >= 0) {
+            const updated = [...data];
+            updated[existingIndex] = optimisticLog;
+            queryClient.setQueryData(queryKey, updated);
+          } else {
+            queryClient.setQueryData(queryKey, [optimisticLog, ...data]);
+          }
+        }
+      }
+    }
+  }
+
+  // Get all queries for user date ranges
+  const userRangeQueries = queryClient.getQueriesData<HabitLog[]>({
+    queryKey: ['habit_logs', 'user', userId, 'range'],
+    exact: false,
+  });
+
+  for (const [queryKey, data] of userRangeQueries) {
+    // Extract startDate and endDate from query key
+    // Format: ['habit_logs', 'user', userId, 'range', startDate, endDate]
+    const keyArray = queryKey as readonly unknown[];
+    if (keyArray.length >= 6) {
+      const startDate = String(keyArray[4]);
+      const endDate = String(keyArray[5]);
+      
+      if (isDateInRange(targetDate, startDate, endDate)) {
+        // Save previous data for rollback
+        previousData.set(queryKey, data);
+        
+        if (data) {
+          const existingIndex = data.findIndex(
+            (log) => log.habit_id === habitId && formatDate(log.date) === targetDate
+          );
+          if (existingIndex >= 0) {
+            const updated = [...data];
+            updated[existingIndex] = optimisticLog;
+            queryClient.setQueryData(queryKey, updated);
+          } else {
+            queryClient.setQueryData(queryKey, [optimisticLog, ...data]);
+          }
+        }
+      }
+    }
+  }
+
+  return previousData;
+}
+
+/**
  * Query keys for React Query
  */
 export const habitLogsKeys = {
@@ -100,21 +253,19 @@ export function useHabitLogs(options?: {
   const { user } = useAuth();
   const { habitId, includeTodayOnly = false, startDate, endDate } = options ?? {};
 
-  // Validate date range if both dates are provided
+  // Validate and normalize date range if both dates are provided
+  let normalizedStartDate: string | undefined;
+  let normalizedEndDate: string | undefined;
+  
   if (startDate && endDate) {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      throw new Error('Invalid date format. Dates must be in YYYY-MM-DD format.');
-    }
-    if (start > end) {
-      throw new Error('startDate must be less than or equal to endDate.');
-    }
+    validateDateRange(startDate, endDate);
+    normalizedStartDate = validateAndNormalizeDate(startDate);
+    normalizedEndDate = validateAndNormalizeDate(endDate);
+  } else if (startDate) {
+    normalizedStartDate = validateAndNormalizeDate(startDate);
+  } else if (endDate) {
+    normalizedEndDate = validateAndNormalizeDate(endDate);
   }
-
-  // Normalize dates to YYYY-MM-DD format
-  const normalizedStartDate = startDate ? formatDate(startDate) : undefined;
-  const normalizedEndDate = endDate ? formatDate(endDate) : undefined;
 
   // Determine query key based on options
   const getQueryKey = () => {
@@ -276,7 +427,9 @@ export function useToggleHabitLog() {
       }
 
       const supabase = createBrowserClient();
-      const targetDate = params.date ?? getTodayDate();
+      const targetDate = params.date 
+        ? validateAndNormalizeDate(params.date)
+        : getTodayDate();
 
       // Check if log exists for this date
       const { data: existingLog, error: checkError } = await supabase
@@ -364,7 +517,9 @@ export function useToggleHabitLog() {
         habitLogsKeys.user(user?.id ?? null)
       );
 
-      const targetDate = params.date ?? getTodayDate();
+      const targetDate = params.date 
+        ? validateAndNormalizeDate(params.date)
+        : getTodayDate();
 
       // Optimistically update logs
       const optimisticLog: HabitLog = {
@@ -373,6 +528,15 @@ export function useToggleHabitLog() {
         date: targetDate,
         completed: params.completed,
       };
+
+      // Update date range queries optimistically
+      const previousRangeQueries = updateDateRangeQueriesOptimistically(
+        queryClient,
+        params.habitId,
+        user?.id ?? null,
+        targetDate,
+        optimisticLog
+      );
 
       // Update habit logs query
       if (previousLogs) {
@@ -447,6 +611,7 @@ export function useToggleHabitLog() {
         previousTodayLogs,
         previousUserTodayLogs,
         previousUserLogs,
+        previousRangeQueries,
       };
     },
     onError: (err, params, context) => {
@@ -468,6 +633,12 @@ export function useToggleHabitLog() {
           habitLogsKeys.user(user?.id ?? null),
           context.previousUserLogs
         );
+      }
+      // Rollback date range queries
+      if (context?.previousRangeQueries) {
+        for (const [queryKey, previousData] of context.previousRangeQueries.entries()) {
+          queryClient.setQueryData(queryKey, previousData);
+        }
       }
     },
     onSettled: (data, error, params) => {
@@ -517,7 +688,9 @@ export function useToggleHabitLog() {
       throw new Error('habitId is required');
     }
 
-    const targetDate = params.date ?? getTodayDate();
+    const targetDate = params.date 
+      ? validateAndNormalizeDate(params.date)
+      : getTodayDate();
 
     // Get current log to determine toggle state
     const currentLogs = queryClient.getQueryData<HabitLog[]>(
