@@ -18,6 +18,10 @@ export const habitLogsKeys = {
   habit: (habitId: string) => ['habit_logs', 'habit', habitId] as const,
   today: (habitId: string) => ['habit_logs', 'today', habitId] as const,
   userToday: (userId: string | null) => ['habit_logs', 'user', 'today', userId] as const,
+  habitRange: (habitId: string, startDate: string, endDate: string) =>
+    ['habit_logs', 'habit', habitId, 'range', startDate, endDate] as const,
+  userRange: (userId: string | null, startDate: string, endDate: string) =>
+    ['habit_logs', 'user', userId, 'range', startDate, endDate] as const,
 };
 
 /**
@@ -26,6 +30,7 @@ export const habitLogsKeys = {
  * This hook provides:
  * - Fetch logs for a specific habit or all user habits
  * - Query for today's logs
+ * - Query for logs within a date range (startDate, endDate)
  * - Mutation for toggling habit completion with optimistic updates
  * 
  * @example
@@ -34,11 +39,20 @@ export const habitLogsKeys = {
  * import { useHabitLogs } from '@/hooks/useHabitLogs'
  * 
  * function HabitCard({ habitId }) {
+ *   // Get all logs for a habit
  *   const { logs, isLoading } = useHabitLogs({ habitId })
+ *   
+ *   // Get logs for a date range
+ *   const { logs: rangeLogs } = useHabitLogs({ 
+ *     habitId, 
+ *     startDate: '2025-01-01', 
+ *     endDate: '2025-01-31' 
+ *   })
+ *   
  *   const { toggleCompletion, isToggling } = useHabitLogs({ habitId })
  *   
  *   const handleToggle = () => {
- *     toggleCompletion()
+ *     toggleCompletion({ habitId })
  *   }
  *   
  *   return <button onClick={handleToggle}>Toggle</button>
@@ -48,10 +62,49 @@ export const habitLogsKeys = {
 export function useHabitLogs(options?: {
   habitId?: string;
   includeTodayOnly?: boolean;
+  startDate?: string; // YYYY-MM-DD format
+  endDate?: string;   // YYYY-MM-DD format
 }) {
   const queryClient = useQueryClient();
   const { user } = useAuth();
-  const { habitId, includeTodayOnly = false } = options ?? {};
+  const { habitId, includeTodayOnly = false, startDate, endDate } = options ?? {};
+
+  // Validate date range if both dates are provided
+  if (startDate && endDate) {
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      throw new Error('Invalid date format. Dates must be in YYYY-MM-DD format.');
+    }
+    if (start > end) {
+      throw new Error('startDate must be less than or equal to endDate.');
+    }
+  }
+
+  // Normalize dates to YYYY-MM-DD format
+  const normalizedStartDate = startDate ? formatDate(startDate) : undefined;
+  const normalizedEndDate = endDate ? formatDate(endDate) : undefined;
+
+  // Determine query key based on options
+  const getQueryKey = () => {
+    if (habitId) {
+      if (includeTodayOnly) {
+        return habitLogsKeys.today(habitId);
+      }
+      if (normalizedStartDate && normalizedEndDate) {
+        return habitLogsKeys.habitRange(habitId, normalizedStartDate, normalizedEndDate);
+      }
+      return habitLogsKeys.habit(habitId);
+    } else {
+      if (includeTodayOnly) {
+        return habitLogsKeys.userToday(user?.id ?? null);
+      }
+      if (normalizedStartDate && normalizedEndDate) {
+        return habitLogsKeys.userRange(user?.id ?? null, normalizedStartDate, normalizedEndDate);
+      }
+      return habitLogsKeys.user(user?.id ?? null);
+    }
+  };
 
   // Query for habit logs
   const {
@@ -60,13 +113,7 @@ export function useHabitLogs(options?: {
     error,
     refetch,
   } = useQuery({
-    queryKey: habitId
-      ? includeTodayOnly
-        ? habitLogsKeys.today(habitId)
-        : habitLogsKeys.habit(habitId)
-      : includeTodayOnly
-        ? habitLogsKeys.userToday(user?.id ?? null)
-        : habitLogsKeys.user(user?.id ?? null),
+    queryKey: getQueryKey(),
     queryFn: async () => {
       if (!user?.id) {
         return [];
@@ -97,9 +144,13 @@ export function useHabitLogs(options?: {
         query = query.in('habit_id', habitIds);
       }
 
+      // Apply date filters
       if (includeTodayOnly) {
         const today = getTodayDate();
         query = query.eq('date', today);
+      } else if (normalizedStartDate && normalizedEndDate) {
+        // Filter by date range
+        query = query.gte('date', normalizedStartDate).lte('date', normalizedEndDate);
       }
 
       const { data, error: queryError } = await query.order('date', { ascending: false });
@@ -174,7 +225,7 @@ export function useHabitLogs(options?: {
       }
     },
     onMutate: async (params) => {
-      // Cancel outgoing refetches
+      // Cancel outgoing refetches for all related queries
       await queryClient.cancelQueries({
         queryKey: habitLogsKeys.habit(params.habitId),
       });
@@ -186,6 +237,15 @@ export function useHabitLogs(options?: {
       });
       await queryClient.cancelQueries({
         queryKey: habitLogsKeys.user(user?.id ?? null),
+      });
+      // Cancel queries for date ranges (using prefix matching)
+      await queryClient.cancelQueries({
+        queryKey: ['habit_logs', 'habit', params.habitId, 'range'],
+        exact: false,
+      });
+      await queryClient.cancelQueries({
+        queryKey: ['habit_logs', 'user', user?.id ?? null, 'range'],
+        exact: false,
       });
 
       // Snapshot previous values
@@ -321,6 +381,15 @@ export function useHabitLogs(options?: {
       });
       queryClient.invalidateQueries({
         queryKey: habitLogsKeys.user(user?.id ?? null),
+      });
+      // Invalidate date range queries (using prefix matching)
+      queryClient.invalidateQueries({
+        queryKey: ['habit_logs', 'habit', params.habitId, 'range'],
+        exact: false,
+      });
+      queryClient.invalidateQueries({
+        queryKey: ['habit_logs', 'user', user?.id ?? null, 'range'],
+        exact: false,
       });
       // Also invalidate habits to refresh streak calculations
       queryClient.invalidateQueries({
