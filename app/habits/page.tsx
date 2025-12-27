@@ -1,14 +1,19 @@
+'use client';
+
+import { HabitList } from '@/components/HabitList';
+
 /**
  * Habits page
  * 
- * This page will be fully implemented in a future issue.
- * For now, it's a placeholder to test the middleware protection.
+ * Displays the user's list of habits using the HabitList component.
  */
 export default function HabitsPage() {
   return (
-    <div>
-      <h1>Habits</h1>
-      <p>This page is protected by middleware.</p>
+    <div className="flex min-h-screen flex-col bg-muted/30">
+      <main className="container mx-auto flex-1 px-4 py-8">
+        <h1 className="mb-8 font-bold text-3xl">My Habits</h1>
+        <HabitList />
+      </main>
     </div>
   );
 }
