@@ -1,4 +1,5 @@
 import { createClient } from "@supabase/supabase-js";
+import { createBrowserClient as createSSRBrowserClient } from "@supabase/ssr";
 import type { Database } from '@/types/database'
 import type { SupabaseClient } from "@supabase/supabase-js";
 
@@ -6,7 +7,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * Supabase client configuration
  * 
  * This module provides Supabase clients for both Server and Client Components.
- * The browser client is optimized for authentication and session management.
+ * The browser client uses cookies for session management to work with middleware.
  */
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -42,12 +43,14 @@ let browserClientInstance: SupabaseClient<Database> | null = null;
 const BROWSER_CLIENT_KEY = '__SUPABASE_BROWSER_CLIENT_SINGLETON__';
 
 /**
- * Creates or returns the singleton Supabase client optimized for browser usage with session management
+ * Creates or returns the singleton Supabase client optimized for browser usage with cookie-based session management
  * 
  * This client is configured with:
- * - Automatic session persistence (localStorage)
+ * - Cookie-based session persistence (works with middleware)
  * - Auth state change listeners
  * - Optimized for authentication flows
+ * 
+ * Uses @supabase/ssr to handle cookies properly so the middleware can read the session.
  * 
  * Uses a robust singleton pattern that stores the instance in both module scope and window object
  * to prevent the "Multiple GoTrueClient instances detected" warning across different module boundaries.
@@ -84,15 +87,41 @@ export function createBrowserClient(): SupabaseClient<Database> {
     return browserClientInstance;
   }
   
-  // Create new instance only if it doesn't exist anywhere
-  browserClientInstance = createClient<Database>(supabaseUrl!, supabaseAnonKey!, {
-    auth: {
-      persistSession: true,
-      autoRefreshToken: true,
-      detectSessionInUrl: true,
-      storage: window.localStorage,
-      // Use a consistent storage key to avoid conflicts
-      storageKey: 'sb-auth-token',
+  // Create new instance using @supabase/ssr for cookie management
+  // This ensures cookies are set properly so middleware can read them
+  browserClientInstance = createSSRBrowserClient<Database>(supabaseUrl!, supabaseAnonKey!, {
+    cookies: {
+      getAll() {
+        return document.cookie.split(';').map(cookie => {
+          const [name, ...rest] = cookie.split('=');
+          return { name: name.trim(), value: rest.join('=') };
+        });
+      },
+      setAll(cookiesToSet) {
+        cookiesToSet.forEach(({ name, value, options }) => {
+          let cookieString = `${name}=${value}`;
+          if (options?.maxAge) {
+            cookieString += `; max-age=${options.maxAge}`;
+          }
+          if (options?.domain) {
+            cookieString += `; domain=${options.domain}`;
+          }
+          if (options?.path) {
+            cookieString += `; path=${options.path}`;
+          }
+          if (options?.sameSite) {
+            cookieString += `; samesite=${options.sameSite}`;
+          }
+          if (options?.secure) {
+            cookieString += `; secure`;
+          }
+          if (options?.httpOnly) {
+            // httpOnly cookies cannot be set from JavaScript
+            // They must be set by the server
+          }
+          document.cookie = cookieString;
+        });
+      },
     },
   });
 
