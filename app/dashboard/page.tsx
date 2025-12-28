@@ -10,6 +10,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useHabits } from '@/hooks/useHabits';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { calculateStreak, isCompletedToday } from '@/lib/habits';
+import { useUIStore } from '@/store/ui';
+import { AddHabitModal } from '@/components/AddHabitModal';
 import type { HabitWithLogs } from '@/types/database';
 
 /**
@@ -21,6 +23,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { signOut, signOutPending, signOutError } = useAuth();
   const { habits, isLoading: isLoadingHabits, error: habitsError } = useHabits();
+  const { openAddHabitModal } = useUIStore();
   // Get all logs (not just today) to calculate streaks
   const {
     logs: allLogs,
@@ -324,25 +327,24 @@ export default function DashboardPage() {
             <p className="text-muted-foreground mb-6">
               Create your first habit to start tracking your progress!
             </p>
-            <Link href="/habits/new">
-              <Button size="lg">
-                <Plus className="mr-2 h-5 w-5" />
-                Create Your First Habit
-              </Button>
-            </Link>
+            <Button size="lg" onClick={openAddHabitModal}>
+              <Plus className="mr-2 h-5 w-5" />
+              Create Your First Habit
+            </Button>
           </div>
         )}
 
         {/* Add Habit Button (only show if there are habits) */}
         {totalHabits > 0 && (
-          <Link href="/habits/new">
-            <Button size="lg" className="w-full md:w-auto">
-              <Plus className="mr-2 h-5 w-5" />
-              Add New Habit
-            </Button>
-          </Link>
+          <Button size="lg" className="w-full md:w-auto" onClick={openAddHabitModal}>
+            <Plus className="mr-2 h-5 w-5" />
+            Add New Habit
+          </Button>
         )}
       </main>
+
+      {/* Add Habit Modal */}
+      <AddHabitModal />
     </div>
   );
 }
