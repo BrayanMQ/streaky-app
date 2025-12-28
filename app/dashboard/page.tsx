@@ -2,9 +2,9 @@
 
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { HabitList } from '@/components/HabitList';
-import { Header } from '@/components/Header';
-import { BottomNav } from '@/components/BottomNav';
+import { HabitList } from '@/components/habits/HabitList';
+import { Header } from '@/components/layout/Header';
+import { BottomNav } from '@/components/layout/BottomNav';
 import { Plus, Loader2, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';

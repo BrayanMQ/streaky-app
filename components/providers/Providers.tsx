@@ -15,7 +15,7 @@ import { useState } from 'react';
  * Usage:
  * ```tsx
  * // In app/layout.tsx
- * import { Providers } from '@/components/Providers'
+ * import { Providers } from '@/components/providers/Providers'
  * 
  * export default function RootLayout({ children }) {
  *   return (

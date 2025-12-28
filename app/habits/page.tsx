@@ -1,8 +1,8 @@
 'use client';
 
-import { HabitList } from '@/components/HabitList';
-import { BottomNav } from '@/components/BottomNav';
-import { Header } from '@/components/Header';
+import { HabitList } from '@/components/habits/HabitList';
+import { BottomNav } from '@/components/layout/BottomNav';
+import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useUIStore } from '@/store/ui';

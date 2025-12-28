@@ -2,10 +2,10 @@
 
 import { Loader2, AlertCircle, Flame, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HabitCard } from '@/components/HabitCard';
-import { AddHabitModal } from '@/components/AddHabitModal';
-import { EditHabitModal } from '@/components/EditHabitModal';
-import { DeleteHabitConfirmModal } from '@/components/DeleteHabitConfirmModal';
+import { HabitCard } from './HabitCard';
+import { AddHabitModal } from './AddHabitModal';
+import { EditHabitModal } from './EditHabitModal';
+import { DeleteHabitConfirmModal } from './DeleteHabitConfirmModal';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useHabits } from '@/hooks/useHabits';
