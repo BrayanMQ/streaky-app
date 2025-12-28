@@ -1,29 +1,90 @@
 "use client"
 
-import { useMemo } from "react"
+import { useMemo, useState, useEffect, useRef } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
-import { Flame, ArrowLeft, TrendingUp, Target, CalendarIcon, Award, CheckCircle2, AlertCircle } from "lucide-react"
+import { Flame, ArrowLeft, TrendingUp, Target, CalendarIcon, Award, CheckCircle2, AlertCircle, Info } from "lucide-react"
 import { useHabits } from "@/hooks/useHabits"
 import { useHabitLogs } from "@/hooks/useHabitLogs"
 import { getCurrentStreak } from "@/lib/streaks"
 import { getHabitColor } from "@/lib/habitColors"
+import { motion } from "framer-motion"
+import { BottomNav } from "@/components/layout/BottomNav"
 import {
   getBestStreak,
   getAverageCompletionRate,
   getTotalDaysTracked,
   getCompletionRate,
   getCompletedDaysInRange,
+  getDaysForPeriod,
+  getPeriodLabel,
+  type Period,
 } from "@/lib/stats"
 
+function StatInfo({ description }: { description: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    const handleScroll = () => {
+      if (isOpen) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isOpen])
+
+  return (
+    <div 
+      ref={containerRef}
+      className="relative ml-1.5 inline-block"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          setIsOpen(!isOpen)
+        }}
+        className="flex items-center text-muted-foreground/60 hover:text-muted-foreground transition-colors outline-none"
+        aria-label="More information"
+      >
+        <Info className="size-3.5" />
+      </button>
+      
+      {isOpen && (
+        <div className="absolute bottom-full left-1/2 mb-2 w-48 -translate-x-1/2 rounded-lg border bg-popover p-2.5 text-xs font-normal text-popover-foreground shadow-xl animate-in fade-in zoom-in duration-200 z-50 pointer-events-auto">
+          <div className="absolute left-1/2 top-full -translate-x-1/2 border-8 border-transparent border-t-popover" />
+          {description}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function StatsPage() {
+  const [period, setPeriod] = useState<Period>('month')
   const { habits, isLoading: isLoadingHabits, error: habitsError } = useHabits()
   const { logs: allLogs, isLoading: isLoadingLogs, error: logsError } = useHabitLogs()
 
   const isLoading = isLoadingHabits || isLoadingLogs
   const error = habitsError || logsError
+  const periodDays = getDaysForPeriod(period)
 
   // Organize logs by habit_id for efficient lookup
   const logsByHabitId = useMemo(() => {
@@ -51,7 +112,7 @@ export default function StatsPage() {
     }
 
     const bestStreak = getBestStreak(habits, logsByHabitId)
-    const avgCompletionRate = getAverageCompletionRate(habits, logsByHabitId, 30)
+    const avgCompletionRate = getAverageCompletionRate(habits, logsByHabitId, periodDays)
     const totalDays = getTotalDaysTracked(allLogs)
 
     return {
@@ -60,7 +121,7 @@ export default function StatsPage() {
       activeHabits: habits.length,
       totalDays,
     }
-  }, [habits, logsByHabitId, allLogs])
+  }, [habits, logsByHabitId, allLogs, periodDays])
 
   // Map color classes to shadow classes (static for Tailwind to include them)
   const getShadowFromColor = (color: string): string => {
@@ -83,8 +144,8 @@ export default function StatsPage() {
     return habits.map((habit, index) => {
       const habitLogs = logsByHabitId.get(habit.id) || []
       const streak = getCurrentStreak(habit.id, habitLogs)
-      const rate = getCompletionRate(habit.id, habitLogs, 30)
-      const completedDays = getCompletedDaysInRange(habit.id, habitLogs, 30)
+      const rate = getCompletionRate(habit.id, habitLogs, periodDays)
+      const completedDays = getCompletedDaysInRange(habit.id, habitLogs, periodDays)
       const color = getHabitColor(habit, index)
       const shadow = getShadowFromColor(color)
 
@@ -92,14 +153,14 @@ export default function StatsPage() {
         id: habit.id,
         name: habit.title,
         streak,
-        total: 30,
+        total: periodDays,
         rate,
         completedDays,
         color,
         shadow,
       }
     })
-  }, [habits, logsByHabitId])
+  }, [habits, logsByHabitId, periodDays])
 
   // Find top habit and worst habit for insights
   const insights = useMemo(() => {
@@ -119,6 +180,20 @@ export default function StatsPage() {
       worstHabit,
     }
   }, [habitBreakdown])
+
+  // Get period text for insights
+  const getPeriodText = (period: Period): string => {
+    switch (period) {
+      case 'week':
+        return 'this week'
+      case 'month':
+        return 'this month'
+      case 'year':
+        return 'this year'
+      default:
+        return 'this month'
+    }
+  }
 
   // Loading state
   if (isLoading) {
@@ -141,7 +216,7 @@ export default function StatsPage() {
         </header>
         <main className="container mx-auto flex-1 px-4 py-8">
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">Cargando estadísticas...</p>
+            <p className="text-muted-foreground">Loading statistics...</p>
           </div>
         </main>
       </div>
@@ -169,7 +244,7 @@ export default function StatsPage() {
         </header>
         <main className="container mx-auto flex-1 px-4 py-8">
           <div className="flex items-center justify-center py-12">
-            <p className="text-destructive">Error al cargar estadísticas. Por favor, intenta de nuevo.</p>
+            <p className="text-destructive">Error loading statistics. Please try again.</p>
           </div>
         </main>
       </div>
@@ -197,7 +272,7 @@ export default function StatsPage() {
         </header>
         <main className="container mx-auto flex-1 px-4 py-8">
           <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">No tienes hábitos aún. Crea uno para ver tus estadísticas.</p>
+            <p className="text-muted-foreground">You don't have any habits yet. Create one to see your statistics.</p>
           </div>
         </main>
       </div>
@@ -226,12 +301,44 @@ export default function StatsPage() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8">
+      <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
+        {/* Period Selector */}
+        <div className="mb-8 flex justify-end">
+          <div className="relative flex w-full sm:w-auto p-1 bg-muted/80 backdrop-blur-sm rounded-xl border shadow-inner">
+            {(['week', 'month', 'year'] as Period[]).map((p) => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`relative z-10 flex-1 sm:flex-none px-6 py-2 text-sm font-medium capitalize transition-colors duration-200 ${
+                  period === p 
+                    ? 'text-foreground' 
+                    : 'text-muted-foreground hover:text-foreground/80'
+                }`}
+              >
+                {/* Animated background indicator */}
+                {period === p && (
+                  <motion.div
+                    layoutId="active-period"
+                    className="absolute inset-0 bg-background rounded-lg shadow-sm"
+                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                  />
+                )}
+                <span className="relative z-20 whitespace-nowrap">
+                  {p === 'week' ? 'Week' : p === 'month' ? 'Month' : 'Year'}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Overview Stats */}
         <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
           <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Best Streak</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                Best Streak
+                <StatInfo description="The longest consecutive number of days you've completed at least one habit (all-time record)." />
+              </CardTitle>
               <div className="rounded-full bg-orange-500/10 p-2">
                 <Flame className="size-4 text-orange-500" />
               </div>
@@ -244,20 +351,26 @@ export default function StatsPage() {
 
           <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Avg Completion</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                Avg Completion
+                <StatInfo description={`The average percentage of your habits completed over the ${getPeriodLabel(period).toLowerCase()}.`} />
+              </CardTitle>
               <div className="rounded-full bg-blue-500/10 p-2">
                 <Target className="size-4 text-blue-500" />
               </div>
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold tracking-tight">{stats.avgCompletionRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">Last 30 days</p>
+              <p className="text-xs text-muted-foreground mt-1">{getPeriodLabel(period)}</p>
             </CardContent>
           </Card>
 
           <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Active Habits</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                Active Habits
+                <StatInfo description="The total number of habits you are currently actively tracking." />
+              </CardTitle>
               <div className="rounded-full bg-primary/10 p-2">
                 <CalendarIcon className="size-4 text-primary" />
               </div>
@@ -270,7 +383,10 @@ export default function StatsPage() {
 
           <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground">Total Days</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                Total Days
+                <StatInfo description="The total number of unique days you have recorded any habit activity (all-time)." />
+              </CardTitle>
               <div className="rounded-full bg-purple-500/10 p-2">
                 <Award className="size-4 text-purple-500" />
               </div>
@@ -310,7 +426,7 @@ export default function StatsPage() {
                 />
                 <div className="flex justify-between text-xs font-medium text-muted-foreground/70">
                   <span>{habit.completedDays} of {habit.total} days</span>
-                  <span>Last 30 days</span>
+                  <span>{getPeriodLabel(period)}</span>
                 </div>
               </div>
             ))}
@@ -324,7 +440,7 @@ export default function StatsPage() {
               <CheckCircle2 className="size-4" /> Performance
             </h4>
             <p className="text-sm text-muted-foreground leading-relaxed">
-              Completaste tus hábitos el <span className="text-foreground font-semibold">{stats.avgCompletionRate}%</span> del tiempo.
+              You completed your habits <span className="text-foreground font-semibold">{stats.avgCompletionRate}%</span> of the time {getPeriodText(period)}.
             </p>
           </div>
 
@@ -334,7 +450,7 @@ export default function StatsPage() {
                 <Award className="size-4" /> Top Habit
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                "{insights.topHabit.name}" es tu hábito más sólido este mes con un <span className="text-foreground font-semibold">{insights.topHabit.rate}%</span>.
+                "{insights.topHabit.name}" is your strongest habit {getPeriodText(period)} with a <span className="text-foreground font-semibold">{insights.topHabit.rate}%</span> completion rate.
               </p>
             </div>
           )}
@@ -345,12 +461,13 @@ export default function StatsPage() {
                 <AlertCircle className="size-4" /> Focus
               </h4>
               <p className="text-sm text-muted-foreground leading-relaxed">
-                "{insights.worstHabit.name}" necesita atención. Intenta mañana a primera hora.
+                "{insights.worstHabit.name}" needs attention {getPeriodText(period)}. Try tackling it first thing tomorrow.
               </p>
             </div>
           )}
         </div>
       </main>
+      <BottomNav />
     </div>
   )
 }
