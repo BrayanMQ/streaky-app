@@ -51,12 +51,12 @@ export function DeleteHabitConfirmModal() {
             This action cannot be undone and all history for this habit will be lost.
           </DialogDescription>
         </DialogHeader>
-        <DialogFooter className="gap-2 sm:gap-0 mt-6">
+        <DialogFooter className="grid grid-cols-2 gap-3 mt-8 sm:flex-row sm:justify-stretch">
           <Button
-            variant="ghost"
+            variant="secondary"
             onClick={handleClose}
             disabled={isDeleting}
-            className="flex-1 sm:flex-none"
+            className="w-full h-11"
           >
             Cancel
           </Button>
@@ -64,7 +64,7 @@ export function DeleteHabitConfirmModal() {
             variant="destructive"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="flex-1 sm:flex-none"
+            className="w-full h-11 shadow-lg shadow-destructive/20"
           >
             {isDeleting ? (
               <>
