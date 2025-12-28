@@ -42,7 +42,7 @@ export function HabitCard({
   const getColor = getHabitColor || ((h: HabitWithLogs) => getHabitColorUtil(h));
   const habitColor = getColor(habit);
 
-  // Close menu when clicking outside
+  // Close menu when clicking outside or scrolling
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
@@ -50,12 +50,20 @@ export function HabitCard({
       }
     };
 
+    const handleScroll = () => {
+      if (isMenuOpen) {
+        setIsMenuOpen(false);
+      }
+    };
+
     if (isMenuOpen) {
       document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScroll, { passive: true });
     }
 
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScroll);
     };
   }, [isMenuOpen]);
 
