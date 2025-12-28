@@ -3,7 +3,8 @@
 import { useMemo } from 'react';
 import { useHabits } from '@/hooks/useHabits';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
-import { calculateStreak, isCompletedToday } from '@/lib/habits';
+import { getCurrentStreak } from '@/lib/streaks';
+import { isCompletedToday } from '@/lib/habits';
 import { getHabitColor } from '@/lib/habitColors';
 import type { HabitWithLogs } from '@/types/database';
 
@@ -58,11 +59,16 @@ export function useHabitsWithData() {
 
   // Optimize log lookup by creating a Map indexed by habit_id
   // This avoids O(n*m) complexity when filtering logs for each habit
+  // Using a single pass for O(n) complexity
   const logsByHabitId = useMemo(() => {
     const map = new Map<string, typeof allLogs>();
     for (const log of allLogs) {
-      const existing = map.get(log.habit_id) || [];
-      map.set(log.habit_id, [...existing, log]);
+      const existing = map.get(log.habit_id);
+      if (existing) {
+        existing.push(log);
+      } else {
+        map.set(log.habit_id, [log]);
+      }
     }
     return map;
   }, [allLogs]);
@@ -77,7 +83,7 @@ export function useHabitsWithData() {
       const habitLogs = logsByHabitId.get(habit.id) || [];
       
       // Calculate streak and completion status
-      const streak = calculateStreak(habitLogs);
+      const streak = getCurrentStreak(habit.id, habitLogs);
       const completedToday = isCompletedToday(habitLogs);
 
       return {

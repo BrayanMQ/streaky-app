@@ -1,0 +1,253 @@
+import type { HabitLog } from '@/types/database'
+
+/**
+ * Utility functions for streak calculations
+ * 
+ * Handles timezone-aware date calculations and optimized streak computation
+ * using date indexes for O(1) lookups.
+ */
+
+/**
+ * Formats a date to YYYY-MM-DD format using local timezone
+ * 
+ * Important: If the input is a string in YYYY-MM-DD format (from database),
+ * it's treated as a date string and returned as-is to avoid timezone conversion issues.
+ * If it's a Date object or other string format, it uses the local timezone.
+ * 
+ * @param date - Date object or date string
+ * @returns Formatted date string (YYYY-MM-DD) in local timezone
+ */
+export function formatDateLocal(date: Date | string): string {
+  // If it's already a string in YYYY-MM-DD format (from database), return it as-is
+  // This avoids timezone conversion issues when parsing dates from the database
+  if (typeof date === 'string') {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (dateRegex.test(date)) {
+      return date
+    }
+    // If it's not in YYYY-MM-DD format, parse it as a date
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  // If it's a Date object, use local timezone
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+/**
+ * Gets today's date in YYYY-MM-DD format using local timezone
+ * @returns Today's date string in local timezone
+ */
+export function getTodayDateLocal(): string {
+  return formatDateLocal(new Date())
+}
+
+/**
+ * Gets yesterday's date in YYYY-MM-DD format using local timezone
+ * @returns Yesterday's date string in local timezone
+ */
+export function getYesterdayDateLocal(): string {
+  const yesterday = new Date()
+  yesterday.setDate(yesterday.getDate() - 1)
+  return formatDateLocal(yesterday)
+}
+
+/**
+ * Parses a YYYY-MM-DD date string as a local date (not UTC)
+ * This is important because new Date("YYYY-MM-DD") interprets it as UTC,
+ * which can cause day shifts in negative timezones
+ * 
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @returns Date object representing the date in local timezone
+ */
+function parseDateLocal(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  // Create date in local timezone (month is 0-indexed in Date constructor)
+  return new Date(year, month - 1, day)
+}
+
+/**
+ * Creates an optimized date index map from habit logs
+ * Maps date strings (YYYY-MM-DD) to completion status (boolean)
+ * 
+ * @param logs - Array of habit logs
+ * @returns Map<string, boolean> for O(1) date lookups
+ */
+function createDateIndex(logs: HabitLog[]): Map<string, boolean> {
+  const index = new Map<string, boolean>()
+  for (const log of logs) {
+    const dateStr = formatDateLocal(log.date)
+    // If multiple logs exist for the same date, keep the most recent one
+    // (though this shouldn't happen in normal operation)
+    index.set(dateStr, log.completed)
+  }
+  return index
+}
+
+/**
+ * Calculates the current streak for a habit based on its logs
+ * 
+ * Logic:
+ * - If today is completed, count consecutive days from today backwards
+ * - If today is NOT completed, start counting from yesterday backwards
+ * - Streak breaks if there's a missing day or a day with completed = false
+ * 
+ * @param habitId - The habit ID (for future use, currently not used)
+ * @param logs - Array of habit logs
+ * @returns The current streak count (0 if no streak)
+ * 
+ * @example
+ * ```ts
+ * // Today: not completed, Yesterday: completed, Day before: completed
+ * calculateStreak('habit-1', logs) // Returns 2 (yesterday + day before)
+ * 
+ * // Today: completed, Yesterday: completed
+ * calculateStreak('habit-1', logs) // Returns 2 (today + yesterday)
+ * ```
+ */
+export function calculateStreak(habitId: string, logs: HabitLog[]): number {
+  if (logs.length === 0) {
+    return 0
+  }
+
+  // Create optimized date index for O(1) lookups
+  const dateIndex = createDateIndex(logs)
+
+  const today = getTodayDateLocal()
+  const todayCompleted = dateIndex.get(today) === true
+
+  // Determine starting date: if today is completed, start from today
+  // Otherwise, start from yesterday
+  // Use parseDateLocal to avoid timezone issues when creating Date from string
+  const startDate = parseDateLocal(today)
+  if (!todayCompleted) {
+    startDate.setDate(startDate.getDate() - 1)
+  }
+  startDate.setHours(0, 0, 0, 0)
+
+  let streak = 0
+  let currentDate = new Date(startDate)
+
+  // Count consecutive completed days going backwards
+  // Limit to prevent infinite loops (max 365 days)
+  let iterations = 0
+  const maxIterations = 365
+  
+  while (iterations < maxIterations) {
+    iterations++
+    const dateStr = formatDateLocal(currentDate)
+    const completed = dateIndex.get(dateStr)
+
+    // If no log entry exists for this date, streak breaks
+    if (completed === undefined) {
+      break
+    }
+
+    // If completed is false, streak breaks
+    if (!completed) {
+      break
+    }
+
+    // Increment streak and move to previous day
+    streak++
+    currentDate.setDate(currentDate.getDate() - 1)
+  }
+
+  return streak
+}
+
+/**
+ * Gets the current streak for a habit
+ * 
+ * This is an alias for calculateStreak that follows the naming convention
+ * requested in the issue.
+ * 
+ * @param habitId - The habit ID
+ * @param logs - Array of habit logs
+ * @returns The current streak count
+ */
+export function getCurrentStreak(habitId: string, logs: HabitLog[]): number {
+  return calculateStreak(habitId, logs)
+}
+
+/**
+ * Gets the longest streak ever achieved for a habit
+ * 
+ * Scans through all logs to find the longest consecutive sequence
+ * of completed days, regardless of when it occurred.
+ * 
+ * @param habitId - The habit ID (for future use, currently not used)
+ * @param logs - Array of habit logs
+ * @returns The longest streak count (0 if no streaks found)
+ * 
+ * @example
+ * ```ts
+ * // Logs: [Jan 1: completed, Jan 2: completed, Jan 3: not, Jan 4: completed, Jan 5: completed]
+ * getLongestStreak('habit-1', logs) // Returns 2 (either Jan 1-2 or Jan 4-5)
+ * ```
+ */
+export function getLongestStreak(habitId: string, logs: HabitLog[]): number {
+  if (logs.length === 0) {
+    return 0
+  }
+
+  // Sort logs by date ascending (oldest first)
+  // Use formatDateLocal to ensure consistent date string format for sorting
+  const sortedLogs = [...logs].sort((a, b) => {
+    const dateA = formatDateLocal(a.date)
+    const dateB = formatDateLocal(b.date)
+    return dateA.localeCompare(dateB)
+  })
+
+  let longestStreak = 0
+  let currentStreak = 0
+  let previousDate: Date | null = null
+
+  for (const log of sortedLogs) {
+    if (!log.completed) {
+      // Reset streak if not completed
+      longestStreak = Math.max(longestStreak, currentStreak)
+      currentStreak = 0
+      previousDate = null
+      continue
+    }
+
+    // Use parseDateLocal to avoid timezone issues
+    const logDateStr = formatDateLocal(log.date)
+    const logDate = parseDateLocal(logDateStr)
+    logDate.setHours(0, 0, 0, 0)
+
+    if (previousDate === null) {
+      // First completed log
+      currentStreak = 1
+      previousDate = logDate
+    } else {
+      // Check if this date is consecutive to the previous one
+      const daysDiff = Math.floor(
+        (logDate.getTime() - previousDate.getTime()) / (1000 * 60 * 60 * 24)
+      )
+
+      if (daysDiff === 1) {
+        // Consecutive day, increment streak
+        currentStreak++
+      } else {
+        // Gap found, reset streak
+        longestStreak = Math.max(longestStreak, currentStreak)
+        currentStreak = 1
+      }
+      previousDate = logDate
+    }
+  }
+
+  // Check final streak
+  longestStreak = Math.max(longestStreak, currentStreak)
+
+  return longestStreak
+}
+
