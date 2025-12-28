@@ -3,7 +3,7 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { Flame, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut } from 'lucide-react';
+import { Flame, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut, ClipboardList } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 
 /**
@@ -58,6 +58,16 @@ export function Header() {
               className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
             >
               <TrendingUp className="h-5 w-5 relative z-10" />
+            </Button>
+          </Link>
+          <Link href="/habits">
+            <Button
+              variant="ghost"
+              size="icon"
+              title="My Habits"
+              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+            >
+              <ClipboardList className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
           <Link href="/dashboard/settings">
