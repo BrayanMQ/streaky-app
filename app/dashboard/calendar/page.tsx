@@ -234,8 +234,8 @@ export default function CalendarPage() {
                 label: "Best Streak", 
                 value: isLoading ? "..." : stats.bestStreak,
                 icon: Zap,
-                color: "text-amber-500",
-                bg: "bg-amber-500/10"
+                color: "text-orange-500",
+                bg: "bg-orange-500/10"
               },
             ].map((stat) => (
               <Card key={stat.label} className="group relative overflow-hidden border-none bg-muted/20 shadow-none transition-all duration-300 hover:bg-muted/30">
