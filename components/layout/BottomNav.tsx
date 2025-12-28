@@ -28,7 +28,7 @@ export function BottomNav() {
     },
     {
       label: 'Habits',
-      href: '/habits',
+      href: '/dashboard/habits',
       icon: List,
     },
     {
