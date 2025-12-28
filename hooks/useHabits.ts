@@ -1,11 +1,12 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createBrowserClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import type { Habit } from '@/types/database';
+import type { Habit, HabitInsert } from '@/types/database';
 import type { PostgrestError } from '@supabase/supabase-js';
+import type { Json } from '@/types/database';
 
 /**
  * Query keys for React Query
@@ -96,6 +97,117 @@ export function useHabits() {
     isLoading,
     error: error as PostgrestError | null,
     refetch,
+  };
+}
+
+/**
+ * Custom hook for creating a new habit using React Query
+ * 
+ * This hook provides a mutation for creating habits with automatic cache invalidation.
+ * It includes error handling and loading states.
+ * 
+ * @returns Object containing:
+ *   - createHabit: Function to create a new habit
+ *   - isCreating: Loading state of the mutation
+ *   - createError: Error object if mutation failed
+ * 
+ * @example
+ * ```tsx
+ * 'use client'
+ * import { useCreateHabit } from '@/hooks/useHabits'
+ * 
+ * function CreateHabitForm() {
+ *   const { createHabit, isCreating, createError } = useCreateHabit()
+ *   
+ *   const handleSubmit = async (e: React.FormEvent) => {
+ *     e.preventDefault()
+ *     try {
+ *       await createHabit({
+ *         title: 'Morning Exercise',
+ *         color: 'bg-blue-500',
+ *         icon: '🏋️'
+ *       })
+ *       // Success - modal will close and list will refresh automatically
+ *     } catch (error) {
+ *       console.error('Failed to create habit:', error)
+ *     }
+ *   }
+ *   
+ *   return (
+ *     <form onSubmit={handleSubmit}>
+ *       {/* form fields */
+/* *       <button disabled={isCreating}>
+*         {isCreating ? 'Creating...' : 'Create Habit'}
+*       </button>
+*       {createError && <p>Error: {createError.message}</p>}
+*     </form>
+*   )
+* }
+* ```
+*/
+export function useCreateHabit() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  // Mutation for creating a new habit
+  const createMutation = useMutation({
+    mutationFn: async (params: {
+      title: string;
+      color?: string | null;
+      icon?: string | null;
+      frequency?: Json | null;
+    }) => {
+      if (!user?.id) {
+        throw new Error('User must be authenticated');
+      }
+
+      // Validate title
+      if (!params.title || params.title.trim().length === 0) {
+        throw new Error('Habit title is required');
+      }
+
+      const supabase = createBrowserClient();
+
+      // Prepare habit data
+      const newHabit: HabitInsert = {
+        user_id: user.id,
+        title: params.title.trim(),
+        color: params.color || null,
+        icon: params.icon || null,
+        frequency: params.frequency || null, // Default to null (daily in MVP)
+      };
+
+      // Insert habit
+      const { data, error: insertError } = await supabase
+        .from('habits')
+        .insert(newHabit)
+        .select()
+        .single();
+
+      if (insertError) {
+        throw insertError;
+      }
+
+      return data as Habit;
+    },
+    onSuccess: () => {
+      // Invalidate habits query to refresh the list
+      if (user?.id) {
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.user(user.id),
+        });
+        // Also invalidate the general habits query
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.all,
+        });
+      }
+    },
+  });
+
+  return {
+    createHabit: createMutation.mutateAsync,
+    isCreating: createMutation.isPending,
+    createError: createMutation.error as PostgrestError | null,
   };
 }
 

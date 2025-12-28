@@ -1,0 +1,211 @@
+"use client"
+
+import type React from "react"
+import { useState, useEffect, useMemo } from "react"
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { AlertCircle, Loader2, Check } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { useUIStore } from "@/store/ui"
+import { useCreateHabit } from "@/hooks/useHabits"
+
+const COLOR_OPTIONS = [
+  { name: "Orange", value: "bg-orange-500", hex: "#f97316" },
+  { name: "Blue", value: "bg-blue-500", hex: "#3b82f6" },
+  { name: "Purple", value: "bg-purple-500", hex: "#a855f7" },
+  { name: "Green", value: "bg-green-500", hex: "#22c55e" },
+  { name: "Red", value: "bg-red-500", hex: "#ef4444" },
+  { name: "Pink", value: "bg-pink-500", hex: "#ec4899" },
+  { name: "Cyan", value: "bg-cyan-500", hex: "#06b6d4" },
+  { name: "Yellow", value: "bg-yellow-500", hex: "#eab308" },
+]
+
+const MIN_LENGTH = 2
+const MAX_LENGTH = 100
+
+export function AddHabitModal() {
+  const { isAddHabitModalOpen, closeAddHabitModal } = useUIStore()
+  const { createHabit, isCreating, createError } = useCreateHabit()
+  
+  const [habitTitle, setHabitTitle] = useState("")
+  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0])
+  const [validationError, setValidationError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!isAddHabitModalOpen) {
+      setHabitTitle("")
+      setSelectedColor(COLOR_OPTIONS[0])
+      setValidationError(null)
+    }
+  }, [isAddHabitModalOpen])
+
+  const validate = () => {
+    const trimmed = habitTitle.trim()
+    if (!trimmed) return "Habit title is required"
+    if (trimmed.length < MIN_LENGTH) return `Minimum ${MIN_LENGTH} characters required`
+    return null
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    const error = validate()
+    if (error) {
+      setValidationError(error)
+      return
+    }
+
+    try {
+      await createHabit({
+        title: habitTitle.trim(),
+        color: selectedColor.value,
+        icon: null,
+        frequency: null,
+      })
+      closeAddHabitModal()
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  const buttonStyle = useMemo(() => ({
+    backgroundColor: isCreating ? undefined : selectedColor.hex,
+    transition: 'background-color 0.3s ease'
+  }), [selectedColor, isCreating])
+
+  return (
+    <Dialog open={isAddHabitModalOpen} onOpenChange={open => !open && closeAddHabitModal()}>
+      <DialogContent className="sm:max-w-[450px] gap-0 p-0 overflow-hidden border-none shadow-2xl">
+        {/* Decorative top bar with selected color */}
+        <div 
+          className="h-1.5 w-full transition-colors duration-500" 
+          style={{ backgroundColor: selectedColor.hex }}
+        />
+        
+        <div className="p-6 space-y-6">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-bold tracking-tight">New Habit</DialogTitle>
+            <DialogDescription>
+              Small steps lead to big changes. What's next?
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-6">
+            {/* Global API Error */}
+            {createError && (
+              <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1">
+                <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                <p className="text-sm font-medium text-destructive">Something went wrong. Please try again.</p>
+              </div>
+            )}
+
+            {/* Input Section */}
+            <div className="space-y-2">
+              <div className="flex justify-between">
+                <Label htmlFor="habit-title" className="text-sm font-semibold">Name</Label>
+                <span className={cn("text-[10px] font-mono uppercase tracking-wider", 
+                  habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
+                  {habitTitle.length}/{MAX_LENGTH}
+                </span>
+              </div>
+              <Input
+                id="habit-title"
+                placeholder="Drinking water, Gym, Meditate..."
+                value={habitTitle}
+                onChange={(e) => {
+                    setHabitTitle(e.target.value)
+                    setValidationError(null)
+                }}
+                disabled={isCreating}
+                autoFocus
+                className={cn(
+                  "h-11 transition-all focus-visible:ring-offset-0",
+                  validationError && "border-destructive focus-visible:ring-destructive"
+                )}
+              />
+              {validationError && (
+                <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{validationError}</p>
+              )}
+            </div>
+
+            {/* Color Picker Section */}
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Label className="text-sm font-semibold text-[#111827]">
+                  Habit Color
+                </Label>
+                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded-full border border-[#E5E7EB]">
+                  {selectedColor.name}
+                </span>
+              </div>
+
+              <div className="flex flex-wrap gap-3 p-1">
+                {COLOR_OPTIONS.map((color) => {
+                  const isSelected = selectedColor.value === color.value
+                  return (
+                    <button
+                      key={color.value}
+                      type="button"
+                      onClick={() => setSelectedColor(color)}
+                      disabled={isCreating}
+                      className={cn(
+                        "group relative h-9 w-9 rounded-full transition-all duration-300 active:scale-95 touch-manipulation shadow-sm",
+                        color.value,
+                        isSelected 
+                          ? "ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-md" 
+                          : "hover:scale-110 opacity-90 hover:opacity-100"
+                      )}
+                      aria-label={`Select ${color.name} color`}
+                    >
+                      {isSelected && (
+                        <Check 
+                          className="h-5 w-5 text-white absolute inset-0 m-auto animate-in zoom-in-50 duration-300" 
+                          strokeWidth={3} 
+                        />
+                      )}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <DialogFooter className="flex flex-col gap-3 pt-2">
+              <Button
+                type="submit"
+                disabled={isCreating || habitTitle.length < MIN_LENGTH}
+                className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
+                style={buttonStyle}
+              >
+                {isCreating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Habit"
+                )}
+              </Button>
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={closeAddHabitModal}
+                disabled={isCreating}
+                className="w-full h-11 text-muted-foreground hover:text-foreground"
+              >
+                Cancel
+              </Button>
+            </DialogFooter>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
+  )
+}
