@@ -135,16 +135,16 @@ export function useHabits() {
  *   
  *   return (
  *     <form onSubmit={handleSubmit}>
- *       {/* form fields */}
- *       <button disabled={isCreating}>
- *         {isCreating ? 'Creating...' : 'Create Habit'}
- *       </button>
- *       {createError && <p>Error: {createError.message}</p>}
- *     </form>
- *   )
- * }
- * ```
- */
+ *       {/* form fields */
+/* *       <button disabled={isCreating}>
+*         {isCreating ? 'Creating...' : 'Create Habit'}
+*       </button>
+*       {createError && <p>Error: {createError.message}</p>}
+*     </form>
+*   )
+* }
+* ```
+*/
 export function useCreateHabit() {
   const queryClient = useQueryClient();
   const { user } = useAuth();
