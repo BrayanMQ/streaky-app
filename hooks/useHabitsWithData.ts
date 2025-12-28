@@ -3,7 +3,8 @@
 import { useMemo } from 'react';
 import { useHabits } from '@/hooks/useHabits';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
-import { calculateStreak, isCompletedToday } from '@/lib/habits';
+import { getCurrentStreak } from '@/lib/streaks';
+import { isCompletedToday } from '@/lib/habits';
 import { getHabitColor } from '@/lib/habitColors';
 import type { HabitWithLogs } from '@/types/database';
 
@@ -77,7 +78,7 @@ export function useHabitsWithData() {
       const habitLogs = logsByHabitId.get(habit.id) || [];
       
       // Calculate streak and completion status
-      const streak = calculateStreak(habitLogs);
+      const streak = getCurrentStreak(habit.id, habitLogs);
       const completedToday = isCompletedToday(habitLogs);
 
       return {
