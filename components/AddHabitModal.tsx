@@ -17,17 +17,9 @@ import { AlertCircle, Loader2, Check } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/ui"
 import { useCreateHabit } from "@/hooks/useHabits"
+import { HABIT_COLORS } from "@/lib/habitColors"
 
-const COLOR_OPTIONS = [
-  { name: "Orange", value: "bg-orange-500", hex: "#f97316" },
-  { name: "Blue", value: "bg-blue-500", hex: "#3b82f6" },
-  { name: "Purple", value: "bg-purple-500", hex: "#a855f7" },
-  { name: "Green", value: "bg-green-500", hex: "#22c55e" },
-  { name: "Red", value: "bg-red-500", hex: "#ef4444" },
-  { name: "Pink", value: "bg-pink-500", hex: "#ec4899" },
-  { name: "Cyan", value: "bg-cyan-500", hex: "#06b6d4" },
-  { name: "Yellow", value: "bg-yellow-500", hex: "#eab308" },
-]
+const COLOR_OPTIONS = HABIT_COLORS
 
 const MIN_LENGTH = 2
 const MAX_LENGTH = 100
@@ -37,13 +29,13 @@ export function AddHabitModal() {
   const { createHabit, isCreating, createError } = useCreateHabit()
   
   const [habitTitle, setHabitTitle] = useState("")
-  const [selectedColor, setSelectedColor] = useState(COLOR_OPTIONS[0])
+  const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [validationError, setValidationError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!isAddHabitModalOpen) {
       setHabitTitle("")
-      setSelectedColor(COLOR_OPTIONS[0])
+      setSelectedColor(HABIT_COLORS[0])
       setValidationError(null)
     }
   }, [isAddHabitModalOpen])
@@ -148,7 +140,7 @@ export function AddHabitModal() {
               </div>
 
               <div className="flex flex-wrap gap-3 p-1">
-                {COLOR_OPTIONS.map((color) => {
+                {HABIT_COLORS.map((color) => {
                   const isSelected = selectedColor.value === color.value
                   return (
                     <button

@@ -1,18 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { HabitCard } from '@/components/HabitCard';
+import { HabitList } from '@/components/HabitList';
 import { Flame, Plus, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useHabits } from '@/hooks/useHabits';
+import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
-import { calculateStreak, isCompletedToday } from '@/lib/habits';
 import { useUIStore } from '@/store/ui';
-import { AddHabitModal } from '@/components/AddHabitModal';
-import type { HabitWithLogs } from '@/types/database';
 
 /**
  * Dashboard page
@@ -22,37 +18,17 @@ import type { HabitWithLogs } from '@/types/database';
 export default function DashboardPage() {
   const router = useRouter();
   const { signOut, signOutPending, signOutError } = useAuth();
-  const { habits, isLoading: isLoadingHabits, error: habitsError } = useHabits();
   const { openAddHabitModal } = useUIStore();
-  // Get all logs (not just today) to calculate streaks
+  
+  // Use centralized hook for habits with data (for stats only)
   const {
-    logs: allLogs,
-    isLoading: isLoadingLogs,
-    error: logsError,
-    toggleCompletion,
-    isToggling,
-    toggleError,
-  } = useHabitLogs();
-
-  // Combine habits with their logs and calculate streaks/completion
-  const habitsWithData = useMemo<HabitWithLogs[]>(() => {
-    if (!habits.length) return [];
-
-    return habits.map((habit) => {
-      // Get logs for this specific habit
-      const habitLogs = allLogs.filter((log) => log.habit_id === habit.id);
-      
-      // Calculate streak and completion status
-      const streak = calculateStreak(habitLogs);
-      const completedToday = isCompletedToday(habitLogs);
-
-      return {
-        ...habit,
-        streak,
-        completedToday,
-      };
-    });
-  }, [habits, allLogs]);
+    habitsWithData,
+    isLoading: isLoadingHabitsData,
+    habitsError,
+    logsError: habitsDataLogsError,
+  } = useHabitsWithData();
+  
+  // Note: toggleError is handled by HabitList component
 
   // Calculate today's completion stats
   const completedToday = habitsWithData.filter((h) => h.completedToday).length;
@@ -60,7 +36,7 @@ export default function DashboardPage() {
   const completionPercentage = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
 
   // Loading state
-  if (isLoadingHabits || isLoadingLogs) {
+  if (isLoadingHabitsData) {
     return (
       <div className="flex min-h-screen flex-col bg-muted/30">
         <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
@@ -89,17 +65,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Note: logsError is handled below in the UI, not blocking the view
-
-  const handleToggleHabit = async (habitId: string) => {
-    try {
-      await toggleCompletion({ habitId });
-    } catch (error) {
-      console.error('Error toggling habit:', error);
-      // Error is already handled by React Query's error state
-      // The optimistic update will be rolled back automatically
-    }
-  };
+  // Note: habitsDataLogsError and toggleError are handled by HabitList component
 
   const handleSignOut = async () => {
     try {
@@ -117,38 +83,6 @@ export default function DashboardPage() {
       // Redirect to login even on error
       router.push('/auth/login');
     }
-  };
-
-  // Get default color class for habit (fallback if no color set)
-  const getHabitColor = (habit: HabitWithLogs): string => {
-    if (habit.color) {
-      // If color is stored as a Tailwind class, use it directly
-      if (habit.color.startsWith('bg-')) {
-        return habit.color;
-      }
-      // Otherwise, try to map common color names
-      const colorMap: Record<string, string> = {
-        orange: 'bg-orange-500',
-        blue: 'bg-blue-500',
-        purple: 'bg-purple-500',
-        cyan: 'bg-cyan-500',
-        green: 'bg-green-500',
-        red: 'bg-red-500',
-        yellow: 'bg-yellow-500',
-        pink: 'bg-pink-500',
-      };
-      return colorMap[habit.color.toLowerCase()] || 'bg-primary';
-    }
-    // Default color rotation based on habit index
-    const colors = [
-      'bg-orange-500',
-      'bg-blue-500',
-      'bg-purple-500',
-      'bg-cyan-500',
-      'bg-green-500',
-    ];
-    const index = habitsWithData.indexOf(habit);
-    return colors[index % colors.length];
   };
 
   return (
@@ -216,51 +150,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto flex-1 px-4 py-8">
         {/* Error Messages */}
-        {logsError && (
-          <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-destructive mb-1">Error loading habit logs</p>
-              <p className="text-sm text-muted-foreground">
-                {logsError.message || 'Failed to load habit completion data. Streaks may not be accurate.'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => window.location.reload()}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {toggleError && (
-          <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-destructive mb-1">
-                Error updating habit
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {toggleError.message || 'Failed to update habit completion. Please try again.'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => {
-                // Clear error by refetching
-                window.location.reload();
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
+        {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
         {signOutError && (
           <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
@@ -304,35 +194,10 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Habits List */}
-        {totalHabits > 0 ? (
-          <div className="mb-8 space-y-4">
-            {habitsWithData.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                onToggle={handleToggleHabit}
-                isToggling={isToggling}
-                getHabitColor={getHabitColor}
-              />
-            ))}
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="mb-8 text-center py-12">
-            <div className="mb-4">
-              <Flame className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
-            </div>
-            <h2 className="text-2xl font-semibold mb-2">No habits yet</h2>
-            <p className="text-muted-foreground mb-6">
-              Create your first habit to start tracking your progress!
-            </p>
-            <Button size="lg" onClick={openAddHabitModal}>
-              <Plus className="mr-2 h-5 w-5" />
-              Create Your First Habit
-            </Button>
-          </div>
-        )}
+        {/* Habits List - uses HabitList component to avoid duplication */}
+        <div className="mb-8">
+          <HabitList />
+        </div>
 
         {/* Add Habit Button (only show if there are habits) */}
         {totalHabits > 0 && (
@@ -342,9 +207,6 @@ export default function DashboardPage() {
           </Button>
         )}
       </main>
-
-      {/* Add Habit Modal */}
-      <AddHabitModal />
     </div>
   );
 }

@@ -3,6 +3,7 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Flame } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { getHabitColor as getHabitColorUtil } from '@/lib/habitColors';
 import type { HabitWithLogs } from '@/types/database';
 
 interface HabitCardProps {
@@ -27,31 +28,8 @@ export function HabitCard({
   isToggling = false,
   getHabitColor,
 }: HabitCardProps) {
-  // Default color function if not provided
-  const defaultGetHabitColor = (habit: HabitWithLogs): string => {
-    if (habit.color) {
-      // If color is stored as a Tailwind class, use it directly
-      if (habit.color.startsWith('bg-')) {
-        return habit.color;
-      }
-      // Otherwise, try to map common color names
-      const colorMap: Record<string, string> = {
-        orange: 'bg-orange-500',
-        blue: 'bg-blue-500',
-        purple: 'bg-purple-500',
-        cyan: 'bg-cyan-500',
-        green: 'bg-green-500',
-        red: 'bg-red-500',
-        yellow: 'bg-yellow-500',
-        pink: 'bg-pink-500',
-      };
-      return colorMap[habit.color.toLowerCase()] || 'bg-primary';
-    }
-    // Default color if no color is set
-    return 'bg-primary';
-  };
-
-  const getColor = getHabitColor || defaultGetHabitColor;
+  // Use provided color function or fallback to centralized utility
+  const getColor = getHabitColor || ((h: HabitWithLogs) => getHabitColorUtil(h));
   const habitColor = getColor(habit);
 
   return (
