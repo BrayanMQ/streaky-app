@@ -1,12 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import Link from 'next/link';
 import { Loader2, AlertCircle, Flame, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HabitCard } from '@/components/HabitCard';
+import { AddHabitModal } from '@/components/AddHabitModal';
 import { useHabits } from '@/hooks/useHabits';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
+import { useUIStore } from '@/store/ui';
 import { calculateStreak, isCompletedToday } from '@/lib/habits';
 import type { HabitWithLogs } from '@/types/database';
 
@@ -23,6 +24,7 @@ import type { HabitWithLogs } from '@/types/database';
 export function HabitList() {
   // Fetch habits and logs in parallel (React Query handles this automatically)
   const { habits, isLoading: isLoadingHabits, error: habitsError, refetch: refetchHabits } = useHabits();
+  const { openAddHabitModal } = useUIStore();
   const {
     logs: allLogs,
     isLoading: isLoadingLogs,
@@ -145,21 +147,22 @@ export function HabitList() {
   // Empty state - show when no habits exist
   if (habitsWithData.length === 0) {
     return (
-      <div className="text-center py-12">
-        <div className="mb-4">
-          <Flame className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
-        </div>
-        <h2 className="text-2xl font-semibold mb-2">No habits yet</h2>
-        <p className="text-muted-foreground mb-6">
-          Create your first habit to start tracking your progress!
-        </p>
-        <Link href="/habits/new">
-          <Button size="lg">
+      <>
+        <div className="text-center py-12">
+          <div className="mb-4">
+            <Flame className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
+          </div>
+          <h2 className="text-2xl font-semibold mb-2">No habits yet</h2>
+          <p className="text-muted-foreground mb-6">
+            Create your first habit to start tracking your progress!
+          </p>
+          <Button size="lg" onClick={openAddHabitModal}>
             <Plus className="mr-2 h-5 w-5" />
             Create Your First Habit
           </Button>
-        </Link>
-      </div>
+        </div>
+        <AddHabitModal />
+      </>
     );
   }
 
@@ -203,6 +206,9 @@ export function HabitList() {
           />
         ))}
       </div>
+
+      {/* Add Habit Modal */}
+      <AddHabitModal />
     </div>
   );
 }
