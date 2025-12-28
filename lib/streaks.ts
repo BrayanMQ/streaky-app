@@ -9,14 +9,34 @@ import type { HabitLog } from '@/types/database'
 
 /**
  * Formats a date to YYYY-MM-DD format using local timezone
+ * 
+ * Important: If the input is a string in YYYY-MM-DD format (from database),
+ * it's treated as a date string and returned as-is to avoid timezone conversion issues.
+ * If it's a Date object or other string format, it uses the local timezone.
+ * 
  * @param date - Date object or date string
  * @returns Formatted date string (YYYY-MM-DD) in local timezone
  */
 export function formatDateLocal(date: Date | string): string {
-  const d = typeof date === 'string' ? new Date(date) : date
-  const year = d.getFullYear()
-  const month = String(d.getMonth() + 1).padStart(2, '0')
-  const day = String(d.getDate()).padStart(2, '0')
+  // If it's already a string in YYYY-MM-DD format (from database), return it as-is
+  // This avoids timezone conversion issues when parsing dates from the database
+  if (typeof date === 'string') {
+    const dateRegex = /^\d{4}-\d{2}-\d{2}$/
+    if (dateRegex.test(date)) {
+      return date
+    }
+    // If it's not in YYYY-MM-DD format, parse it as a date
+    const d = new Date(date)
+    const year = d.getFullYear()
+    const month = String(d.getMonth() + 1).padStart(2, '0')
+    const day = String(d.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  // If it's a Date object, use local timezone
+  const year = date.getFullYear()
+  const month = String(date.getMonth() + 1).padStart(2, '0')
+  const day = String(date.getDate()).padStart(2, '0')
   return `${year}-${month}-${day}`
 }
 
@@ -36,6 +56,20 @@ export function getYesterdayDateLocal(): string {
   const yesterday = new Date()
   yesterday.setDate(yesterday.getDate() - 1)
   return formatDateLocal(yesterday)
+}
+
+/**
+ * Parses a YYYY-MM-DD date string as a local date (not UTC)
+ * This is important because new Date("YYYY-MM-DD") interprets it as UTC,
+ * which can cause day shifts in negative timezones
+ * 
+ * @param dateStr - Date string in YYYY-MM-DD format
+ * @returns Date object representing the date in local timezone
+ */
+function parseDateLocal(dateStr: string): Date {
+  const [year, month, day] = dateStr.split('-').map(Number)
+  // Create date in local timezone (month is 0-indexed in Date constructor)
+  return new Date(year, month - 1, day)
 }
 
 /**
@@ -90,7 +124,8 @@ export function calculateStreak(habitId: string, logs: HabitLog[]): number {
 
   // Determine starting date: if today is completed, start from today
   // Otherwise, start from yesterday
-  const startDate = new Date(today)
+  // Use parseDateLocal to avoid timezone issues when creating Date from string
+  const startDate = parseDateLocal(today)
   if (!todayCompleted) {
     startDate.setDate(startDate.getDate() - 1)
   }
@@ -100,7 +135,12 @@ export function calculateStreak(habitId: string, logs: HabitLog[]): number {
   let currentDate = new Date(startDate)
 
   // Count consecutive completed days going backwards
-  while (true) {
+  // Limit to prevent infinite loops (max 365 days)
+  let iterations = 0
+  const maxIterations = 365
+  
+  while (iterations < maxIterations) {
+    iterations++
     const dateStr = formatDateLocal(currentDate)
     const completed = dateIndex.get(dateStr)
 
@@ -158,8 +198,11 @@ export function getLongestStreak(habitId: string, logs: HabitLog[]): number {
   }
 
   // Sort logs by date ascending (oldest first)
+  // Use formatDateLocal to ensure consistent date string format for sorting
   const sortedLogs = [...logs].sort((a, b) => {
-    return new Date(a.date).getTime() - new Date(b.date).getTime()
+    const dateA = formatDateLocal(a.date)
+    const dateB = formatDateLocal(b.date)
+    return dateA.localeCompare(dateB)
   })
 
   let longestStreak = 0
@@ -175,7 +218,9 @@ export function getLongestStreak(habitId: string, logs: HabitLog[]): number {
       continue
     }
 
-    const logDate = new Date(log.date)
+    // Use parseDateLocal to avoid timezone issues
+    const logDateStr = formatDateLocal(log.date)
+    const logDate = parseDateLocal(logDateStr)
     logDate.setHours(0, 0, 0, 0)
 
     if (previousDate === null) {

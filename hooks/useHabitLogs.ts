@@ -4,7 +4,8 @@ import { useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { createBrowserClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
-import { getTodayDate, formatDate } from '@/lib/habits';
+import { formatDate } from '@/lib/habits';
+import { getTodayDateLocal, formatDateLocal } from '@/lib/streaks';
 import { habitsKeys } from '@/hooks/useHabits';
 import type { HabitLog, HabitLogInsert } from '@/types/database';
 import type { PostgrestError } from '@supabase/supabase-js';
@@ -111,7 +112,7 @@ function updateDateRangeQueriesOptimistically(
         
         if (data) {
           const existingIndex = data.findIndex(
-            (log) => log.habit_id === habitId && formatDate(log.date) === targetDate
+            (log) => log.habit_id === habitId && formatDateLocal(log.date) === targetDate
           );
           if (existingIndex >= 0) {
             const updated = [...data];
@@ -145,7 +146,7 @@ function updateDateRangeQueriesOptimistically(
         
         if (data) {
           const existingIndex = data.findIndex(
-            (log) => log.habit_id === habitId && formatDate(log.date) === targetDate
+            (log) => log.habit_id === habitId && formatDateLocal(log.date) === targetDate
           );
           if (existingIndex >= 0) {
             const updated = [...data];
@@ -302,33 +303,22 @@ export function useHabitLogs(options?: {
       }
 
       const supabase = createBrowserClient();
-      let query = supabase.from('habit_logs').select('*');
+      
+      // Optimized: Select only needed fields for better performance
+      // RLS policies automatically filter by user_id, so we can query directly
+      let query = supabase
+        .from('habit_logs')
+        .select('id,habit_id,date,completed');
 
       if (habitId) {
         query = query.eq('habit_id', habitId);
-      } else {
-        // Get logs for all user habits
-        // First get user's habits, then get logs for those habits
-        const { data: userHabits, error: habitsError } = await supabase
-          .from('habits')
-          .select('id')
-          .eq('user_id', user.id);
-
-        if (habitsError) {
-          throw habitsError;
-        }
-
-        if (!userHabits || userHabits.length === 0) {
-          return [];
-        }
-
-        const habitIds = userHabits.map((h) => h.id);
-        query = query.in('habit_id', habitIds);
       }
+      // When habitId is not provided, RLS policies ensure we only get logs
+      // for habits belonging to the authenticated user
 
       // Apply date filters
       if (includeTodayOnly) {
-        const today = getTodayDate();
+        const today = getTodayDateLocal();
         query = query.eq('date', today);
       } else if (normalizedStartDate && normalizedEndDate) {
         // Filter by date range
@@ -343,9 +333,12 @@ export function useHabitLogs(options?: {
 
       return (data as HabitLog[]) ?? [];
     },
-    enabled: !!user?.id && (habitId ? true : true), // Only run query if user is authenticated
-    staleTime: 30 * 1000, // 30 seconds
+    enabled: !!user?.id, // Only run query if user is authenticated
+    staleTime: 5 * 60 * 1000, // 5 minutes - data doesn't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache longer
     retry: 1,
+    refetchOnWindowFocus: false, // Don't refetch on window focus for better performance
+    refetchOnReconnect: true, // Only refetch on reconnect
   });
 
   // Use the internal toggle hook that maintains backward compatibility
@@ -429,12 +422,13 @@ export function useToggleHabitLog() {
       const supabase = createBrowserClient();
       const targetDate = params.date 
         ? validateAndNormalizeDate(params.date)
-        : getTodayDate();
+        : getTodayDateLocal();
 
       // Check if log exists for this date
+      // Select only id and completed for better performance
       const { data: existingLog, error: checkError } = await supabase
         .from('habit_logs')
-        .select('*')
+        .select('id,completed')
         .eq('habit_id', params.habitId)
         .eq('date', targetDate)
         .single();
@@ -446,11 +440,12 @@ export function useToggleHabitLog() {
 
       if (existingLog) {
         // Update existing log
+        // Select only needed fields for better performance
         const { data, error: updateError } = await supabase
           .from('habit_logs')
           .update({ completed: params.completed })
           .eq('id', existingLog.id)
-          .select()
+          .select('id,habit_id,date,completed')
           .single();
 
         if (updateError) {
@@ -466,10 +461,11 @@ export function useToggleHabitLog() {
           completed: params.completed,
         };
 
+        // Select only needed fields for better performance
         const { data, error: insertError } = await supabase
           .from('habit_logs')
           .insert(newLog)
-          .select()
+          .select('id,habit_id,date,completed')
           .single();
 
         if (insertError) {
@@ -519,7 +515,7 @@ export function useToggleHabitLog() {
 
       const targetDate = params.date 
         ? validateAndNormalizeDate(params.date)
-        : getTodayDate();
+        : getTodayDateLocal();
 
       // Optimistically update logs
       const optimisticLog: HabitLog = {
@@ -541,7 +537,7 @@ export function useToggleHabitLog() {
       // Update habit logs query
       if (previousLogs) {
         const existingIndex = previousLogs.findIndex(
-          (log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate
+          (log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate
         );
         if (existingIndex >= 0) {
           const updated = [...previousLogs];
@@ -558,7 +554,7 @@ export function useToggleHabitLog() {
       // Update today logs query
       if (previousTodayLogs) {
         const existingIndex = previousTodayLogs.findIndex(
-          (log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate
+          (log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate
         );
         if (existingIndex >= 0) {
           const updated = [...previousTodayLogs];
@@ -575,7 +571,7 @@ export function useToggleHabitLog() {
       // Update user today logs query
       if (previousUserTodayLogs) {
         const existingIndex = previousUserTodayLogs.findIndex(
-          (log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate
+          (log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate
         );
         if (existingIndex >= 0) {
           const updated = [...previousUserTodayLogs];
@@ -592,7 +588,7 @@ export function useToggleHabitLog() {
       // Update user logs query (all logs, not just today)
       if (previousUserLogs) {
         const existingIndex = previousUserLogs.findIndex(
-          (log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate
+          (log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate
         );
         if (existingIndex >= 0) {
           const updated = [...previousUserLogs];
@@ -690,7 +686,7 @@ export function useToggleHabitLog() {
 
     const targetDate = params.date 
       ? validateAndNormalizeDate(params.date)
-      : getTodayDate();
+      : getTodayDateLocal();
 
     // Get current log to determine toggle state
     // Try multiple query keys since different parts of the app may use different queries
@@ -705,7 +701,7 @@ export function useToggleHabitLog() {
       );
     }
     
-    const todayLog = currentLogs?.find((log) => log.habit_id === params.habitId && formatDate(log.date) === targetDate);
+    const todayLog = currentLogs?.find((log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate);
     const currentCompleted = todayLog?.completed ?? false;
 
     // Toggle: if currently completed, set to false, otherwise set to true

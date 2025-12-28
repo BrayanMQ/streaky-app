@@ -59,11 +59,16 @@ export function useHabitsWithData() {
 
   // Optimize log lookup by creating a Map indexed by habit_id
   // This avoids O(n*m) complexity when filtering logs for each habit
+  // Using a single pass for O(n) complexity
   const logsByHabitId = useMemo(() => {
     const map = new Map<string, typeof allLogs>();
     for (const log of allLogs) {
-      const existing = map.get(log.habit_id) || [];
-      map.set(log.habit_id, [...existing, log]);
+      const existing = map.get(log.habit_id);
+      if (existing) {
+        existing.push(log);
+      } else {
+        map.set(log.habit_id, [log]);
+      }
     }
     return map;
   }, [allLogs]);

@@ -63,9 +63,10 @@ export function useHabits() {
       }
 
       const supabase = createBrowserClient();
+      // Select only needed fields for better performance
       const { data, error: queryError } = await supabase
         .from('habits')
-        .select('*')
+        .select('id,user_id,title,icon,color,frequency,created_at')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false });
 
@@ -76,8 +77,11 @@ export function useHabits() {
       return (data as Habit[]) ?? [];
     },
     enabled: !!user?.id, // Only run query if user is authenticated
-    staleTime: 30 * 1000, // 30 seconds
+    staleTime: 5 * 60 * 1000, // 5 minutes - habits don't change frequently
+    gcTime: 10 * 60 * 1000, // 10 minutes - keep in cache longer
     retry: 1,
+    refetchOnWindowFocus: false, // Don't refetch on window focus for better performance
+    refetchOnReconnect: true, // Only refetch on reconnect
   });
 
   // Invalidate habits query when auth state changes
