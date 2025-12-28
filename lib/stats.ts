@@ -6,6 +6,44 @@ import { getLongestStreak } from './streaks'
  * Utility functions for calculating habit statistics
  */
 
+export type Period = 'week' | 'month' | 'year'
+
+/**
+ * Gets the number of days for a given period
+ * @param period - The period type (week, month, or year)
+ * @returns Number of days in the period
+ */
+export function getDaysForPeriod(period: Period): number {
+  switch (period) {
+    case 'week':
+      return 7
+    case 'month':
+      return 30
+    case 'year':
+      return 365
+    default:
+      return 30
+  }
+}
+
+/**
+ * Gets the display label for a period
+ * @param period - The period type
+ * @returns Display label for the period
+ */
+export function getPeriodLabel(period: Period): string {
+  switch (period) {
+    case 'week':
+      return 'Last 7 days'
+    case 'month':
+      return 'Last 30 days'
+    case 'year':
+      return 'Last 365 days'
+    default:
+      return 'Last 30 days'
+  }
+}
+
 /**
  * Parses a YYYY-MM-DD date string as a local date (not UTC)
  * @param dateStr - Date string in YYYY-MM-DD format
