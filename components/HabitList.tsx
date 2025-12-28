@@ -4,6 +4,8 @@ import { Loader2, AlertCircle, Flame, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HabitCard } from '@/components/HabitCard';
 import { AddHabitModal } from '@/components/AddHabitModal';
+import { EditHabitModal } from '@/components/EditHabitModal';
+import { DeleteHabitConfirmModal } from '@/components/DeleteHabitConfirmModal';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useHabits } from '@/hooks/useHabits';
@@ -152,6 +154,12 @@ export function HabitList() {
 
       {/* Add Habit Modal */}
       <AddHabitModal />
+      
+      {/* Edit Habit Modal */}
+      <EditHabitModal />
+
+      {/* Delete Habit Confirmation Modal */}
+      <DeleteHabitConfirmModal />
     </div>
   );
 }
