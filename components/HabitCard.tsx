@@ -14,6 +14,7 @@ interface HabitCardProps {
   onToggle: (habitId: string) => void;
   isToggling?: boolean;
   getHabitColor?: (habit: HabitWithLogs) => string;
+  mode?: 'execution' | 'management';
 }
 
 /**
@@ -23,13 +24,15 @@ interface HabitCardProps {
  * - Habit title
  * - Completion status (visual indicator)
  * - Current streak
- * - One-tap toggle to mark as completed
+ * - One-tap toggle to mark as completed (in execution mode)
+ * - Actions menu for editing/deleting (in management mode)
  */
 export function HabitCard({
   habit,
   onToggle,
   isToggling = false,
   getHabitColor,
+  mode = 'execution',
 }: HabitCardProps) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -75,71 +78,84 @@ export function HabitCard({
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const isExecution = mode === 'execution';
+
   return (
     <Card
       className={cn(
-        'cursor-pointer transition-all hover:shadow-md relative',
-        habit.completedToday && 'border-primary bg-primary/5',
+        'transition-all relative',
+        isExecution ? 'cursor-pointer hover:shadow-md' : 'cursor-default',
+        isExecution && habit.completedToday && 'border-primary bg-primary/5',
         isToggling && 'opacity-50 pointer-events-none',
       )}
-      onClick={() => onToggle(habit.id)}
+      onClick={() => isExecution && onToggle(habit.id)}
     >
       <CardContent className="flex items-center justify-between p-6">
         <div className="flex items-center gap-4 flex-1">
           <div
             className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full',
-              habit.completedToday ? habitColor : 'bg-muted',
+              'flex h-12 w-12 items-center justify-center rounded-full transition-colors',
+              isExecution 
+                ? (habit.completedToday ? habitColor : 'bg-muted')
+                : habitColor // Always show color in management mode
             )}
           >
-            {habit.completedToday ? (
-              <span className="text-2xl">✓</span>
-            ) : (
-              <span className="text-2xl opacity-30">○</span>
+            {isExecution && (
+              habit.completedToday ? (
+                <span className="text-2xl">✓</span>
+              ) : (
+                <span className="text-2xl opacity-30">○</span>
+              )
             )}
           </div>
           <div>
             <h3 className="font-semibold text-lg">{habit.title}</h3>
-            <div className="flex items-center gap-2 text-muted-foreground text-sm">
-              <Flame className="h-4 w-4 text-primary" />
-              <span>{habit.streak ?? 0} day streak</span>
-            </div>
+            {isExecution && (
+              <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                <Flame className="h-4 w-4 text-primary" />
+                <span>{habit.streak ?? 0} day streak</span>
+              </div>
+            )}
           </div>
         </div>
         
-        {/* Actions Menu */}
-        <div className="relative" ref={menuRef}>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-8 w-8"
-            onClick={handleMenuToggle}
-            disabled={isToggling}
-          >
-            <MoreVertical className="h-4 w-4" />
-          </Button>
-          
-          {isMenuOpen && (
-            <div className="absolute right-0 top-10 z-50 w-40 rounded-md border bg-background shadow-lg">
-              <div className="p-1">
-                <button
-                  onClick={handleEdit}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-sm hover:bg-accent transition-colors text-left"
-                >
-                  <Edit className="h-4 w-4" />
-                  Edit
-                </button>
-                <button
-                  onClick={handleDelete}
-                  className="w-full flex items-center gap-2 px-3 py-2 text-sm rounded-sm hover:bg-destructive/10 text-destructive transition-colors text-left"
-                >
-                  <Trash2 className="h-4 w-4" />
-                  Delete
-                </button>
+        {/* Actions Menu - Only show in management mode */}
+        {mode === 'management' && (
+          <div className="relative" ref={menuRef}>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-8 w-8"
+              onClick={handleMenuToggle}
+              disabled={isToggling}
+            >
+              <MoreVertical className="h-4 w-4" />
+            </Button>
+            
+            {isMenuOpen && (
+              <div className="absolute right-0 top-10 z-50 w-40 rounded-md border bg-background shadow-lg">
+                <div className="p-1 space-y-1">
+                  <Button
+                    variant="ghost"
+                    onClick={handleEdit}
+                    className="w-full justify-start font-normal h-9 px-2"
+                  >
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleDelete}
+                    className="w-full justify-start font-normal h-9 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete
+                  </Button>
+                </div>
               </div>
-            </div>
-          )}
-        </div>
+            )}
+          </div>
+        )}
       </CardContent>
     </Card>
   );

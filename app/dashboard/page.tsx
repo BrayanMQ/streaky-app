@@ -121,7 +121,7 @@ export default function DashboardPage() {
 
         {/* Habits List - uses HabitList component to avoid duplication */}
         <div className="mb-8">
-          <HabitList />
+          <HabitList mode="execution" />
         </div>
 
         {/* Add Habit Button (only show if there are habits) */}

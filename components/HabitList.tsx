@@ -20,8 +20,9 @@ import { useUIStore } from '@/store/ui';
  * - Empty state with CTA to create first habit
  * - List of habits using HabitCard components
  * - Optimized data fetching and calculations
+ * - Support for execution (dashboard) and management (habits page) modes
  */
-export function HabitList() {
+export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'management' }) {
   const { openAddHabitModal } = useUIStore();
   
   // Use centralized hook for habits with data
@@ -148,6 +149,7 @@ export function HabitList() {
             onToggle={handleToggleHabit}
             isToggling={isToggling}
             getHabitColor={getHabitColor}
+            mode={mode}
           />
         ))}
       </div>

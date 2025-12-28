@@ -32,7 +32,7 @@ export default function HabitsPage() {
             </Button>
           )}
         </div>
-        <HabitList />
+        <HabitList mode="management" />
         {totalHabits > 0 && (
           <div className="mt-6 md:hidden">
             <Button size="lg" className="w-full" onClick={openAddHabitModal}>
