@@ -2,8 +2,10 @@
 
 import { Loader2, AlertCircle, Flame, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { HabitCard } from '@/components/HabitCard';
-import { AddHabitModal } from '@/components/AddHabitModal';
+import { HabitCard } from './HabitCard';
+import { AddHabitModal } from './AddHabitModal';
+import { EditHabitModal } from './EditHabitModal';
+import { DeleteHabitConfirmModal } from './DeleteHabitConfirmModal';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useHabits } from '@/hooks/useHabits';
@@ -18,8 +20,9 @@ import { useUIStore } from '@/store/ui';
  * - Empty state with CTA to create first habit
  * - List of habits using HabitCard components
  * - Optimized data fetching and calculations
+ * - Support for execution (dashboard) and management (habits page) modes
  */
-export function HabitList() {
+export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'management' }) {
   const { openAddHabitModal } = useUIStore();
   
   // Use centralized hook for habits with data
@@ -146,12 +149,19 @@ export function HabitList() {
             onToggle={handleToggleHabit}
             isToggling={isToggling}
             getHabitColor={getHabitColor}
+            mode={mode}
           />
         ))}
       </div>
 
       {/* Add Habit Modal */}
       <AddHabitModal />
+      
+      {/* Edit Habit Modal */}
+      <EditHabitModal />
+
+      {/* Delete Habit Confirmation Modal */}
+      <DeleteHabitConfirmModal />
     </div>
   );
 }
