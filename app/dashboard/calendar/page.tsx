@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Target, Zap, Trophy, Calendar as CalendarIcon } from "lucide-react"
@@ -16,8 +16,26 @@ export default function CalendarPage() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null)
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const { habits, isLoading: isLoadingHabits } = useHabits()
+
+  // Auto-scroll selected habit chip to the left
+  useEffect(() => {
+    if (selectedHabitId && scrollContainerRef.current) {
+      const container = scrollContainerRef.current
+      const selectedElement = container.querySelector(`[data-habit-id="${selectedHabitId}"]`) as HTMLElement
+      
+      if (selectedElement) {
+        const targetScrollPos = selectedElement.offsetLeft - 16 // 16px padding for breathing room
+        
+        container.scrollTo({
+          left: targetScrollPos,
+          behavior: "smooth"
+        })
+      }
+    }
+  }, [selectedHabitId])
 
   // Define a broad range for preloading (current year and surrounding years)
   // This ensures that navigation between months and years is instantaneous
@@ -178,7 +196,10 @@ export default function CalendarPage() {
                 ))}
               </div>
             ) : (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1">
+              <div 
+                ref={scrollContainerRef}
+                className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-1 px-1 scroll-smooth"
+              >
                 {habits.map((habit, index) => {
                   const isSelected = selectedHabitId === habit.id
                   const habitColor = getHabitColor(habit, index)
@@ -186,6 +207,7 @@ export default function CalendarPage() {
                   return (
                     <Button
                       key={habit.id}
+                      data-habit-id={habit.id}
                       variant={isSelected ? "default" : "outline"}
                       onClick={() => setSelectedHabitId(habit.id)}
                       className={cn(
