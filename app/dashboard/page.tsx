@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { HabitList } from '@/components/HabitList';
 import { Header } from '@/components/Header';
+import { BottomNav } from '@/components/BottomNav';
 import { Plus, Loader2, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
@@ -72,7 +73,7 @@ export default function DashboardPage() {
       <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8">
+      <main className="container mx-auto flex-1 px-4 py-8 mb-20 md:mb-0">
         {/* Error Messages */}
         {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
         {signOutError && (
@@ -131,6 +132,9 @@ export default function DashboardPage() {
           </Button>
         )}
       </main>
+
+      {/* Bottom Navigation for Mobile */}
+      <BottomNav />
     </div>
   );
 }
