@@ -1,18 +1,15 @@
 'use client';
 
-import { useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { HabitCard } from '@/components/HabitCard';
 import { Flame, Plus, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
-import { useHabits } from '@/hooks/useHabits';
+import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
-import { calculateStreak, isCompletedToday } from '@/lib/habits';
 import { useUIStore } from '@/store/ui';
 import { AddHabitModal } from '@/components/AddHabitModal';
-import type { HabitWithLogs } from '@/types/database';
 
 /**
  * Dashboard page
@@ -22,37 +19,23 @@ import type { HabitWithLogs } from '@/types/database';
 export default function DashboardPage() {
   const router = useRouter();
   const { signOut, signOutPending, signOutError } = useAuth();
-  const { habits, isLoading: isLoadingHabits, error: habitsError } = useHabits();
   const { openAddHabitModal } = useUIStore();
-  // Get all logs (not just today) to calculate streaks
+  
+  // Use centralized hook for habits with data
   const {
-    logs: allLogs,
-    isLoading: isLoadingLogs,
-    error: logsError,
+    habitsWithData,
+    getHabitColor,
+    isLoading: isLoadingHabitsData,
+    habitsError,
+    logsError: habitsDataLogsError,
+  } = useHabitsWithData();
+  
+  // Get toggle functionality from useHabitLogs
+  const {
     toggleCompletion,
     isToggling,
     toggleError,
   } = useHabitLogs();
-
-  // Combine habits with their logs and calculate streaks/completion
-  const habitsWithData = useMemo<HabitWithLogs[]>(() => {
-    if (!habits.length) return [];
-
-    return habits.map((habit) => {
-      // Get logs for this specific habit
-      const habitLogs = allLogs.filter((log) => log.habit_id === habit.id);
-      
-      // Calculate streak and completion status
-      const streak = calculateStreak(habitLogs);
-      const completedToday = isCompletedToday(habitLogs);
-
-      return {
-        ...habit,
-        streak,
-        completedToday,
-      };
-    });
-  }, [habits, allLogs]);
 
   // Calculate today's completion stats
   const completedToday = habitsWithData.filter((h) => h.completedToday).length;
@@ -60,7 +43,7 @@ export default function DashboardPage() {
   const completionPercentage = totalHabits > 0 ? (completedToday / totalHabits) * 100 : 0;
 
   // Loading state
-  if (isLoadingHabits || isLoadingLogs) {
+  if (isLoadingHabitsData) {
     return (
       <div className="flex min-h-screen flex-col bg-muted/30">
         <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
@@ -89,7 +72,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Note: logsError is handled below in the UI, not blocking the view
+  // Note: habitsDataLogsError is handled below in the UI, not blocking the view
 
   const handleToggleHabit = async (habitId: string) => {
     try {
@@ -117,38 +100,6 @@ export default function DashboardPage() {
       // Redirect to login even on error
       router.push('/auth/login');
     }
-  };
-
-  // Get default color class for habit (fallback if no color set)
-  const getHabitColor = (habit: HabitWithLogs): string => {
-    if (habit.color) {
-      // If color is stored as a Tailwind class, use it directly
-      if (habit.color.startsWith('bg-')) {
-        return habit.color;
-      }
-      // Otherwise, try to map common color names
-      const colorMap: Record<string, string> = {
-        orange: 'bg-orange-500',
-        blue: 'bg-blue-500',
-        purple: 'bg-purple-500',
-        cyan: 'bg-cyan-500',
-        green: 'bg-green-500',
-        red: 'bg-red-500',
-        yellow: 'bg-yellow-500',
-        pink: 'bg-pink-500',
-      };
-      return colorMap[habit.color.toLowerCase()] || 'bg-primary';
-    }
-    // Default color rotation based on habit index
-    const colors = [
-      'bg-orange-500',
-      'bg-blue-500',
-      'bg-purple-500',
-      'bg-cyan-500',
-      'bg-green-500',
-    ];
-    const index = habitsWithData.indexOf(habit);
-    return colors[index % colors.length];
   };
 
   return (
@@ -216,13 +167,13 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto flex-1 px-4 py-8">
         {/* Error Messages */}
-        {logsError && (
+        {habitsDataLogsError && (
           <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
             <div className="flex-1">
               <p className="text-sm font-semibold text-destructive mb-1">Error loading habit logs</p>
               <p className="text-sm text-muted-foreground">
-                {logsError.message || 'Failed to load habit completion data. Streaks may not be accurate.'}
+                {habitsDataLogsError.message || 'Failed to load habit completion data. Streaks may not be accurate.'}
               </p>
             </div>
             <Button
