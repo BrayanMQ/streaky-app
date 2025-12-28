@@ -42,8 +42,8 @@ export default function CalendarPage() {
   const preloadRange = useMemo(() => {
     const currentYear = new Date().getFullYear()
     return {
-      startDate: `${currentYear - 1}-01-01`,
-      endDate: `${currentYear + 1}-12-31`
+      startDate: `${currentYear}-01-01`,
+      endDate: `${currentYear}-12-31`
     }
   }, [])
 
