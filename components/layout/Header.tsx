@@ -42,24 +42,6 @@ export function Header() {
           <span>Streaky</span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Link href="/dashboard/calendar">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <Calendar className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Link href="/dashboard/stats">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <TrendingUp className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
           <Link href="/habits">
             <Button
               variant="ghost"
@@ -70,10 +52,31 @@ export function Header() {
               <ClipboardList className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
+          <Link href="/dashboard/calendar">
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Calendar"
+              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+            >
+              <Calendar className="h-5 w-5 relative z-10" />
+            </Button>
+          </Link>
+          <Link href="/dashboard/stats">
+            <Button
+              variant="ghost"
+              size="icon"
+              title="Stats"
+              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+            >
+              <TrendingUp className="h-5 w-5 relative z-10" />
+            </Button>
+          </Link>
           <Link href="/dashboard/settings">
             <Button
               variant="ghost"
               size="icon"
+              title="Settings"
               className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
             >
               <Settings className="h-5 w-5 relative z-10" />
