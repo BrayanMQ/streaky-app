@@ -42,7 +42,7 @@ export function Header() {
           <span>Streaky</span>
         </Link>
         <nav className="flex items-center gap-2">
-          <Link href="/habits">
+          <Link href="/dashboard/habits">
             <Button
               variant="ghost"
               size="icon"
