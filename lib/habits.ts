@@ -1,4 +1,5 @@
 import type { HabitLog } from '@/types/database'
+import { formatDateLocal, getTodayDateLocal } from './streaks'
 
 /**
  * Utility functions for habit calculations and checks
@@ -6,8 +7,10 @@ import type { HabitLog } from '@/types/database'
 
 /**
  * Formats a date string to YYYY-MM-DD format
+ * Uses UTC for database compatibility (dates stored in DB are timezone-agnostic)
  * @param date - Date object or date string
- * @returns Formatted date string (YYYY-MM-DD)
+ * @returns Formatted date string (YYYY-MM-DD) in UTC
+ * @deprecated For UI calculations, use formatDateLocal from streaks.ts instead
  */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date
@@ -16,7 +19,9 @@ export function formatDate(date: Date | string): string {
 
 /**
  * Gets today's date in YYYY-MM-DD format
- * @returns Today's date string
+ * Uses UTC for database compatibility
+ * @returns Today's date string in UTC
+ * @deprecated For UI calculations, use getTodayDateLocal from streaks.ts instead
  */
 export function getTodayDate(): string {
   return formatDate(new Date())
@@ -89,24 +94,26 @@ export function calculateStreak(habitLogs: HabitLog[]): number {
 
 /**
  * Checks if a habit was completed today
+ * Uses local timezone for accurate day detection
  * 
  * @param habitLogs - Array of habit logs for the habit
  * @returns true if there's a log entry for today with completed = true
  */
 export function isCompletedToday(habitLogs: HabitLog[]): boolean {
-  const today = getTodayDate()
-  const todayLog = habitLogs.find((log) => formatDate(log.date) === today)
+  const today = getTodayDateLocal()
+  const todayLog = habitLogs.find((log) => formatDateLocal(log.date) === today)
   return todayLog?.completed === true
 }
 
 /**
  * Gets the log entry for today if it exists
+ * Uses local timezone for accurate day detection
  * 
  * @param habitLogs - Array of habit logs for the habit
  * @returns The log entry for today, or undefined if it doesn't exist
  */
 export function getTodayLog(habitLogs: HabitLog[]): HabitLog | undefined {
-  const today = getTodayDate()
-  return habitLogs.find((log) => formatDate(log.date) === today)
+  const today = getTodayDateLocal()
+  return habitLogs.find((log) => formatDateLocal(log.date) === today)
 }
 
