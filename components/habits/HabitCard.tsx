@@ -120,7 +120,7 @@ export function HabitCard({
             <h3 className="font-semibold text-lg">{habit.title}</h3>
             {isExecution && (
               <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Flame className="h-4 w-4 text-primary" />
+                <Flame className="h-4 w-4 text-orange-500/80" />
                 <span>{habit.streak ?? 0} day streak</span>
               </div>
             )}
