@@ -3,13 +3,12 @@
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
-import { HabitCard } from '@/components/HabitCard';
+import { HabitList } from '@/components/HabitList';
 import { Flame, Plus, Calendar, TrendingUp, Settings, Menu, Loader2, LogOut, AlertCircle, X } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useUIStore } from '@/store/ui';
-import { AddHabitModal } from '@/components/AddHabitModal';
 
 /**
  * Dashboard page
@@ -21,21 +20,15 @@ export default function DashboardPage() {
   const { signOut, signOutPending, signOutError } = useAuth();
   const { openAddHabitModal } = useUIStore();
   
-  // Use centralized hook for habits with data
+  // Use centralized hook for habits with data (for stats only)
   const {
     habitsWithData,
-    getHabitColor,
     isLoading: isLoadingHabitsData,
     habitsError,
     logsError: habitsDataLogsError,
   } = useHabitsWithData();
   
-  // Get toggle functionality from useHabitLogs
-  const {
-    toggleCompletion,
-    isToggling,
-    toggleError,
-  } = useHabitLogs();
+  // Note: toggleError is handled by HabitList component
 
   // Calculate today's completion stats
   const completedToday = habitsWithData.filter((h) => h.completedToday).length;
@@ -72,17 +65,7 @@ export default function DashboardPage() {
     );
   }
 
-  // Note: habitsDataLogsError is handled below in the UI, not blocking the view
-
-  const handleToggleHabit = async (habitId: string) => {
-    try {
-      await toggleCompletion({ habitId });
-    } catch (error) {
-      console.error('Error toggling habit:', error);
-      // Error is already handled by React Query's error state
-      // The optimistic update will be rolled back automatically
-    }
-  };
+  // Note: habitsDataLogsError and toggleError are handled by HabitList component
 
   const handleSignOut = async () => {
     try {
@@ -167,51 +150,7 @@ export default function DashboardPage() {
       {/* Main Content */}
       <main className="container mx-auto flex-1 px-4 py-8">
         {/* Error Messages */}
-        {habitsDataLogsError && (
-          <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-destructive mb-1">Error loading habit logs</p>
-              <p className="text-sm text-muted-foreground">
-                {habitsDataLogsError.message || 'Failed to load habit completion data. Streaks may not be accurate.'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => window.location.reload()}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {toggleError && (
-          <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-destructive mb-1">
-                Error updating habit
-              </p>
-              <p className="text-sm text-muted-foreground">
-                {toggleError.message || 'Failed to update habit completion. Please try again.'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => {
-                // Clear error by refetching
-                window.location.reload();
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
+        {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
         {signOutError && (
           <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
             <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
@@ -255,35 +194,10 @@ export default function DashboardPage() {
           )}
         </div>
 
-        {/* Habits List */}
-        {totalHabits > 0 ? (
-          <div className="mb-8 space-y-4">
-            {habitsWithData.map((habit) => (
-              <HabitCard
-                key={habit.id}
-                habit={habit}
-                onToggle={handleToggleHabit}
-                isToggling={isToggling}
-                getHabitColor={getHabitColor}
-              />
-            ))}
-          </div>
-        ) : (
-          /* Empty State */
-          <div className="mb-8 text-center py-12">
-            <div className="mb-4">
-              <Flame className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
-            </div>
-            <h2 className="text-2xl font-semibold mb-2">No habits yet</h2>
-            <p className="text-muted-foreground mb-6">
-              Create your first habit to start tracking your progress!
-            </p>
-            <Button size="lg" onClick={openAddHabitModal}>
-              <Plus className="mr-2 h-5 w-5" />
-              Create Your First Habit
-            </Button>
-          </div>
-        )}
+        {/* Habits List - uses HabitList component to avoid duplication */}
+        <div className="mb-8">
+          <HabitList />
+        </div>
 
         {/* Add Habit Button (only show if there are habits) */}
         {totalHabits > 0 && (
@@ -293,9 +207,6 @@ export default function DashboardPage() {
           </Button>
         )}
       </main>
-
-      {/* Add Habit Modal */}
-      <AddHabitModal />
     </div>
   );
 }
