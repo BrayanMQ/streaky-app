@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useMemo } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -62,9 +63,15 @@ export function AddHabitModal() {
         icon: null,
         frequency: null,
       })
+      toast.success('Habit created', {
+        description: `"${habitTitle.trim()}" has been successfully added.`,
+      })
       closeAddHabitModal()
     } catch (err) {
       console.error(err)
+      toast.error('‘Error creating habit', {
+        description: 'The habit could not be created. Please try again.',
+      })
     }
   }
 
