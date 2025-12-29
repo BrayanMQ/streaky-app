@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { motion } from 'framer-motion';
 
 interface ConfettiParticle {
@@ -25,6 +26,7 @@ const COLORS = [
  * 
  * Displays animated confetti particles when a habit is completed
  * Used for special celebrations (e.g., streaks >= 7 days)
+ * Portalled to document.body to ensure visibility over all elements
  */
 export function ConfettiEffect({ 
   onComplete 
@@ -32,16 +34,18 @@ export function ConfettiEffect({
   onComplete?: () => void 
 }) {
   const [particles, setParticles] = useState<ConfettiParticle[]>([]);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    // Generate 20 confetti particles
-    const newParticles: ConfettiParticle[] = Array.from({ length: 20 }, (_, i) => ({
+    setMounted(true);
+    // Generate 28 confetti particles for a smooth but rich effect
+    const newParticles: ConfettiParticle[] = Array.from({ length: 28 }, (_, i) => ({
       id: i,
       x: Math.random() * 100, // Random starting X position (0-100%)
       y: -10, // Start above the viewport
       color: COLORS[Math.floor(Math.random() * COLORS.length)],
       rotation: Math.random() * 360,
-      delay: Math.random() * 0.3,
+      delay: Math.random() * 0.4,
     }));
 
     setParticles(newParticles);
@@ -49,42 +53,44 @@ export function ConfettiEffect({
     // Call onComplete after animation finishes
     const timer = setTimeout(() => {
       onComplete?.();
-    }, 2000);
+    }, 2500);
 
     return () => clearTimeout(timer);
   }, [onComplete]);
 
-  return (
-    <div className="fixed inset-0 pointer-events-none z-50 overflow-hidden">
+  if (!mounted) return null;
+
+  return createPortal(
+    <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
       {particles.map((particle) => (
         <motion.div
           key={particle.id}
-          className="absolute w-2 h-2 rounded-sm"
+          className="absolute w-2 h-2 rounded-sm will-change-transform"
           style={{
             backgroundColor: particle.color,
             left: `${particle.x}%`,
             top: `${particle.y}%`,
           }}
           initial={{
-            y: -10,
+            y: -20,
             x: 0,
             rotate: particle.rotation,
-            scale: 1,
+            opacity: 1,
           }}
           animate={{
-            y: window.innerHeight + 20,
-            x: (Math.random() - 0.5) * 200,
-            rotate: particle.rotation + 360 * (Math.random() > 0.5 ? 1 : -1),
-            scale: [1, 1.2, 0.8, 0],
+            y: typeof window !== 'undefined' ? window.innerHeight + 20 : 1000,
+            x: (Math.random() - 0.5) * 300,
+            rotate: particle.rotation + 360,
+            opacity: [1, 1, 0],
           }}
           transition={{
-            duration: 1.5 + Math.random() * 0.5,
+            duration: 1.8 + Math.random() * 0.5,
             delay: particle.delay,
-            ease: 'easeIn',
+            ease: 'easeOut',
           }}
         />
       ))}
-    </div>
+    </div>,
+    document.body
   );
 }
-

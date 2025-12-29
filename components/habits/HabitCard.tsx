@@ -39,6 +39,7 @@ export function HabitCard({
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [prevCompleted, setPrevCompleted] = useState(habit.completedToday);
+  const [prevStreak, setPrevStreak] = useState(habit.streak ?? 0);
   const menuRef = useRef<HTMLDivElement>(null);
   const { setSelectedHabit, openEditHabitModal, openDeleteHabitModal } = useUIStore();
 
@@ -48,26 +49,34 @@ export function HabitCard({
 
   // Show confetti when habit is completed and streak >= 7
   useEffect(() => {
-    if (habit.completedToday && !prevCompleted) {
+    const currentStreak = habit.streak ?? 0;
+    const wasCompleted = prevCompleted;
+    const isNowCompleted = habit.completedToday;
+    
+    // Check if habit was just completed (transition from not completed to completed)
+    if (isNowCompleted && !wasCompleted) {
+      // Calculate the streak after completion
+      const streakAfterCompletion = Math.max(prevStreak + 1, currentStreak);
+      
       // Haptic feedback for mobile devices
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
-        const streak = habit.streak ?? 0;
-        if (streak >= 7) {
-          // Longer vibration for important streaks
+        // Use the streak after completion for vibration
+        if (streakAfterCompletion >= 7) {
           navigator.vibrate(100);
         } else {
-          // Short vibration for regular completion
           navigator.vibrate(50);
         }
       }
       
-      // Show confetti for streaks >= 7
-      if ((habit.streak ?? 0) >= 7) {
+      // Show confetti if streak after completion is >= 7
+      if (streakAfterCompletion >= 7) {
         setShowConfetti(true);
       }
     }
-    setPrevCompleted(habit.completedToday);
-  }, [habit.completedToday, habit.streak, prevCompleted]);
+    
+    setPrevCompleted(isNowCompleted);
+    setPrevStreak(currentStreak);
+  }, [habit.completedToday, habit.streak, prevCompleted, prevStreak]);
 
   // Close menu when clicking outside or scrolling
   useEffect(() => {
