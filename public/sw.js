@@ -45,6 +45,13 @@ self.addEventListener('activate', (event) => {
   return self.clients.claim();
 });
 
+// Listen for messages from clients
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+  }
+});
+
 // Intercept requests
 self.addEventListener('fetch', (event) => {
   const { request } = event;
