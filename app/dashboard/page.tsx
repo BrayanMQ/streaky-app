@@ -68,12 +68,12 @@ export default function DashboardPage() {
   // Note: habitsDataLogsError and toggleError are handled by HabitList component
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
+    <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8 mb-20 md:mb-0">
+      <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
         {/* Error Messages */}
         {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
         {signOutError && (

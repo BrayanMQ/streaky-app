@@ -173,11 +173,11 @@ export default function CalendarPage() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-background pb-20 md:pb-0">
+    <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
       <Header />
 
       {/* Main Content - Improved spacing and layout */}
-      <main className="flex-1 px-4 py-4 md:px-10 lg:px-16 w-full max-w-[1600px] mx-auto">
+      <main className="flex-1 px-4 py-4 md:px-10 lg:px-16 w-full max-w-[1600px] mx-auto pb-20 md:pb-8">
         <div className="flex flex-col gap-6">
           {/* Page Title & Intro */}
           <div className="flex flex-col gap-1">
