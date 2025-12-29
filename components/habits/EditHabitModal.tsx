@@ -78,14 +78,14 @@ export function EditHabitModal() {
         icon: null,
         frequency: null,
       })
-      toast.success('Hábito actualizado', {
-        description: `"${habitTitle.trim()}" ha sido actualizado exitosamente.`,
+      toast.success('Habit updated', {
+        description: `"${habitTitle.trim()}" has been successfully updated.`,
       })
       closeEditHabitModal()
     } catch (err) {
       console.error(err)
-      toast.error('Error al actualizar hábito', {
-        description: 'No se pudo actualizar el hábito. Intenta de nuevo.',
+      toast.error('Error updating habit', {
+        description: 'The habit could not be updated. Please try again.',
       })
     }
   }

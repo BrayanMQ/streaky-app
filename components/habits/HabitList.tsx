@@ -79,8 +79,8 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
     } catch (error) {
       console.error('Error toggling habit:', error);
       const habit = habitsWithData.find(h => h.id === habitId);
-      toast.error('Error al actualizar hábito', {
-        description: `No se pudo ${habit?.completedToday ? 'desmarcar' : 'completar'} "${habit?.title}". Intenta de nuevo.`,
+      toast.error('Error updating habit', {
+        description: `Could not ${habit?.completedToday ? 'uncheck' : 'check'} "${habit?.title}". Please try again.`,
       });
     }
   };
