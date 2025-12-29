@@ -11,6 +11,7 @@ import { useHabitLogs } from "@/hooks/useHabitLogs"
 import { getCurrentStreak } from "@/lib/streaks"
 import { getHabitColor } from "@/lib/habitColors"
 import { motion } from "framer-motion"
+import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
 import {
   getBestStreak,
@@ -282,23 +283,7 @@ export default function StatsPage() {
   return (
     <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
       {/* Header */}
-      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard">
-              <Button variant="ghost" size="icon" className="hover:bg-muted/80">
-                <ArrowLeft className="size-5" />
-              </Button>
-            </Link>
-            <div className="flex items-center gap-2">
-              <TrendingUp className="size-6 text-primary" />
-              <span className="font-bold text-xl">
-                Statistics
-              </span>
-            </div>
-          </div>
-        </div>
-      </header>
+      <Header />
 
       {/* Main Content */}
       <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">

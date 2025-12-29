@@ -1,5 +1,6 @@
 "use client"
 
+import { toast } from "sonner"
 import {
   Dialog,
   DialogContent,
@@ -22,9 +23,15 @@ export function DeleteHabitConfirmModal() {
 
     try {
       await deleteHabit(selectedHabit.id)
+      toast.success('Habit deleted', {
+        description: `"${selectedHabit.title}" was successfully deleted.`,
+      })
       handleClose()
     } catch (error) {
       console.error("Error deleting habit:", error)
+      toast.error('Error deleting habit:', {
+        description: `Could not delete "${selectedHabit.title}". Please try again.`,
+      })
     }
   }
 

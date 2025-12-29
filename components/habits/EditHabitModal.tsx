@@ -2,6 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect, useMemo } from "react"
+import { toast } from "sonner"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -77,9 +78,15 @@ export function EditHabitModal() {
         icon: null,
         frequency: null,
       })
+      toast.success('Habit updated', {
+        description: `"${habitTitle.trim()}" has been successfully updated.`,
+      })
       closeEditHabitModal()
     } catch (err) {
       console.error(err)
+      toast.error('Error updating habit', {
+        description: 'The habit could not be updated. Please try again.',
+      })
     }
   }
 

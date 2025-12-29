@@ -6,6 +6,7 @@ import { HabitList } from '@/components/habits/HabitList';
 import { Header } from '@/components/layout/Header';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Plus, Loader2, AlertCircle, X } from 'lucide-react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useUIStore } from '@/store/ui';
@@ -68,12 +69,12 @@ export default function DashboardPage() {
   // Note: habitsDataLogsError and toggleError are handled by HabitList component
 
   return (
-    <div className="flex min-h-screen flex-col bg-muted/30">
+    <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
       {/* Header */}
       <Header />
 
       {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8 mb-20 md:mb-0">
+      <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
         {/* Error Messages */}
         {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
         {signOutError && (
@@ -103,17 +104,30 @@ export default function DashboardPage() {
         <div className="mb-8">
           <h1 className="mb-2 font-bold text-3xl">Today's Habits</h1>
           {totalHabits > 0 ? (
-            <>
-              <p className="text-muted-foreground">
-                {completedToday} of {totalHabits} completed
-              </p>
-              <div className="mt-4 h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <p className="text-muted-foreground">
+                  {completedToday} of {totalHabits} completed
+                </p>
+                <span className="text-sm text-muted-foreground">
+                  {Math.round(completionPercentage)}%
+                </span>
+              </div>
+              
+              <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
                 <div
-                  className="h-full bg-primary transition-all duration-500"
+                  className={cn(
+                    "h-full transition-all duration-700 ease-out",
+                    completionPercentage < 25 && "bg-amber-500/70",
+                    completionPercentage >= 25 && completionPercentage < 50 && "bg-amber-400/75",
+                    completionPercentage >= 50 && completionPercentage < 75 && "bg-yellow-400/80",
+                    completionPercentage >= 75 && completionPercentage < 100 && "bg-lime-400/80",
+                    completionPercentage === 100 && "bg-emerald-600"
+                  )}
                   style={{ width: `${completionPercentage}%` }}
                 />
               </div>
-            </>
+            </div>
           ) : (
             <p className="text-muted-foreground">No habits yet. Create your first habit to get started!</p>
           )}

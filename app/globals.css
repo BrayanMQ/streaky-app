@@ -150,3 +150,35 @@
 @utility text-balance {
   text-wrap: balance;
 }
+
+/* Sonner Toast Custom Styles */
+@layer base {
+  [data-sonner-toast] {
+    backdrop-filter: blur(8px);
+    font-weight: 500 !important;
+  }
+
+  [data-sonner-toast][data-type="success"] {
+    background: hsl(142 71% 95%) !important;
+    color: hsl(142 76% 25%) !important;
+    border-color: hsl(142 71% 85%) !important;
+  }
+  
+  [data-sonner-toast][data-type="error"] {
+    background: hsl(0 84% 97%) !important;
+    color: hsl(0 84% 40%) !important;
+    border-color: hsl(0 84% 90%) !important;
+  }
+  
+  [data-sonner-toast][data-type="info"] {
+    background: hsl(217 91% 97%) !important;
+    color: hsl(217 91% 40%) !important;
+    border-color: hsl(217 91% 90%) !important;
+  }
+  
+  [data-sonner-toast][data-type="warning"] {
+    background: hsl(25 95% 97%) !important;
+    color: hsl(25 95% 35%) !important;
+    border-color: hsl(25 95% 90%) !important;
+  }
+}

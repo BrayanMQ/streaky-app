@@ -1,8 +1,11 @@
 'use client';
 
-import { Loader2, AlertCircle, Flame, Plus } from 'lucide-react';
+import { motion } from 'framer-motion';
+import { toast } from 'sonner';
+import { AlertCircle, Flame, Plus } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { HabitCard } from './HabitCard';
+import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { AddHabitModal } from './AddHabitModal';
 import { EditHabitModal } from './EditHabitModal';
 import { DeleteHabitConfirmModal } from './DeleteHabitConfirmModal';
@@ -47,11 +50,38 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
 
   const handleToggleHabit = async (habitId: string) => {
     try {
+      const habit = habitsWithData.find(h => h.id === habitId);
+      const wasCompleted = habit?.completedToday ?? false;
+      
       await toggleCompletion({ habitId });
+      
+      // Show success toast with contextual message
+      if (!wasCompleted) {
+        const streak = habit?.streak ?? 0;
+        if (streak >= 7) {
+          toast.success('Excellent!', {
+            description: `You have completed “${habit?.title}”. ${streak} days in a row! 🔥`,
+          });
+        } else if (streak >= 3) {
+          toast.success('Well done!', {
+            description: `You have completed “${habit?.title}”. ${streak} days in a row.`,
+          });
+        } else {
+          toast.success('Habit completed', {
+            description: `You have completed “${habit?.title}” today.`,
+          });
+        }
+      } else {
+        toast.info('Habit unchecked', {
+          description: `You have unchecked “${habit?.title}” for today.`,
+        });
+      }
     } catch (error) {
       console.error('Error toggling habit:', error);
-      // Error is already handled by React Query's error state
-      // The optimistic update will be rolled back automatically
+      const habit = habitsWithData.find(h => h.id === habitId);
+      toast.error('Error updating habit', {
+        description: `Could not ${habit?.completedToday ? 'uncheck' : 'check'} "${habit?.title}". Please try again.`,
+      });
     }
   };
 
@@ -64,14 +94,13 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
     }
   };
 
-  // Loading state - show while data is loading
+  // Loading state - show skeleton loaders while data is loading
   if (isLoadingHabitsData) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-          <p className="text-lg text-muted-foreground">Loading habits...</p>
-        </div>
+      <div className="space-y-4">
+        {Array.from({ length: 3 }).map((_, index) => (
+          <HabitCardSkeleton key={index} />
+        ))}
       </div>
     );
   }
@@ -142,15 +171,25 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
 
       {/* Habits List */}
       <div className="space-y-4">
-        {habitsWithData.map((habit) => (
-          <HabitCard
+        {habitsWithData.map((habit, index) => (
+          <motion.div
             key={habit.id}
-            habit={habit}
-            onToggle={handleToggleHabit}
-            isToggling={isToggling}
-            getHabitColor={getHabitColor}
-            mode={mode}
-          />
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{
+              duration: 0.3,
+              delay: index * 0.05,
+              ease: 'easeOut',
+            }}
+          >
+            <HabitCard
+              habit={habit}
+              onToggle={handleToggleHabit}
+              isToggling={isToggling}
+              getHabitColor={getHabitColor}
+              mode={mode}
+            />
+          </motion.div>
         ))}
       </div>
 
