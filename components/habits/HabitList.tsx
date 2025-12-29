@@ -59,21 +59,21 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
       if (!wasCompleted) {
         const streak = habit?.streak ?? 0;
         if (streak >= 7) {
-          toast.success('¡Excelente!', {
-            description: `Has completado "${habit?.title}". ¡${streak} días de racha! 🔥`,
+          toast.success('Excellent!', {
+            description: `You have completed “${habit?.title}”. ${streak} days in a row! 🔥`,
           });
         } else if (streak >= 3) {
-          toast.success('¡Bien hecho!', {
-            description: `Has completado "${habit?.title}". ${streak} días de racha.`,
+          toast.success('Well done!', {
+            description: `You have completed “${habit?.title}”. ${streak} days in a row.`,
           });
         } else {
-          toast.success('Hábito completado', {
-            description: `Has completado "${habit?.title}" hoy.`,
+          toast.success('Habit completed', {
+            description: `You have completed “${habit?.title}” today.`,
           });
         }
       } else {
-        toast.info('Hábito desmarcado', {
-          description: `Has desmarcado "${habit?.title}" para hoy.`,
+        toast.info('Habit unchecked', {
+          description: `You have unchecked “${habit?.title}” for today.`,
         });
       }
     } catch (error) {
