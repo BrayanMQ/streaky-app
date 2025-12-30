@@ -273,7 +273,7 @@ export async function deleteUserAccount(): Promise<{ error: AuthError | null }> 
 
     if (habitsError) {
       console.error('Error deleting habits:', habitsError);
-      return { error: habitsError as AuthError };
+      return { error: habitsError as unknown as AuthError };
     }
 
     // Sign out the user (auth user deletion requires admin privileges)

@@ -235,3 +235,26 @@ export const Constants = {
     Enums: {},
   },
 } as const
+
+// MANUAL TYPE DEFINITIONS (Safe to edit - preserved during regeneration)
+// ============================================================================
+// This section contains type aliases and extended types that combine
+// database types with calculated fields or application-specific logic.
+// These types are NOT in the database schema and must be defined manually.
+// They are preserved when running: npm run generate:types
+// ============================================================================
+
+// Type aliases for convenience
+export type Habit = Tables<'habits'>
+export type HabitInsert = TablesInsert<'habits'>
+export type HabitUpdate = TablesUpdate<'habits'>
+export type HabitLog = Tables<'habit_logs'>
+
+// Extended type for habits with calculated data
+// This type combines the Habit database type with fields calculated at runtime:
+// - streak: Current streak calculated from habit_logs
+// - completedToday: Boolean indicating if habit was completed today
+export type HabitWithLogs = Habit & {
+  streak: number
+  completedToday: boolean
+}
