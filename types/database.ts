@@ -73,6 +73,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -211,18 +235,3 @@ export const Constants = {
     Enums: {},
   },
 } as const
-
-// Type aliases for easier access to table types
-export type Habit = Tables<'habits'>
-export type HabitInsert = TablesInsert<'habits'>
-export type HabitUpdate = TablesUpdate<'habits'>
-
-export type HabitLog = Tables<'habit_logs'>
-export type HabitLogInsert = TablesInsert<'habit_logs'>
-export type HabitLogUpdate = TablesUpdate<'habit_logs'>
-
-// Extended types for UI usage
-export type HabitWithLogs = Habit & {
-  streak?: number
-  completedToday?: boolean
-}
