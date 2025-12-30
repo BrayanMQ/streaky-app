@@ -3,8 +3,10 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { useState } from 'react';
+import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { ServiceWorkerProvider } from './ServiceWorkerProvider';
+import { ThemeSync } from './ThemeSync';
 
 /**
  * Providers component that wraps the app with React Query
@@ -53,12 +55,20 @@ export function Providers({ children }: { children: React.ReactNode }) {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ServiceWorkerProvider>
-        {children}
-        <Toaster />
-        {/* Only show devtools in development */}
-        {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
-      </ServiceWorkerProvider>
+      <NextThemesProvider
+        attribute="class"
+        defaultTheme="system"
+        enableSystem
+        disableTransitionOnChange
+      >
+        <ThemeSync />
+        <ServiceWorkerProvider>
+          {children}
+          <Toaster />
+          {/* Only show devtools in development */}
+          {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
+        </ServiceWorkerProvider>
+      </NextThemesProvider>
     </QueryClientProvider>
   );
 }
