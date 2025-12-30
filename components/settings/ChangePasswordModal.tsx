@@ -147,7 +147,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
             <Label htmlFor="current-password" className="text-sm font-semibold">
               Current Password
             </Label>
-            <div className="relative">
+            <div className="relative w-full" >
               <Input
                 id="current-password"
                 type={showCurrentPassword ? "text" : "password"}
@@ -167,7 +167,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
               <button
                 type="button"
                 onClick={() => setShowCurrentPassword(!showCurrentPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-muted-foreground hover:text-foreground"
                 tabIndex={-1}
               >
                 {showCurrentPassword ? (
@@ -184,7 +184,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
             <Label htmlFor="new-password" className="text-sm font-semibold">
               New Password
             </Label>
-            <div className="relative">
+            <div className="relative w-full">
               <Input
                 id="new-password"
                 type={showNewPassword ? "text" : "password"}
@@ -196,14 +196,14 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                 }}
                 disabled={isUpdating}
                 className={cn(
-                  "h-11 pr-10",
+                  "h-11 w-full pr-10",
                   validationError && "border-destructive focus-visible:ring-destructive"
                 )}
               />
               <button
                 type="button"
                 onClick={() => setShowNewPassword(!showNewPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-muted-foreground hover:text-foreground"
                 tabIndex={-1}
               >
                 {showNewPassword ? (
@@ -223,7 +223,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
             <Label htmlFor="confirm-password" className="text-sm font-semibold">
               Confirm New Password
             </Label>
-            <div className="relative">
+            <div className="relative w-full">
               <Input
                 id="confirm-password"
                 type={showConfirmPassword ? "text" : "password"}
@@ -235,14 +235,14 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
                 }}
                 disabled={isUpdating}
                 className={cn(
-                  "h-11 pr-10",
+                  "h-11 pr-10 w-full",
                   validationError && "border-destructive focus-visible:ring-destructive"
                 )}
               />
               <button
                 type="button"
                 onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
+                className="absolute right-0 top-0 h-full px-3 flex items-center justify-center text-muted-foreground hover:text-foreground"
                 tabIndex={-1}
               >
                 {showConfirmPassword ? (
