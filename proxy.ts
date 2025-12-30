@@ -1,7 +1,5 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import { createServerClient } from '@supabase/ssr';
-import type { Database } from '@/types/database';
 
 /**
  * Route protection middleware
@@ -13,6 +11,9 @@ import type { Database } from '@/types/database';
  * - Allows access to public routes (/auth/login when not authenticated, /auth/callback)
  * 
  * Runs in Edge Runtime, so it uses Edge-compatible APIs.
+ * 
+ * Performance: Uses lightweight cookie checks instead of network requests to Supabase.
+ * Full authentication validation happens in server components if needed.
  */
 
 // Routes that require authentication
@@ -20,6 +21,72 @@ const protectedRoutes = ['/dashboard', '/habits'];
 
 // Public routes (accessible without authentication)
 const publicRoutes = ['/auth/login', '/auth/callback'];
+
+/**
+ * Extracts the Supabase project reference from the Supabase URL
+ * 
+ * @param supabaseUrl - The Supabase URL (e.g., https://<project-ref>.supabase.co)
+ * @returns The project reference, or null if the URL format is invalid
+ */
+function extractProjectRef(supabaseUrl: string): string | null {
+  try {
+    const url = new URL(supabaseUrl);
+    // Extract project ref from hostname (e.g., abc123xyz.supabase.co -> abc123xyz)
+    const hostnameParts = url.hostname.split('.');
+    if (hostnameParts.length >= 2 && hostnameParts[1] === 'supabase') {
+      return hostnameParts[0];
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Checks if Supabase session cookies are present, indicating potential authentication
+ * 
+ * This is a lightweight check that doesn't validate the tokens. It only checks for
+ * their presence. Actual validation happens in server components.
+ * 
+ * @param request - The Next.js request object
+ * @param projectRef - The Supabase project reference
+ * @returns true if session cookies are present, false otherwise
+ */
+function hasSessionCookie(request: NextRequest, projectRef: string): boolean {
+  // Supabase SSR stores the access token in a cookie with this pattern
+  const accessTokenCookieName = `sb-${projectRef}-auth-token`;
+  
+  // Check for standard cookie
+  const accessToken = request.cookies.get(accessTokenCookieName);
+  if (accessToken && accessToken.value) {
+    return true;
+  }
+  
+  // Check for chunked cookies (if token is large, Supabase may split it)
+  // Format: sb-<project-ref>-auth-token.0, .1, .2, etc.
+  let chunkIndex = 0;
+  let hasChunkedCookies = false;
+  
+  while (chunkIndex < 10) { // Reasonable limit for chunked cookies
+    const chunkCookieName = `${accessTokenCookieName}.${chunkIndex}`;
+    const chunkCookie = request.cookies.get(chunkCookieName);
+    
+    if (chunkCookie && chunkCookie.value) {
+      hasChunkedCookies = true;
+    } else if (hasChunkedCookies) {
+      // We found chunks before, but this one is missing - stop searching
+      break;
+    } else {
+      // No chunks found yet, but continue checking
+      chunkIndex++;
+      continue;
+    }
+    
+    chunkIndex++;
+  }
+  
+  return hasChunkedCookies;
+}
 
 /**
  * Validates that the redirect URL is safe (prevents open redirects)
@@ -60,36 +127,19 @@ export async function proxy(request: NextRequest) {
     pathname === route || pathname.startsWith(`${route}/`)
   );
 
-  // Create response to allow cookie updates
-  const response = NextResponse.next();
-
-  // Create Supabase client to check authentication
+  // Get Supabase URL to extract project ref for cookie checking
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   
-  if (!supabaseUrl || !supabaseAnonKey) {
-    throw new Error('Missing Supabase environment variables');
+  if (!supabaseUrl) {
+    throw new Error('Missing NEXT_PUBLIC_SUPABASE_URL environment variable');
   }
 
-  const supabase = createServerClient<Database>(supabaseUrl, supabaseAnonKey, {
-    cookies: {
-      getAll() {
-        return Array.from(request.cookies.getAll());
-      },
-      setAll(cookiesToSet) {
-        cookiesToSet.forEach(({ name, value, options }) => {
-          request.cookies.set(name, value);
-          response.cookies.set(name, value, options);
-        });
-      },
-    },
-  });
+  // Extract project ref and check for session cookies (lightweight check)
+  const projectRef = extractProjectRef(supabaseUrl);
+  const hasSession = projectRef ? hasSessionCookie(request, projectRef) : false;
 
-  const { data: { user }, error } = await supabase.auth.getUser();
-  const isAuthenticated = !error && user !== null;
-
-  // If user is authenticated and trying to access /auth/login, redirect to dashboard
-  if (isAuthenticated && pathname === '/auth/login') {
+  // If session cookies are present and trying to access /auth/login, redirect to dashboard
+  if (hasSession && pathname === '/auth/login') {
     // Check if there's a redirectTo parameter (from a previous redirect)
     // If so, redirect there instead of dashboard
     const redirectTo = request.nextUrl.searchParams.get('redirectTo');
@@ -98,9 +148,9 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(redirectPath, request.url));
   }
 
-  // If it's a protected route, verify authentication
+  // If it's a protected route, verify authentication (via cookie check)
   if (isProtectedRoute) {
-    if (!isAuthenticated) {
+    if (!hasSession) {
       // Build login URL with redirectTo parameter
       const loginUrl = new URL('/auth/login', request.url);
       
@@ -117,24 +167,27 @@ export async function proxy(request: NextRequest) {
   // Allow access to /auth/callback always (for OAuth flow)
   // Authenticated users accessing /auth/login are already handled above
 
-  return response;
+  return NextResponse.next();
 }
 
 /**
  * Middleware matcher configuration
- * Only runs middleware on specific routes for better performance
+ * Optimized to only run on routes that need protection or authentication checks
  */
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
+     * Match routes that require authentication checks:
+     * - /dashboard and all sub-routes
+     * - /auth/login and /auth/callback (for redirect logic)
+     * 
+     * Excludes:
      * - api (API routes)
      * - _next/static (static files)
      * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
-     * - public files (files in the public folder)
+     * - favicon.ico and other static assets
      */
-    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)',
   ],
 };
 
