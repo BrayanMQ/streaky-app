@@ -12,6 +12,10 @@ const STATIC_ASSETS = [
   '/icons/icon-512.png',
 ];
 
+function isAuthRoute(url) {
+  return url.pathname.startsWith('/auth/');
+}
+
 // Service Worker installation
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
@@ -65,6 +69,12 @@ self.addEventListener('fetch', (event) => {
   // Ignore browser extension requests
   if (url.protocol === 'chrome-extension:') {
     return;
+  }
+
+  // IMPORTANT: Bypass service worker for auth routes
+  // OAuth callbacks are time-sensitive and should not be intercepted
+  if (isAuthRoute(url)) {
+    return; // Let the request go through normally without interception
   }
 
   // Strategy: Cache First for static assets
