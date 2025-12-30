@@ -158,3 +158,139 @@ export async function resendConfirmationEmail(
   return { error };
 }
 
+/**
+ * Updates the current user's email address
+ * 
+ * @param newEmail - New email address
+ * @returns Promise with updated user data, or error
+ */
+export async function updateEmail(
+  newEmail: string
+): Promise<{ user: User | null; error: AuthError | null }> {
+  const supabase = createBrowserClient();
+  
+  const { data, error } = await supabase.auth.updateUser({
+    email: newEmail,
+  });
+
+  return {
+    user: data.user,
+    error,
+  };
+}
+
+/**
+ * Updates the current user's password
+ * 
+ * @param newPassword - New password
+ * @returns Promise with updated user data, or error
+ */
+export async function updatePassword(
+  newPassword: string
+): Promise<{ user: User | null; error: AuthError | null }> {
+  const supabase = createBrowserClient();
+  
+  const { data, error } = await supabase.auth.updateUser({
+    password: newPassword,
+  });
+
+  return {
+    user: data.user,
+    error,
+  };
+}
+
+/**
+ * Deletes the current user's account and all associated data
+ * 
+ * This function:
+ * 1. Deletes all user-related data (habits, habit_logs, user_settings)
+ * 2. Signs out the user
+ * 
+ * Note: The actual deletion of the auth user requires admin privileges.
+ * The data deletion will cascade automatically when the user is deleted,
+ * but we delete explicitly here for better control and error handling.
+ * 
+ * For complete account deletion including auth user, you may need to:
+ * - Use a Supabase Edge Function with admin privileges
+ * - Or handle it server-side with admin API
+ * 
+ * @returns Promise with error if deletion fails
+ */
+export async function deleteUserAccount(): Promise<{ error: AuthError | null }> {
+  const supabase = createBrowserClient();
+  
+  // Get current user to ensure they're authenticated
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  
+  if (userError || !user) {
+    return { error: userError || new Error('User not authenticated') as AuthError };
+  }
+
+  try {
+    // Delete user_settings (CASCADE would handle this, but we do it explicitly)
+    const { error: settingsError } = await supabase
+      .from('user_settings')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (settingsError) {
+      console.error('Error deleting user settings:', settingsError);
+      // Continue even if settings deletion fails (might not exist)
+    }
+
+    // First, get all habit IDs for this user
+    const { data: habits, error: fetchHabitsError } = await supabase
+      .from('habits')
+      .select('id')
+      .eq('user_id', user.id);
+
+    if (fetchHabitsError) {
+      console.error('Error fetching habits:', fetchHabitsError);
+      // Continue - we'll try to delete habits anyway
+    }
+
+    // Delete habit_logs for all user's habits
+    // (This will cascade automatically, but we do it explicitly for cleaner transaction)
+    if (habits && habits.length > 0) {
+      const habitIds = habits.map(h => h.id);
+      const { error: logsError } = await supabase
+        .from('habit_logs')
+        .delete()
+        .in('habit_id', habitIds);
+
+      if (logsError) {
+        console.error('Error deleting habit logs:', logsError);
+        // Continue even if logs deletion fails (CASCADE will handle it)
+      }
+    }
+
+    // Delete habits (this will cascade delete habit_logs automatically if we didn't above)
+    const { error: habitsError } = await supabase
+      .from('habits')
+      .delete()
+      .eq('user_id', user.id);
+
+    if (habitsError) {
+      console.error('Error deleting habits:', habitsError);
+      return { error: habitsError as unknown as AuthError };
+    }
+
+    // Sign out the user (auth user deletion requires admin privileges)
+    // The actual auth user deletion should be handled by a server-side function
+    // or Edge Function with admin privileges
+    const { error: signOutError } = await supabase.auth.signOut();
+
+    if (signOutError) {
+      return { error: signOutError };
+    }
+
+    return { error: null };
+  } catch (error) {
+    console.error('Error deleting user account:', error);
+    return { 
+      error: error instanceof Error ? error as AuthError : new Error('Failed to delete account') as AuthError 
+    };
+  }
+}
+

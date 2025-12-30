@@ -73,6 +73,30 @@ export type Database = {
         }
         Relationships: []
       }
+      user_settings: {
+        Row: {
+          created_at: string
+          id: string
+          theme: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          theme?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -212,7 +236,15 @@ export const Constants = {
   },
 } as const
 
-// Type aliases for easier access to table types
+// MANUAL TYPE DEFINITIONS (Safe to edit - preserved during regeneration)
+// ============================================================================
+// This section contains type aliases and extended types that combine
+// database types with calculated fields or application-specific logic.
+// These types are NOT in the database schema and must be defined manually.
+// They are preserved when running: npm run generate:types
+// ============================================================================
+
+// Type aliases for convenience
 export type Habit = Tables<'habits'>
 export type HabitInsert = TablesInsert<'habits'>
 export type HabitUpdate = TablesUpdate<'habits'>
