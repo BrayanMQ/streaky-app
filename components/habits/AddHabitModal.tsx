@@ -138,10 +138,10 @@ export function AddHabitModal() {
             {/* Color Picker Section */}
             <div className="space-y-4">
               <div className="flex items-center justify-between">
-                <Label className="text-sm font-semibold text-[#111827]">
+                <Label className="text-sm font-semibold">
                   Habit Color
                 </Label>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-[#6B7280] bg-[#F3F4F6] px-2 py-0.5 rounded-full border border-[#E5E7EB]">
+                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
                   {selectedColor.name}
                 </span>
               </div>
