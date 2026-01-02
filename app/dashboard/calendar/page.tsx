@@ -37,15 +37,17 @@ export default function CalendarPage() {
     }
   }, [selectedHabitId])
 
-  // Define a broad range for preloading (current year and surrounding years)
+  // Define a broad range for preloading (selected year ± 1 year)
   // This ensures that navigation between months and years is instantaneous
+  // and logs from previous/next years are available when navigating
   const preloadRange = useMemo(() => {
-    const currentYear = new Date().getFullYear()
+    const startYear = selectedYear - 1
+    const endYear = selectedYear + 1
     return {
-      startDate: `${currentYear}-01-01`,
-      endDate: `${currentYear}-12-31`
+      startDate: `${startYear}-01-01`,
+      endDate: `${endYear}-12-31`
     }
-  }, [])
+  }, [selectedYear])
 
   // Fetch ALL logs for ALL habits in this broad range at once
   // By not passing habitId, we get logs for all user's habits
