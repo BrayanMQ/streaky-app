@@ -16,33 +16,11 @@ import { Label } from "@/components/ui/label"
 import { Loader2, AlertCircle, Lock, Eye, EyeOff } from "lucide-react"
 import { updatePassword } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { changePasswordSchema } from "@/lib/validations"
 
 interface ChangePasswordModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
-}
-
-/**
- * Validates password strength
- */
-function validatePassword(password: string): { valid: boolean; message?: string } {
-  if (password.length < 8) {
-    return { valid: false, message: "Password must be at least 8 characters long" }
-  }
-
-  if (!/[A-Z]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one uppercase letter" }
-  }
-
-  if (!/[a-z]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one lowercase letter" }
-  }
-
-  if (!/[0-9]/.test(password)) {
-    return { valid: false, message: "Password must contain at least one number" }
-  }
-
-  return { valid: true }
 }
 
 export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalProps) {
@@ -71,33 +49,17 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate current password
-    if (!currentPassword.trim()) {
-      setValidationError("Current password is required")
-      return
-    }
+    // Validate using Zod schema
+    const result = changePasswordSchema.safeParse({
+      currentPassword,
+      newPassword,
+      confirmPassword,
+    })
 
-    // Validate new password
-    if (!newPassword.trim()) {
-      setValidationError("New password is required")
-      return
-    }
-
-    const passwordValidation = validatePassword(newPassword)
-    if (!passwordValidation.valid) {
-      setValidationError(passwordValidation.message || "Invalid password")
-      return
-    }
-
-    // Check if new password is different from current
-    if (currentPassword === newPassword) {
-      setValidationError("New password must be different from current password")
-      return
-    }
-
-    // Check if passwords match
-    if (newPassword !== confirmPassword) {
-      setValidationError("New passwords do not match")
+    if (!result.success) {
+      // Extract the first error message (Zod handles all validations)
+      const error = result.error.errors[0]
+      setValidationError(error.message)
       return
     }
 

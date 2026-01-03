@@ -19,6 +19,7 @@ import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/ui"
 import { useUpdateHabit } from "@/hooks/useHabits"
 import { HABIT_COLORS } from "@/lib/habitColors"
+import { habitSchema } from "@/lib/validations"
 
 const MIN_LENGTH = 2
 const MAX_LENGTH = 100
@@ -29,7 +30,7 @@ export function EditHabitModal() {
   
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
-  const [validationError, setValidationError] = useState<string | null>(null)
+  const [titleError, setTitleError] = useState<string | null>(null)
 
   // Initialize form when modal opens or selectedHabit changes
   useEffect(() => {
@@ -40,7 +41,7 @@ export function EditHabitModal() {
         (c) => c.value === selectedHabit.color
       ) || HABIT_COLORS[0]
       setSelectedColor(colorOption)
-      setValidationError(null)
+      setTitleError(null)
     }
   }, [isEditHabitModalOpen, selectedHabit])
 
@@ -49,26 +50,54 @@ export function EditHabitModal() {
     if (!isEditHabitModalOpen) {
       setHabitTitle("")
       setSelectedColor(HABIT_COLORS[0])
-      setValidationError(null)
+      setTitleError(null)
     }
   }, [isEditHabitModalOpen])
 
-  const validate = () => {
-    const trimmed = habitTitle.trim()
-    if (!trimmed) return "Habit title is required"
-    if (trimmed.length < MIN_LENGTH) return `Minimum ${MIN_LENGTH} characters required`
-    return null
+  // Real-time validation on title change
+  const validateTitle = (title: string) => {
+    // Use a simplified validation for real-time feedback
+    // Full validation happens on submit
+    if (!title.trim()) {
+      setTitleError(null) // Don't show error while typing
+      return
+    }
+    
+    const trimmed = title.trim()
+    if (trimmed.length < MIN_LENGTH) {
+      setTitleError(`Minimum ${MIN_LENGTH} characters required`)
+      return
+    }
+    if (trimmed.length > MAX_LENGTH) {
+      setTitleError(`Maximum ${MAX_LENGTH} characters allowed`)
+      return
+    }
+    setTitleError(null)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedHabit) return
 
-    const error = validate()
-    if (error) {
-      setValidationError(error)
+    // Validate using Zod schema
+    const result = habitSchema.safeParse({
+      title: habitTitle,
+      color: selectedColor.value,
+      icon: null,
+      frequency: null,
+    })
+
+    if (!result.success) {
+      // Extract and display validation errors
+      const titleError = result.error.errors.find(err => err.path[0] === 'title')
+      if (titleError) {
+        setTitleError(titleError.message)
+      }
       return
     }
+
+    // Clear any existing errors
+    setTitleError(null)
 
     try {
       await updateHabit({
@@ -88,6 +117,17 @@ export function EditHabitModal() {
         description: 'The habit could not be updated. Please try again.',
       })
     }
+  }
+
+  // Check if form is valid for button disabled state
+  const isFormValid = () => {
+    const result = habitSchema.safeParse({
+      title: habitTitle,
+      color: selectedColor.value,
+      icon: null,
+      frequency: null,
+    })
+    return result.success
   }
 
   const buttonStyle = useMemo(() => ({
@@ -139,18 +179,20 @@ export function EditHabitModal() {
                 placeholder="Drinking water, Gym, Meditate..."
                 value={habitTitle}
                 onChange={(e) => {
-                    setHabitTitle(e.target.value)
-                    setValidationError(null)
+                    const newValue = e.target.value
+                    setHabitTitle(newValue)
+                    // Real-time validation
+                    validateTitle(newValue)
                 }}
                 disabled={isUpdating}
                 autoFocus
                 className={cn(
                   "h-11 transition-all focus-visible:ring-offset-0",
-                  validationError && "border-destructive focus-visible:ring-destructive"
+                  titleError && "border-destructive focus-visible:ring-destructive"
                 )}
               />
-              {validationError && (
-                <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{validationError}</p>
+              {titleError && (
+                <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
               )}
             </div>
 
@@ -198,7 +240,7 @@ export function EditHabitModal() {
             <DialogFooter className="flex flex-col gap-3 pt-2">
               <Button
                 type="submit"
-                disabled={isUpdating || habitTitle.length < MIN_LENGTH}
+                disabled={isUpdating || !isFormValid()}
                 className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
                 style={buttonStyle}
               >

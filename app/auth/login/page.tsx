@@ -15,6 +15,7 @@ import {
 } from '@/components/ui/card';
 import { Flame, Loader2 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { loginSchema, signUpSchema } from '@/lib/validations';
 
 /**
  * Login content component that uses useSearchParams
@@ -59,12 +60,6 @@ function LoginContent() {
     return '/dashboard';
   };
 
-  // Email validation
-  const validateEmail = (email: string): boolean => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
   // Get user-friendly error message from Supabase error
   const getErrorMessage = (error: any): string => {
     if (!error) return 'An unexpected error occurred';
@@ -102,25 +97,20 @@ function LoginContent() {
     setFormError(null);
     setFieldErrors({});
 
-    // Validation
-    const errors: { email?: string; password?: string } = {};
+    // Validation using Zod
+    const schema = isLogin ? loginSchema : signUpSchema;
+    const result = schema.safeParse({ email, password });
 
-    // Email validation
-    if (!email.trim()) {
-      errors.email = 'Email is required';
-    } else if (!validateEmail(email)) {
-      errors.email = 'Please enter a valid email address';
-    }
-
-    // Password validation
-    if (!password) {
-      errors.password = 'Password is required';
-    } else if (!isLogin && password.length < 6) {
-      errors.password = 'Password must be at least 6 characters long';
-    }
-
-    // If there are field errors, show them and stop
-    if (Object.keys(errors).length > 0) {
+    if (!result.success) {
+      // Convert Zod errors to field errors format
+      const errors: { email?: string; password?: string } = {};
+      result.error.issues.forEach((err) => {
+        if (err.path[0] === 'email') {
+          errors.email = err.message;
+        } else if (err.path[0] === 'password') {
+          errors.password = err.message;
+        }
+      });
       setFieldErrors(errors);
       return;
     }
@@ -221,12 +211,17 @@ function LoginContent() {
                   }
                 }}
                 onBlur={() => {
-                  // Validate email on blur
-                  if (email && !validateEmail(email)) {
-                    setFieldErrors((prev) => ({
-                      ...prev,
-                      email: 'Please enter a valid email address',
-                    }));
+                  // Validate email on blur using Zod
+                  if (email) {
+                    const schema = isLogin ? loginSchema : signUpSchema;
+                    const result = schema.shape.email.safeParse(email);
+                    if (!result.success) {
+                      const error = result.error.issues[0];
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        email: error.message,
+                      }));
+                    }
                   }
                 }}
                 required
