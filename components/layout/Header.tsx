@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Flame, Calendar, TrendingUp, Settings, Loader2, LogOut, ClipboardList, LayoutDashboard, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
+import { useTopLoadingBar } from '@/hooks/useTopLoadingBar';
 
 /**
  * Header component
@@ -20,6 +21,7 @@ export function Header() {
   const router = useRouter();
   const pathname = usePathname();
   const { signOut, signOutPending } = useAuth();
+  const { startLoading } = useTopLoadingBar();
 
   // Map routes to page titles and icons
   const pageInfo: Record<string, { title: string; icon: React.ComponentType<{ className?: string }> }> = {
@@ -33,6 +35,7 @@ export function Header() {
   const currentPage = pageInfo[pathname] || { title: 'Streaky', icon: Flame };
 
   const handleSignOut = async () => {
+    startLoading();
     try {
       const result = await signOut();
       if (result.error) {
@@ -48,6 +51,7 @@ export function Header() {
   };
 
   const handleBack = () => {
+    startLoading();
     if (pathname !== '/dashboard') {
       router.back();
     } else {
@@ -78,7 +82,15 @@ export function Header() {
               <ArrowLeft className="size-5" />
             </Button>
           )}
-          <Link href="/dashboard" className="flex items-center gap-2 font-bold text-xl">
+          <Link 
+            href="/dashboard" 
+            onClick={() => {
+              if (pathname !== '/dashboard') {
+                startLoading();
+              }
+            }}
+            className="flex items-center gap-2 font-bold text-xl"
+          >
             <Flame className="h-6 w-6 text-primary" />
             <span>Streaky</span>
           </Link>
@@ -86,7 +98,14 @@ export function Header() {
 
         {/* Desktop: Navigation icons */}
         <nav className="hidden md:flex items-center gap-2">
-          <Link href="/dashboard">
+          <Link 
+            href="/dashboard"
+            onClick={() => {
+              if (pathname !== '/dashboard') {
+                startLoading();
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -96,7 +115,14 @@ export function Header() {
               <LayoutDashboard className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
-          <Link href="/dashboard/habits">
+          <Link 
+            href="/dashboard/habits"
+            onClick={() => {
+              if (pathname !== '/dashboard/habits') {
+                startLoading();
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -106,7 +132,14 @@ export function Header() {
               <ClipboardList className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
-          <Link href="/dashboard/calendar">
+          <Link 
+            href="/dashboard/calendar"
+            onClick={() => {
+              if (pathname !== '/dashboard/calendar') {
+                startLoading();
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -116,7 +149,14 @@ export function Header() {
               <Calendar className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
-          <Link href="/dashboard/stats">
+          <Link 
+            href="/dashboard/stats"
+            onClick={() => {
+              if (pathname !== '/dashboard/stats') {
+                startLoading();
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"
@@ -126,7 +166,14 @@ export function Header() {
               <TrendingUp className="h-5 w-5 relative z-10" />
             </Button>
           </Link>
-          <Link href="/dashboard/settings">
+          <Link 
+            href="/dashboard/settings"
+            onClick={() => {
+              if (pathname !== '/dashboard/settings') {
+                startLoading();
+              }
+            }}
+          >
             <Button
               variant="ghost"
               size="icon"

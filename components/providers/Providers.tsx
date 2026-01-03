@@ -7,6 +7,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { ServiceWorkerProvider } from './ServiceWorkerProvider';
 import { ThemeSync } from './ThemeSync';
+import { TopLoadingBar } from './TopLoadingBar';
 
 /**
  * Providers component that wraps the app with React Query
@@ -62,6 +63,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <ThemeSync />
+        <TopLoadingBar />
         <ServiceWorkerProvider>
           {children}
           <Toaster />

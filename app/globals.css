@@ -182,3 +182,37 @@
     border-color: hsl(25 95% 90%) !important;
   }
 }
+
+/* NProgress Top Loading Bar Styles */
+@layer base {
+  #nprogress {
+    pointer-events: none;
+  }
+
+  #nprogress .bar {
+    background: var(--primary);
+    position: fixed;
+    z-index: 9999;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 3px;
+  }
+
+  #nprogress .peg {
+    display: block;
+    position: absolute;
+    right: 0px;
+    width: 100px;
+    height: 100%;
+    box-shadow: 0 0 10px var(--primary), 0 0 5px var(--primary);
+    opacity: 1;
+    transform: rotate(3deg) translate(0px, -4px);
+  }
+
+  /* Fade out animation for smooth completion */
+  #nprogress .bar.fade-out {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+}

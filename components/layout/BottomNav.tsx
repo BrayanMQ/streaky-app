@@ -10,6 +10,7 @@ import {
   TrendingUp 
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { useTopLoadingBar } from '@/hooks/useTopLoadingBar';
 
 /**
  * BottomNav component
@@ -19,6 +20,7 @@ import { cn } from '@/lib/utils';
  */
 export function BottomNav() {
   const pathname = usePathname();
+  const { startLoading } = useTopLoadingBar();
 
   const navItems = [
     {
@@ -59,6 +61,12 @@ export function BottomNav() {
             <Link
               key={item.href}
               href={item.href}
+              onClick={() => {
+                // Only start loading if navigating to a different route
+                if (!isActive) {
+                  startLoading();
+                }
+              }}
               className={cn(
                 'relative flex flex-1 flex-col items-center justify-center gap-1 py-1 transition-all duration-300 ease-in-out',
                 isActive 
