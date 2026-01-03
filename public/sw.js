@@ -7,9 +7,7 @@ const API_CACHE = `streaky-api-${CACHE_VERSION}`;
 // Static assets to cache on installation
 const STATIC_ASSETS = [
   '/',
-  '/manifest.json',
-  '/icons/icon-192.png',
-  '/icons/icon-512.png',
+  '/manifest.json'
 ];
 
 function isAuthRoute(url) {
