@@ -16,19 +16,12 @@ import { Label } from "@/components/ui/label"
 import { Loader2, AlertCircle, Mail } from "lucide-react"
 import { updateEmail } from "@/lib/auth"
 import { cn } from "@/lib/utils"
+import { changeEmailSchema } from "@/lib/validations"
 
 interface ChangeEmailModalProps {
   open: boolean
   onOpenChange: (open: boolean) => void
   currentEmail: string
-}
-
-/**
- * Validates email format
- */
-function validateEmail(email: string): boolean {
-  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-  return emailRegex.test(email)
 }
 
 export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEmailModalProps) {
@@ -47,18 +40,17 @@ export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEma
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Validate email
+    // Validate using Zod schema
     const trimmedEmail = newEmail.trim()
-    if (!trimmedEmail) {
-      setValidationError("Email is required")
+    const result = changeEmailSchema.safeParse({ email: trimmedEmail })
+
+    if (!result.success) {
+      const error = result.error.errors[0]
+      setValidationError(error.message)
       return
     }
 
-    if (!validateEmail(trimmedEmail)) {
-      setValidationError("Please enter a valid email address")
-      return
-    }
-
+    // Additional validation: email must be different from current
     if (trimmedEmail === currentEmail) {
       setValidationError("New email must be different from current email")
       return
