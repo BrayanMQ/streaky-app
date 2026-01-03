@@ -10,6 +10,13 @@ import { useEffect } from 'react';
  */
 export function ServiceWorkerProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
+
+    // Only run in production
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[SW] Service Worker not enabled in development');
+      return;
+    }
+
     // Only run on client
     if (typeof window === 'undefined') {
       return;
