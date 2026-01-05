@@ -58,7 +58,7 @@ export function ChangePasswordModal({ open, onOpenChange }: ChangePasswordModalP
 
     if (!result.success) {
       // Extract the first error message (Zod handles all validations)
-      const error = result.error.errors[0]
+      const error = result.error.issues[0]
       setValidationError(error.message)
       return
     }

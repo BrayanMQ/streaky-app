@@ -76,7 +76,7 @@ export function AddHabitModal() {
 
     if (!result.success) {
       // Extract and display validation errors
-      const titleError = result.error.errors.find(err => err.path[0] === 'title')
+      const titleError = result.error.issues.find(err => err.path[0] === 'title')
       if (titleError) {
         setTitleError(titleError.message)
       }
