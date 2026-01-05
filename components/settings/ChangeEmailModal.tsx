@@ -45,7 +45,7 @@ export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEma
     const result = changeEmailSchema.safeParse({ email: trimmedEmail })
 
     if (!result.success) {
-      const error = result.error.errors[0]
+      const error = result.error.issues[0]
       setValidationError(error.message)
       return
     }
