@@ -20,6 +20,7 @@ import { useUIStore } from "@/store/ui"
 import { useUpdateHabit } from "@/hooks/useHabits"
 import { HABIT_COLORS } from "@/lib/habitColors"
 import { habitSchema } from "@/lib/validations"
+import { HabitEmojiPicker } from "./habit-emoji-picker"
 
 const MIN_LENGTH = 2
 const MAX_LENGTH = 100
@@ -27,7 +28,7 @@ const MAX_LENGTH = 100
 export function EditHabitModal() {
   const { isEditHabitModalOpen, closeEditHabitModal, selectedHabit } = useUIStore()
   const { updateHabit, isUpdating, updateError } = useUpdateHabit()
-  
+  const [selectedEmoji, setSelectedEmoji] = useState(selectedHabit?.icon || "🎯");
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)
@@ -83,7 +84,7 @@ export function EditHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: null,
+      icon: selectedEmoji,
       frequency: null,
     })
 
@@ -104,7 +105,7 @@ export function EditHabitModal() {
         id: selectedHabit.id,
         title: habitTitle.trim(),
         color: selectedColor.value,
-        icon: null,
+        icon: selectedEmoji,
         frequency: null,
       })
       toast.success('Habit updated', {
@@ -124,7 +125,7 @@ export function EditHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: null,
+      icon: selectedEmoji,
       frequency: null,
     })
     return result.success
@@ -168,29 +169,43 @@ export function EditHabitModal() {
             {/* Input Section */}
             <div className="space-y-2">
               <div className="flex justify-between">
-                <Label htmlFor="edit-habit-title" className="text-sm font-semibold">Name</Label>
+                <Label htmlFor="edit-habit-title" className="text-sm font-semibold">
+                  Icon & Name
+                </Label>
                 <span className={cn("text-[10px] font-mono uppercase tracking-wider", 
                   habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
                   {habitTitle.length}/{MAX_LENGTH}
                 </span>
               </div>
-              <Input
-                id="edit-habit-title"
-                placeholder="Drinking water, Gym, Meditate..."
-                value={habitTitle}
-                onChange={(e) => {
-                    const newValue = e.target.value
-                    setHabitTitle(newValue)
-                    // Real-time validation
-                    validateTitle(newValue)
-                }}
-                disabled={isUpdating}
-                autoFocus
-                className={cn(
-                  "h-11 transition-all focus-visible:ring-offset-0",
-                  titleError && "border-destructive focus-visible:ring-destructive"
-                )}
-              />
+
+              <div className="flex gap-2">
+                {/* Emoji component */}
+                <HabitEmojiPicker 
+                  selectedEmoji={selectedEmoji} 
+                  onSelect={setSelectedEmoji}
+                  disabled={isUpdating}
+                  color={selectedColor.hex}
+                />
+
+                <div className="flex-1">
+                  <Input
+                    id="edit-habit-title"
+                    placeholder="Name your habit..."
+                    value={habitTitle}
+                    onChange={(e) => {
+                      const newValue = e.target.value
+                      setHabitTitle(newValue)
+                      validateTitle(newValue)
+                    }}
+                    disabled={isUpdating}
+                    className={cn(
+                      "h-11 transition-all focus-visible:ring-offset-0",
+                      titleError && "border-destructive focus-visible:ring-destructive"
+                    )}
+                  />
+                </div>
+              </div>
+
               {titleError && (
                 <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
               )}

@@ -40,6 +40,7 @@ export function AddHabitModal() {
       setHabitTitle("")
       setSelectedColor(HABIT_COLORS[0])
       setTitleError(null)
+      setSelectedEmoji("🎯");
     }
   }, [isAddHabitModalOpen])
 
