@@ -20,6 +20,7 @@ import { useUIStore } from "@/store/ui"
 import { useCreateHabit } from "@/hooks/useHabits"
 import { HABIT_COLORS } from "@/lib/habitColors"
 import { habitSchema } from "@/lib/validations"
+import { HabitEmojiPicker } from "./habit-emoji-picker"
 
 const COLOR_OPTIONS = HABIT_COLORS
 
@@ -29,7 +30,7 @@ const MAX_LENGTH = 100
 export function AddHabitModal() {
   const { isAddHabitModalOpen, closeAddHabitModal } = useUIStore()
   const { createHabit, isCreating, createError } = useCreateHabit()
-  
+  const [selectedIcon, setSelectedIcon] = useState("🎯"); //Default icon
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)
@@ -39,6 +40,7 @@ export function AddHabitModal() {
       setHabitTitle("")
       setSelectedColor(HABIT_COLORS[0])
       setTitleError(null)
+      setSelectedIcon("🎯");
     }
   }, [isAddHabitModalOpen])
 
@@ -70,7 +72,7 @@ export function AddHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: null,
+      icon: selectedIcon,
       frequency: null,
     })
 
@@ -90,7 +92,7 @@ export function AddHabitModal() {
       await createHabit({
         title: habitTitle.trim(),
         color: selectedColor.value,
-        icon: null,
+        icon: selectedIcon,
         frequency: null,
       })
       toast.success('Habit created', {
@@ -110,7 +112,7 @@ export function AddHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: null,
+      icon: selectedIcon,
       frequency: null,
     })
     return result.success
@@ -148,35 +150,50 @@ export function AddHabitModal() {
             )}
 
             {/* Input Section */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="habit-title" className="text-sm font-semibold">Name</Label>
-                <span className={cn("text-[10px] font-mono uppercase tracking-wider", 
-                  habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
-                  {habitTitle.length}/{MAX_LENGTH}
-                </span>
-              </div>
-              <Input
-                id="habit-title"
-                placeholder="Drinking water, Gym, Meditate..."
-                value={habitTitle}
-                onChange={(e) => {
-                    const newValue = e.target.value
-                    setHabitTitle(newValue)
-                    // Real-time validation
-                    validateTitle(newValue)
-                }}
-                disabled={isCreating}
-                autoFocus
-                className={cn(
-                  "h-11 transition-all focus-visible:ring-offset-0",
-                  titleError && "border-destructive focus-visible:ring-destructive"
-                )}
-              />
-              {titleError && (
-                <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
-              )}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <Label htmlFor="habit-title" className="text-sm font-semibold text-foreground/80">
+                Habit Icon & Name
+              </Label>
+              <span className={cn("text-[10px] font-mono uppercase tracking-wider", 
+                habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
+                {habitTitle.length}/{MAX_LENGTH}
+              </span>
             </div>
+
+            <div className="flex gap-2">
+              {/* Emoji component */}
+              <HabitEmojiPicker 
+                selectedEmoji={selectedIcon} 
+                onSelect={setSelectedIcon}
+                disabled={isCreating}
+                color={selectedColor.hex}
+              />
+
+              {/* Text input */}
+              <div className="flex-1 border-none p-0">
+                <Input
+                  id="habit-title"
+                  placeholder="Name your habit..."
+                  value={habitTitle}
+                  onChange={(e) => {
+                    const newValue = e.target.value;
+                    setHabitTitle(newValue);
+                    validateTitle(newValue);
+                  }}
+                  disabled={isCreating}
+                  className={cn(
+                    "h-11 transition-all focus-visible:ring-offset-0",
+                    titleError && "border-destructive focus-visible:ring-destructive"
+                  )}
+                />
+              </div>
+            </div>
+
+            {titleError && (
+              <p className="text-destructive text-xs font-medium animate-in slide-in-from-top-1">{titleError}</p>
+            )}
+          </div>
 
             {/* Color Picker Section */}
             <div className="space-y-4">
