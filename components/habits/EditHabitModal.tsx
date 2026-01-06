@@ -28,7 +28,7 @@ const MAX_LENGTH = 100
 export function EditHabitModal() {
   const { isEditHabitModalOpen, closeEditHabitModal, selectedHabit } = useUIStore()
   const { updateHabit, isUpdating, updateError } = useUpdateHabit()
-  const [selectedEmoji, setSelectedEmoji] = useState(selectedHabit?.icon || "🎯");
+  const [selectedIcon, setSelectedIcon] = useState(selectedHabit?.icon || "🎯");
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)
@@ -37,7 +37,7 @@ export function EditHabitModal() {
   useEffect(() => {
     if (isEditHabitModalOpen && selectedHabit) {
       setHabitTitle(selectedHabit.title || "")
-      setSelectedEmoji(selectedHabit.icon || "🎯")
+      setSelectedIcon(selectedHabit.icon || "🎯")
       // Find the color in HABIT_COLORS or default to first
       const colorOption = HABIT_COLORS.find(
         (c) => c.value === selectedHabit.color
@@ -85,7 +85,7 @@ export function EditHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: selectedEmoji,
+      icon: selectedIcon,
       frequency: null,
     })
 
@@ -106,7 +106,7 @@ export function EditHabitModal() {
         id: selectedHabit.id,
         title: habitTitle.trim(),
         color: selectedColor.value,
-        icon: selectedEmoji,
+        icon: selectedIcon,
         frequency: null,
       })
       toast.success('Habit updated', {
@@ -126,7 +126,7 @@ export function EditHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: selectedEmoji,
+      icon: selectedIcon,
       frequency: null,
     })
     return result.success
@@ -180,10 +180,10 @@ export function EditHabitModal() {
               </div>
 
               <div className="flex gap-2">
-                {/* Emoji component */}
+                {/* Icon Picker component */}
                 <HabitEmojiPicker 
-                  selectedEmoji={selectedEmoji} 
-                  onSelect={setSelectedEmoji}
+                  selectedEmoji={selectedIcon} 
+                  onSelect={setSelectedIcon}
                   disabled={isUpdating}
                   color={selectedColor.hex}
                 />

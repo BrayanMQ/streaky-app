@@ -30,7 +30,7 @@ const MAX_LENGTH = 100
 export function AddHabitModal() {
   const { isAddHabitModalOpen, closeAddHabitModal } = useUIStore()
   const { createHabit, isCreating, createError } = useCreateHabit()
-  const [selectedEmoji, setSelectedEmoji] = useState("🎯"); //Default icon
+  const [selectedIcon, setSelectedIcon] = useState("🎯"); //Default icon
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)
@@ -40,7 +40,7 @@ export function AddHabitModal() {
       setHabitTitle("")
       setSelectedColor(HABIT_COLORS[0])
       setTitleError(null)
-      setSelectedEmoji("🎯");
+      setSelectedIcon("🎯");
     }
   }, [isAddHabitModalOpen])
 
@@ -72,7 +72,7 @@ export function AddHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: selectedEmoji,
+      icon: selectedIcon,
       frequency: null,
     })
 
@@ -92,7 +92,7 @@ export function AddHabitModal() {
       await createHabit({
         title: habitTitle.trim(),
         color: selectedColor.value,
-        icon: selectedEmoji,
+        icon: selectedIcon,
         frequency: null,
       })
       toast.success('Habit created', {
@@ -112,7 +112,7 @@ export function AddHabitModal() {
     const result = habitSchema.safeParse({
       title: habitTitle,
       color: selectedColor.value,
-      icon: null,
+      icon: selectedIcon,
       frequency: null,
     })
     return result.success
@@ -164,8 +164,8 @@ export function AddHabitModal() {
             <div className="flex gap-2">
               {/* Emoji component */}
               <HabitEmojiPicker 
-                selectedEmoji={selectedEmoji} 
-                onSelect={setSelectedEmoji}
+                selectedEmoji={selectedIcon} 
+                onSelect={setSelectedIcon}
                 disabled={isCreating}
                 color={selectedColor.hex}
               />

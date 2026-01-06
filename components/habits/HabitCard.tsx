@@ -189,6 +189,13 @@ export function HabitCard({
                 <span className="text-2xl opacity-30">○</span>
               )
             )}
+            {/* Management mode: Show the saved icon */}
+            {!isExecution && (
+              <span className="text-2xl drop-shadow-sm">
+                {habit.icon || "🎯"} {/* Fallback if no icon is saved in the database */}
+              </span>
+            )}
+
           </motion.div>
           <div>
             <h3 className="font-semibold text-lg">{habit.title}</h3>
