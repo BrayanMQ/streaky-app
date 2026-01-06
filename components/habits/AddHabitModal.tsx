@@ -30,7 +30,7 @@ const MAX_LENGTH = 100
 export function AddHabitModal() {
   const { isAddHabitModalOpen, closeAddHabitModal } = useUIStore()
   const { createHabit, isCreating, createError } = useCreateHabit()
-  const [selectedEmoji, setSelectedEmoji] = useState("🎯"); //Default emoji
+  const [selectedEmoji, setSelectedEmoji] = useState("🎯"); //Default icon
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)

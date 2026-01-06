@@ -37,6 +37,7 @@ export function EditHabitModal() {
   useEffect(() => {
     if (isEditHabitModalOpen && selectedHabit) {
       setHabitTitle(selectedHabit.title || "")
+      setSelectedEmoji(selectedHabit.icon || "🎯")
       // Find the color in HABIT_COLORS or default to first
       const colorOption = HABIT_COLORS.find(
         (c) => c.value === selectedHabit.color
