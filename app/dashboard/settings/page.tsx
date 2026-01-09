@@ -8,13 +8,14 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
-import { Bell, Moon, Smartphone, LogOut, Sun, Monitor } from "lucide-react"
+import { Bell, Moon, Smartphone, LogOut, Sun, Monitor, Languages } from "lucide-react"
 import { useAuth } from "@/hooks/useAuth"
 import { useUserSettings } from "@/hooks/useUserSettings"
 import { usePWAInstall } from "@/hooks/usePWAInstall"
 import { ChangeEmailModal } from "@/components/settings/ChangeEmailModal"
 import { ChangePasswordModal } from "@/components/settings/ChangePasswordModal"
 import { DeleteAccountModal } from "@/components/settings/DeleteAccountModal"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 
 export default function SettingsPage() {
@@ -188,6 +189,57 @@ export default function SettingsPage() {
                     <span className="text-xs font-medium">System</span>
                   </button>
                 </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Language Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Language</CardTitle>
+              <CardDescription>Choose your preferred language</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Languages className="size-5 text-muted-foreground" />
+                  <div>
+                    <Label>App Language</Label>
+                    <p className="text-muted-foreground text-sm">English (US)</p>
+                  </div>
+                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" className="gap-2">
+                      <span className="text-lg">🇺🇸</span>
+                      Change
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[200px] p-2" align="end">
+                    <div className="grid gap-1">
+                      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                        <span className="text-xl group-hover:scale-110 transition-transform">🇺🇸</span>
+                        <span>English</span>
+                      </button>
+                      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                        <span className="text-xl group-hover:scale-110 transition-transform">🇪🇸</span>
+                        <span>Español</span>
+                      </button>
+                      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                        <span className="text-xl group-hover:scale-110 transition-transform">🇧🇷</span>
+                        <span>Português</span>
+                      </button>
+                      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                        <span className="text-xl group-hover:scale-110 transition-transform">🇫🇷</span>
+                        <span>Français</span>
+                      </button>
+                      <button className="flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md hover:bg-accent hover:text-accent-foreground transition-colors group">
+                        <span className="text-xl group-hover:scale-110 transition-transform">🇩🇪</span>
+                        <span>Deutsch</span>
+                      </button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </CardContent>
           </Card>
