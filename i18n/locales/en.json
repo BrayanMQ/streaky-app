@@ -119,5 +119,63 @@
             "createFirstBtn": "Create Your First Habit",
             "genericError": "An error occurred. Please try again."
         }
+    },
+    "settings": {
+        "title": "Settings",
+        "account": {
+            "title": "Account",
+            "description": "Manage your account settings",
+            "email": "Email",
+            "password": "Password",
+            "change": "Change"
+        },
+        "notifications": {
+            "title": "Notifications",
+            "description": "Configure how you receive reminders",
+            "comingSoon": "Coming Soon",
+            "comingSoonDesc": "Notification settings will be available in a future update",
+            "dailyReminders": "Daily Reminders",
+            "dailyRemindersDesc": "Get reminded to track your habits",
+            "streakAlerts": "Streak Alerts",
+            "streakAlertsDesc": "Celebrate your milestones"
+        },
+        "appearance": {
+            "title": "Appearance",
+            "description": "Customize how Streaky looks",
+            "theme": "Theme",
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        },
+        "language": {
+            "title": "Language",
+            "description": "Choose your preferred language",
+            "appLanguage": "App Language",
+            "english": "English",
+            "spanish": "Spanish",
+            "portuguese": "Portuguese",
+            "french": "French",
+            "german": "German",
+            "currentLanguage": "English (US)"
+        },
+        "app": {
+            "title": "App",
+            "description": "Progressive Web App settings",
+            "installApp": "Install App",
+            "installed": "App is installed on your device",
+            "installDesc": "Add Streaky to your home screen",
+            "installBtn": "Install",
+            "installedBtn": "Installed",
+            "notAvailable": "Not Available"
+        },
+        "dangerZone": {
+            "title": "Danger Zone",
+            "deleteAccount": "Delete Account",
+            "deleteAccountDesc": "Permanently delete your account and all data",
+            "deleteBtn": "Delete",
+            "signOut": "Sign Out",
+            "signOutDesc": "Sign out of your account",
+            "signingOut": "Signing out..."
+        }
     }
 }

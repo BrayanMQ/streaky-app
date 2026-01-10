@@ -119,5 +119,63 @@
             "createFirstBtn": "Crea tu primer hábito",
             "genericError": "Ocurrió un error. Por favor intenta de nuevo."
         }
+    },
+    "settings": {
+        "title": "Configuración",
+        "account": {
+            "title": "Cuenta",
+            "description": "Administra la configuración de tu cuenta",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "change": "Cambiar"
+        },
+        "notifications": {
+            "title": "Notificaciones",
+            "description": "Configura cómo recibes los recordatorios",
+            "comingSoon": "Próximamente",
+            "comingSoonDesc": "La configuración de notificaciones estará disponible en una futura actualización",
+            "dailyReminders": "Recordatorios diarios",
+            "dailyRemindersDesc": "Recibe recordatorios para seguir tus hábitos",
+            "streakAlerts": "Alertas de racha",
+            "streakAlertsDesc": "Celebra tus hitos"
+        },
+        "appearance": {
+            "title": "Apariencia",
+            "description": "Personaliza cómo se ve Streaky",
+            "theme": "Tema",
+            "light": "Claro",
+            "dark": "Oscuro",
+            "system": "Sistema"
+        },
+        "language": {
+            "title": "Idioma",
+            "description": "Elige tu idioma preferido",
+            "appLanguage": "Idioma de la aplicación",
+            "english": "Inglés",
+            "spanish": "Español",
+            "portuguese": "Portugués",
+            "french": "Francés",
+            "german": "Alemán",
+            "currentLanguage": "Español"
+        },
+        "app": {
+            "title": "Aplicación",
+            "description": "Configuración de la Aplicación Web Progresiva",
+            "installApp": "Instalar aplicación",
+            "installed": "La aplicación está instalada en tu dispositivo",
+            "installDesc": "Añade Streaky a tu pantalla de inicio",
+            "installBtn": "Instalar",
+            "installedBtn": "Instalada",
+            "notAvailable": "No disponible"
+        },
+        "dangerZone": {
+            "title": "Zona de peligro",
+            "deleteAccount": "Eliminar cuenta",
+            "deleteAccountDesc": "Elimina permanentemente tu cuenta y todos los datos",
+            "deleteBtn": "Eliminar",
+            "signOut": "Cerrar sesión",
+            "signOutDesc": "Cierra la sesión de tu cuenta",
+            "signingOut": "Cerrando sesión..."
+        }
     }
 }

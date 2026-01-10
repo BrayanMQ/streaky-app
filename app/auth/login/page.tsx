@@ -377,23 +377,6 @@ function LoginContent() {
             </div>
           </CardContent>
         </Card>
-        <button onClick={() => i18n.changeLanguage('es')}>ES</button>
-        <button onClick={() => i18n.changeLanguage('en')}>EN</button>
-      </div>
-      <div className="mb-4 flex gap-2">
-        <button
-          onClick={() => i18n.changeLanguage('en')}
-          className="rounded border px-2 py-1 text-xs"
-        >
-          EN
-        </button>
-
-        <button
-          onClick={() => i18n.changeLanguage('es')}
-          className="rounded border px-2 py-1 text-xs"
-        >
-          ES
-        </button>
       </div>
     </I18nProvider>
   );
