@@ -16,5 +16,18 @@
         "noAccount": "¿No tienes una cuenta?",
         "haveAccount": "¿Ya tienes una cuenta?",
         "loading": "Cargando..."
+    },
+    "dashboard": {
+        "loading": "Cargando hábitos...",
+        "errorTitle": "Error al cargar hábitos",
+        "retry": "Reintentar",
+        "signOutError": "Error al cerrar sesión",
+        "signOutErrorMessage": "Ocurrió un error al cerrar la sesión.",
+        "title": "Hábitos de hoy",
+        "stats": {
+            "completed": "{{completed}} de {{total}} completados"
+        },
+        "noHabits": "Aún no tienes hábitos. ¡Crea tu primer hábito para comenzar!",
+        "addHabit": "Agregar nuevo hábito"
     }
 }

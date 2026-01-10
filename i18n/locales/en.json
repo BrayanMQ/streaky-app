@@ -16,5 +16,18 @@
         "noAccount": "Don't have an account?",
         "haveAccount": "Already have an account?",
         "loading": "Loading..."
+    },
+    "dashboard": {
+        "loading": "Loading habits...",
+        "errorTitle": "Error loading habits",
+        "retry": "Retry",
+        "signOutError": "Sign out error",
+        "signOutErrorMessage": "An error occurred while signing out.",
+        "title": "Today's Habits",
+        "stats": {
+            "completed": "{{completed}} of {{total}} completed"
+        },
+        "noHabits": "No habits yet. Create your first habit to get started!",
+        "addHabit": "Add New Habit"
     }
 }
