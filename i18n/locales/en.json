@@ -177,5 +177,39 @@
             "signOutDesc": "Sign out of your account",
             "signingOut": "Signing out..."
         }
+    },
+    "calendar": {
+        "title": "Calendar",
+        "noHabits": "No habits created yet.",
+        "createFirst": "Create your first habit",
+        "stats": {
+            "completed": "Completed",
+            "missed": "Missed",
+            "successRate": "Success Rate",
+            "bestStreak": "Best Streak"
+        },
+        "months": {
+            "january": "January",
+            "february": "February",
+            "march": "March",
+            "april": "April",
+            "may": "May",
+            "june": "June",
+            "july": "July",
+            "august": "August",
+            "september": "September",
+            "october": "October",
+            "november": "November",
+            "december": "December"
+        },
+        "days": {
+            "sun": "Sun",
+            "mon": "Mon",
+            "tue": "Tue",
+            "wed": "Wed",
+            "thu": "Thu",
+            "fri": "Fri",
+            "sat": "Sat"
+        }
     }
 }

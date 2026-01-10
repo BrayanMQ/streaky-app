@@ -163,7 +163,7 @@
             "description": "Configuración de la Aplicación Web Progresiva",
             "installApp": "Instalar aplicación",
             "installed": "La aplicación está instalada en tu dispositivo",
-            "installDesc": "Añade Streaky a tu pantalla de inicio",
+            "installDesc": "Añade Streaky y a tu pantalla de inicio",
             "installBtn": "Instalar",
             "installedBtn": "Instalada",
             "notAvailable": "No disponible"
@@ -176,6 +176,40 @@
             "signOut": "Cerrar sesión",
             "signOutDesc": "Cierra la sesión de tu cuenta",
             "signingOut": "Cerrando sesión..."
+        }
+    },
+    "calendar": {
+        "title": "Calendario",
+        "noHabits": "Aún no has creado hábitos.",
+        "createFirst": "Crea tu primer hábito",
+        "stats": {
+            "completed": "Completados",
+            "missed": "Perdidos",
+            "successRate": "Tasa de éxito",
+            "bestStreak": "Mejor racha"
+        },
+        "months": {
+            "january": "Enero",
+            "february": "Febrero",
+            "march": "Marzo",
+            "april": "Abril",
+            "may": "Mayo",
+            "june": "Junio",
+            "july": "Julio",
+            "august": "Agosto",
+            "september": "Septiembre",
+            "october": "Octubre",
+            "november": "Noviembre",
+            "december": "Diciembre"
+        },
+        "days": {
+            "sun": "Dom",
+            "mon": "Lun",
+            "tue": "Mar",
+            "wed": "Mié",
+            "thu": "Jue",
+            "fri": "Vie",
+            "sat": "Sáb"
         }
     }
 }
