@@ -1,0 +1,20 @@
+{
+    "auth": {
+        "welcomeBack": "Bienvenido de nuevo",
+        "createAccount": "Crear cuenta",
+        "signinSubtitle": "Inicia sesión para continuar tus hábitos",
+        "signupSubtitle": "Comienza a construir hábitos hoy",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "passwordHint": "La contraseña debe tener al menos 6 caracteres",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "signIn": "Iniciar sesión",
+        "signUp": "Registrarse",
+        "processing": "Procesando...",
+        "orContinue": "O continuar con",
+        "connecting": "Conectando...",
+        "noAccount": "¿No tienes una cuenta?",
+        "haveAccount": "¿Ya tienes una cuenta?",
+        "loading": "Cargando..."
+    }
+}

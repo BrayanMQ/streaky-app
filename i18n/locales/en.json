@@ -1,0 +1,20 @@
+{
+    "auth": {
+        "welcomeBack": "Welcome back",
+        "createAccount": "Create account",
+        "signinSubtitle": "Sign in to continue your streaks",
+        "signupSubtitle": "Start building habits today",
+        "email": "Email",
+        "password": "Password",
+        "passwordHint": "Password must be at least 6 characters long",
+        "forgotPassword": "Forgot password?",
+        "signIn": "Sign In",
+        "signUp": "Sign Up",
+        "processing": "Processing...",
+        "orContinue": "Or continue with",
+        "connecting": "Connecting...",
+        "noAccount": "Don't have an account?",
+        "haveAccount": "Already have an account?",
+        "loading": "Loading..."
+    }
+}

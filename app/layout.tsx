@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Providers } from '@/components/providers/Providers';
 import './globals.css';
+import '@/i18n'
 
 export const metadata: Metadata = {
   title: 'Streaky - Habit Tracker',
