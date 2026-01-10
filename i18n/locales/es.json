@@ -15,7 +15,16 @@
         "connecting": "Conectando...",
         "noAccount": "¿No tienes una cuenta?",
         "haveAccount": "¿Ya tienes una cuenta?",
-        "loading": "Cargando..."
+        "loading": "Cargando...",
+        "errors": {
+            "unexpected": "Ocurrió un error inesperado",
+            "invalidCredentials": "Correo o contraseña inválidos. Inténtalo de nuevo.",
+            "emailNotConfirmed": "Por favor revisa tu correo y confirma tu cuenta antes de iniciar sesión.",
+            "userAlreadyRegistered": "Ya existe una cuenta con este correo. Por favor inicia sesión.",
+            "passwordWeak": "La contraseña es muy débil. Por favor usa una contraseña más fuerte.",
+            "passwordLength": "La contraseña debe tener al menos 6 caracteres.",
+            "network": "Error de red. Por favor revisa tu conexión e inténtalo de nuevo."
+        }
     },
     "dashboard": {
         "loading": "Cargando hábitos...",
@@ -311,5 +320,13 @@
                 "desc": "\"{{name}}\" necesita atención {{period}}. Intenta hacerlo mañana a primera hora."
             }
         }
+    },
+    "nav": {
+        "today": "Hoy",
+        "habits": "Mis Hábitos",
+        "calendar": "Calendario",
+        "stats": "Estadísticas",
+        "settings": "Ajustes",
+        "signOut": "Cerrar Sesión"
     }
 }

@@ -18,9 +18,6 @@ import { useAuth } from '@/hooks/useAuth';
 import { loginSchema, signUpSchema } from '@/lib/validations';
 import { useTranslation } from 'react-i18next'
 import I18nProvider from '@/components/I18nProvider'
-import i18n from 'i18next'
-
-
 
 /**
  * Login content component that uses useSearchParams
@@ -69,31 +66,31 @@ function LoginContent() {
 
   // Get user-friendly error message from Supabase error
   const getErrorMessage = (error: any): string => {
-    if (!error) return 'An unexpected error occurred';
+    if (!error) return t('auth.errors.unexpected');
 
     const errorMessage = error.message || error.toString();
 
     // Map common Supabase errors to user-friendly messages
     if (errorMessage.includes('Invalid login credentials') ||
       errorMessage.includes('email') && errorMessage.includes('password')) {
-      return 'Invalid email or password. Please try again.';
+      return t('auth.errors.invalidCredentials');
     }
     if (errorMessage.includes('Email not confirmed')) {
-      return 'Please check your email and confirm your account before signing in.';
+      return t('auth.errors.emailNotConfirmed');
     }
     if (errorMessage.includes('User already registered')) {
-      return 'An account with this email already exists. Please sign in instead.';
+      return t('auth.errors.userAlreadyRegistered');
     }
     if (errorMessage.includes('Password')) {
       if (errorMessage.includes('weak')) {
-        return 'Password is too weak. Please use a stronger password.';
+        return t('auth.errors.passwordWeak');
       }
       if (errorMessage.includes('length')) {
-        return 'Password must be at least 6 characters long.';
+        return t('auth.errors.passwordLength');
       }
     }
     if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-      return 'Network error. Please check your connection and try again.';
+      return t('auth.errors.network');
     }
 
     return errorMessage;

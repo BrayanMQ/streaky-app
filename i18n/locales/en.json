@@ -9,13 +9,22 @@
         "passwordHint": "Password must be at least 6 characters long",
         "forgotPassword": "Forgot password?",
         "signIn": "Sign In",
-        "signUp": "SignUp",
+        "signUp": "Sign Up",
         "processing": "Processing...",
         "orContinue": "Or continue with",
         "connecting": "Connecting...",
         "noAccount": "Don't have an account?",
         "haveAccount": "Already have an account?",
-        "loading": "Loading..."
+        "loading": "Loading...",
+        "errors": {
+            "unexpected": "An unexpected error occurred",
+            "invalidCredentials": "Invalid email or password. Please try again.",
+            "emailNotConfirmed": "Please check your email and confirm your account before signing in.",
+            "userAlreadyRegistered": "An account with this email already exists. Please sign in instead.",
+            "passwordWeak": "Password is too weak. Please use a stronger password.",
+            "passwordLength": "Password must be at least 6 characters long.",
+            "network": "Network error. Please check your connection and try again."
+        }
     },
     "dashboard": {
         "loading": "Loading habits...",
@@ -311,5 +320,13 @@
                 "desc": "\"{{name}}\" needs attention {{period}}. Try tackling it first thing tomorrow."
             }
         }
+    },
+    "nav": {
+        "today": "Today",
+        "habits": "My Habits",
+        "calendar": "Calendar",
+        "stats": "Statistics",
+        "settings": "Settings",
+        "signOut": "Sign Out"
     }
 }
