@@ -72,5 +72,27 @@
             "minChars": "Minimum {{count}} characters required",
             "maxChars": "Maximum {{count}} characters allowed"
         }
+    },
+    "habits": {
+        "management": {
+            "addNew": "Add New Habit"
+        },
+        "emojiPicker": {
+            "search": "Search icons...",
+            "recent": "Recent",
+            "noResults": "No emojis found",
+            "tryKeywords": "Try different keywords",
+            "categories": {
+                "productivity": "Productivity",
+                "fitness": "Health & Fitness",
+                "wellness": "Mind & Sleep",
+                "food": "Food & Drink",
+                "learning": "Learning & Tech",
+                "creativity": "Creativity",
+                "feelings": "Feelings",
+                "nature": "Nature",
+                "lifestyle": "Lifestyle"
+            }
+        }
     }
 }
