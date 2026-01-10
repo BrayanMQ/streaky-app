@@ -10,6 +10,8 @@ import { getHabitColor as getHabitColorUtil } from '@/lib/habitColors';
 import { useUIStore } from '@/store/ui';
 import { ConfettiEffect } from './ConfettiEffect';
 import type { HabitWithLogs } from '@/types/database';
+import { useTranslation } from 'react-i18next';
+import I18nProvider from '@/components/I18nProvider';
 
 interface HabitCardProps {
   habit: HabitWithLogs;
@@ -36,6 +38,7 @@ export function HabitCard({
   getHabitColor,
   mode = 'execution',
 }: HabitCardProps) {
+  const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const [prevCompleted, setPrevCompleted] = useState(habit.completedToday);
@@ -52,12 +55,12 @@ export function HabitCard({
     const currentStreak = habit.streak ?? 0;
     const wasCompleted = prevCompleted;
     const isNowCompleted = habit.completedToday;
-    
+
     // Check if habit was just completed (transition from not completed to completed)
     if (isNowCompleted && !wasCompleted) {
       // Calculate the streak after completion
       const streakAfterCompletion = Math.max(prevStreak + 1, currentStreak);
-      
+
       // Haptic feedback for mobile devices
       if (typeof navigator !== 'undefined' && 'vibrate' in navigator) {
         // Use the streak after completion for vibration
@@ -67,13 +70,13 @@ export function HabitCard({
           navigator.vibrate(50);
         }
       }
-      
+
       // Show confetti if streak after completion is >= 7
       if (streakAfterCompletion >= 7) {
         setShowConfetti(true);
       }
     }
-    
+
     setPrevCompleted(isNowCompleted);
     setPrevStreak(currentStreak);
   }, [habit.completedToday, habit.streak, prevCompleted, prevStreak]);
@@ -143,110 +146,112 @@ export function HabitCard({
         <ConfettiEffect onComplete={() => setShowConfetti(false)} />
       )}
       <Card
-      className={cn(
-        'transition-all duration-300 ease-in-out relative',
-        isExecution ? 'cursor-pointer hover:shadow-md active:scale-[0.98] touch-manipulation' : 'cursor-default',
-        isExecution && habit.completedToday && 'border-primary bg-primary/5',
-        isToggling && 'opacity-50 pointer-events-none',
-      )}
-      onClick={handleCardClick}
-      onTouchStart={handleTouchStart}
-      style={{
-        minHeight: isExecution ? '44px' : undefined, // Ensure minimum touch target size
-      }}
-    >
-      <CardContent className="flex items-center justify-between p-6">
-        <div className="flex items-center gap-4 flex-1">
-          <motion.div
-            className={cn(
-              'flex h-12 w-12 items-center justify-center rounded-full',
-              isExecution 
-                ? (habit.completedToday ? habitColor : 'bg-muted')
-                : habitColor // Always show color in management mode
-            )}
-            animate={{
-              scale: habit.completedToday ? [1, 1.1, 1] : 1,
-            }}
-            transition={{
-              duration: 0.3,
-              ease: 'easeOut',
-            }}
-          >
-            {isExecution && (
-              habit.completedToday ? (
-                <motion.span
-                  className="text-2xl"
-                  initial={{ scale: 0, rotate: -180 }}
-                  animate={{ scale: [0, 1.2, 1], rotate: [0, 10, -10, 0] }}
-                  transition={{
-                    duration: 0.4,
-                    ease: [0.34, 1.56, 0.64, 1],
-                  }}
-                >
-                  ✓
-                </motion.span>
-              ) : (
-                <span className="text-2xl opacity-30">○</span>
-              )
-            )}
-            {/* Management mode: Show the saved icon */}
-            {!isExecution && (
-              <span className="text-2xl drop-shadow-sm">
-                {habit.icon || "🎯"} {/* Fallback if no icon is saved in the database */}
-              </span>
-            )}
-
-          </motion.div>
-          <div>
-            <h3 className="font-semibold text-lg">{habit.title}</h3>
-            {isExecution && (
-              <div className="flex items-center gap-2 text-muted-foreground text-sm">
-                <Flame className="h-4 w-4 text-orange-500/80" />
-                <span>{habit.streak ?? 0} day streak</span>
-              </div>
-            )}
-          </div>
-        </div>
-        
-        {/* Actions Menu - Only show in management mode */}
-        {mode === 'management' && (
-          <div className="relative" ref={menuRef}>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={handleMenuToggle}
-              disabled={isToggling}
-            >
-              <MoreVertical className="h-4 w-4" />
-            </Button>
-            
-            {isMenuOpen && (
-              <div className="absolute right-0 top-10 z-50 w-40 rounded-md border bg-background shadow-lg">
-                <div className="p-1 space-y-1">
-                  <Button
-                    variant="ghost"
-                    onClick={handleEdit}
-                    className="w-full justify-start font-normal h-9 px-2"
-                  >
-                    <Edit className="h-4 w-4 mr-2" />
-                    Edit
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    onClick={handleDelete}
-                    className="w-full justify-start font-normal h-9 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20"
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete
-                  </Button>
-                </div>
-              </div>
-            )}
-          </div>
+        className={cn(
+          'transition-all duration-300 ease-in-out relative',
+          isExecution ? 'cursor-pointer hover:shadow-md active:scale-[0.98] touch-manipulation' : 'cursor-default',
+          isExecution && habit.completedToday && 'border-primary bg-primary/5',
+          isToggling && 'opacity-50 pointer-events-none',
         )}
-      </CardContent>
-    </Card>
+        onClick={handleCardClick}
+        onTouchStart={handleTouchStart}
+        style={{
+          minHeight: isExecution ? '44px' : undefined, // Ensure minimum touch target size
+        }}
+      >
+        <CardContent className="flex items-center justify-between p-6">
+          <I18nProvider>
+            <div className="flex items-center gap-4 flex-1">
+              <motion.div
+                className={cn(
+                  'flex h-12 w-12 items-center justify-center rounded-full',
+                  isExecution
+                    ? (habit.completedToday ? habitColor : 'bg-muted')
+                    : habitColor // Always show color in management mode
+                )}
+                animate={{
+                  scale: habit.completedToday ? [1, 1.1, 1] : 1,
+                }}
+                transition={{
+                  duration: 0.3,
+                  ease: 'easeOut',
+                }}
+              >
+                {isExecution && (
+                  habit.completedToday ? (
+                    <motion.span
+                      className="text-2xl"
+                      initial={{ scale: 0, rotate: -180 }}
+                      animate={{ scale: [0, 1.2, 1], rotate: [0, 10, -10, 0] }}
+                      transition={{
+                        duration: 0.4,
+                        ease: [0.34, 1.56, 0.64, 1],
+                      }}
+                    >
+                      ✓
+                    </motion.span>
+                  ) : (
+                    <span className="text-2xl opacity-30">○</span>
+                  )
+                )}
+                {/* Management mode: Show the saved icon */}
+                {!isExecution && (
+                  <span className="text-2xl drop-shadow-sm">
+                    {habit.icon || "🎯"} {/* Fallback if no icon is saved in the database */}
+                  </span>
+                )}
+
+              </motion.div>
+              <div>
+                <h3 className="font-semibold text-lg">{habit.title}</h3>
+                {isExecution && (
+                  <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                    <Flame className="h-4 w-4 text-orange-500/80" />
+                    <span>{t('habits.card.streak', { count: habit.streak ?? 0 })}</span>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Actions Menu - Only show in management mode */}
+            {mode === 'management' && (
+              <div className="relative" ref={menuRef}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8"
+                  onClick={handleMenuToggle}
+                  disabled={isToggling}
+                >
+                  <MoreVertical className="h-4 w-4" />
+                </Button>
+
+                {isMenuOpen && (
+                  <div className="absolute right-0 top-10 z-50 w-40 rounded-md border bg-background shadow-lg">
+                    <div className="p-1 space-y-1">
+                      <Button
+                        variant="ghost"
+                        onClick={handleEdit}
+                        className="w-full justify-start font-normal h-9 px-2"
+                      >
+                        <Edit className="h-4 w-4 mr-2" />
+                        {t('habits.card.edit')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleDelete}
+                        className="w-full justify-start font-normal h-9 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20"
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        {t('habits.card.delete')}
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </I18nProvider>
+        </CardContent>
+      </Card>
     </>
   );
 }

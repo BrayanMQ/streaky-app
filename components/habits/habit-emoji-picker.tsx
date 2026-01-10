@@ -4,7 +4,8 @@ import { Smile, Search } from "lucide-react";
 import { useEffect, useMemo, useState, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { EMOJI_CATEGORIES, MAX_RECENTS, RECENT_EMOJIS_KEY } from "./emoji-data";
-
+import { useTranslation } from "react-i18next";
+import I18nProvider from "@/components/I18nProvider";
 
 export function HabitEmojiPicker({
   selectedEmoji,
@@ -17,6 +18,7 @@ export function HabitEmojiPicker({
   disabled: boolean;
   color: string;
 }) {
+  const { t } = useTranslation()
   const [search, setSearch] = useState("");
   const [recentEmojis, setRecentEmojis] = useState<string[]>([]);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -48,11 +50,12 @@ export function HabitEmojiPicker({
     return EMOJI_CATEGORIES.map((category) => ({
       ...category,
       emojis: category.emojis.filter((emojiObj) => {
-        const targetString = `${emojiObj.keywords} ${category.label}`.toLowerCase();
+        const translatedLabel = t(`habits.emojiPicker.categories.${category.id}`, { defaultValue: category.label });
+        const targetString = `${emojiObj.keywords} ${translatedLabel}`.toLowerCase();
         return searchTerms.every(term => targetString.includes(term));
       })
     })).filter((category) => category.emojis.length > 0);
-  }, [search]);
+  }, [search, t]);
 
   const scrollToCategory = (id: string) => {
     const el = categoryRefs.current[id];
@@ -121,117 +124,119 @@ export function HabitEmojiPicker({
         side="bottom"
         sideOffset={8}
       >
-        {/* Mobile Drag Handle */}
-        <div className="mx-auto mt-2 h-1 w-12 rounded-full bg-muted-foreground/20 sm:hidden" />
+        <I18nProvider>
+          {/* Mobile Drag Handle */}
+          <div className="mx-auto mt-2 h-1 w-12 rounded-full bg-muted-foreground/20 sm:hidden" />
 
-        <div className="p-3" onKeyDown={handleKeyDown}>
-          {/* Search */}
-          <div className="mb-3 flex items-center gap-2 rounded-lg border bg-muted/50 px-2 transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search icons..."
-              className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
-            />
-          </div>
-
-          {/* Category Tabs (Desktop/Tablet Navigation) */}
-          {!search && (
-            <div className="mb-3 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
-              {EMOJI_CATEGORIES.map((cat) => {
-                const Icon = cat.icon;
-                return (
-                  <button
-                    key={cat.id}
-                    title={cat.label}
-                    onClick={() => scrollToCategory(cat.id)}
-                    className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all active:scale-90"
-                  >
-                    <Icon className="h-4 w-4" />
-                  </button>
-                );
-              })}
+          <div className="p-3" onKeyDown={handleKeyDown}>
+            {/* Search */}
+            <div className="mb-3 flex items-center gap-2 rounded-lg border bg-muted/50 px-2 transition-shadow focus-within:ring-2 focus-within:ring-primary/20">
+              <Search className="h-4 w-4 text-muted-foreground" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder={t('habits.emojiPicker.search')}
+                className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground/60"
+              />
             </div>
-          )}
 
-          {/* Scrollable area */}
-          <div
-            ref={scrollRef}
-            className="max-h-80 space-y-5 overflow-y-auto pr-2 scroll-smooth"
-            onWheel={(e) => e.stopPropagation()}
-          >
-            <AnimatePresence initial={false}>
-              {/* Recent */}
-              {recentEmojis.length > 0 && !search && (
-                <motion.div
-                  key="recent-section"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
-                  className="space-y-2"
-                >
-                  <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                    Recent
-                  </p>
-                  <div className="grid grid-cols-6 gap-2">
-                    {recentEmojis.map((emoji) => (
-                      <EmojiButton
-                        key={`recent-${emoji}`}
-                        emoji={emoji}
-                        selected={selectedEmoji === emoji}
-                        onClick={() => handleSelect(emoji)}
-                        color={color}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              )}
+            {/* Category Tabs (Desktop/Tablet Navigation) */}
+            {!search && (
+              <div className="mb-3 flex gap-1 overflow-x-auto pb-1 scrollbar-none">
+                {EMOJI_CATEGORIES.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <button
+                      key={cat.id}
+                      title={t(`habits.emojiPicker.categories.${cat.id}`, { defaultValue: cat.label })}
+                      onClick={() => scrollToCategory(cat.id)}
+                      className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md text-muted-foreground hover:bg-muted hover:text-foreground transition-all active:scale-90"
+                    >
+                      <Icon className="h-4 w-4" />
+                    </button>
+                  );
+                })}
+              </div>
+            )}
 
-              {/* Categories */}
-              {filteredCategories.map((category) => (
-                <motion.div
-                  key={category.id}
-                  ref={(el) => { categoryRefs.current[category.id] = el }}
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  layout="position"
-                  className="space-y-2"
-                >
-                  <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
-                    {category.label}
-                  </p>
+            {/* Scrollable area */}
+            <div
+              ref={scrollRef}
+              className="max-h-80 space-y-5 overflow-y-auto pr-2 scroll-smooth"
+              onWheel={(e) => e.stopPropagation()}
+            >
+              <AnimatePresence initial={false}>
+                {/* Recent */}
+                {recentEmojis.length > 0 && !search && (
+                  <motion.div
+                    key="recent-section"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    className="space-y-2"
+                  >
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                      {t('habits.emojiPicker.recent')}
+                    </p>
+                    <div className="grid grid-cols-6 gap-2">
+                      {recentEmojis.map((emoji) => (
+                        <EmojiButton
+                          key={`recent-${emoji}`}
+                          emoji={emoji}
+                          selected={selectedEmoji === emoji}
+                          onClick={() => handleSelect(emoji)}
+                          color={color}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                )}
 
-                  <div className="grid grid-cols-6 gap-2">
-                    {category.emojis.map((emojiObj) => (
-                      <EmojiButton
-                        key={emojiObj.char}
-                        emoji={emojiObj.char}
-                        selected={selectedEmoji === emojiObj.char}
-                        onClick={() => handleSelect(emojiObj.char)}
-                        color={color}
-                      />
-                    ))}
-                  </div>
-                </motion.div>
-              ))}
+                {/* Categories */}
+                {filteredCategories.map((category) => (
+                  <motion.div
+                    key={category.id}
+                    ref={(el) => { categoryRefs.current[category.id] = el }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    layout="position"
+                    className="space-y-2"
+                  >
+                    <p className="px-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground/70">
+                      {t(`habits.emojiPicker.categories.${category.id}`, { defaultValue: category.label })}
+                    </p>
 
-              {filteredCategories.length === 0 && (
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.9 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="flex flex-col items-center justify-center py-10 text-center"
-                >
-                  <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
-                    <Search className="h-6 w-6 text-muted-foreground/40" />
-                  </div>
-                  <p className="text-sm font-medium text-muted-foreground">No emojis found</p>
-                  <p className="text-xs text-muted-foreground/60">Try different keywords</p>
-                </motion.div>
-              )}
-            </AnimatePresence>
+                    <div className="grid grid-cols-6 gap-2">
+                      {category.emojis.map((emojiObj) => (
+                        <EmojiButton
+                          key={emojiObj.char}
+                          emoji={emojiObj.char}
+                          selected={selectedEmoji === emojiObj.char}
+                          onClick={() => handleSelect(emojiObj.char)}
+                          color={color}
+                        />
+                      ))}
+                    </div>
+                  </motion.div>
+                ))}
+
+                {filteredCategories.length === 0 && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="flex flex-col items-center justify-center py-10 text-center"
+                  >
+                    <div className="mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-muted">
+                      <Search className="h-6 w-6 text-muted-foreground/40" />
+                    </div>
+                    <p className="text-sm font-medium text-muted-foreground">{t('habits.emojiPicker.noResults')}</p>
+                    <p className="text-xs text-muted-foreground/60">{t('habits.emojiPicker.tryKeywords')}</p>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
-        </div>
+        </I18nProvider>
       </PopoverContent>
     </Popover>
   );

@@ -1,0 +1,332 @@
+{
+    "auth": {
+        "welcomeBack": "Bienvenido de nuevo",
+        "createAccount": "Crear cuenta",
+        "signinSubtitle": "Inicia sesión para continuar tus hábitos",
+        "signupSubtitle": "Comienza a construir hábitos hoy",
+        "email": "Correo electrónico",
+        "password": "Contraseña",
+        "passwordHint": "La contraseña debe tener al menos 6 caracteres",
+        "forgotPassword": "¿Olvidaste tu contraseña?",
+        "signIn": "Iniciar sesión",
+        "signUp": "Registrarse",
+        "processing": "Procesando...",
+        "orContinue": "O continuar con",
+        "connecting": "Conectando...",
+        "noAccount": "¿No tienes una cuenta?",
+        "haveAccount": "¿Ya tienes una cuenta?",
+        "loading": "Cargando...",
+        "errors": {
+            "unexpected": "Ocurrió un error inesperado",
+            "invalidCredentials": "Correo o contraseña inválidos. Inténtalo de nuevo.",
+            "emailNotConfirmed": "Por favor revisa tu correo y confirma tu cuenta antes de iniciar sesión.",
+            "userAlreadyRegistered": "Ya existe una cuenta con este correo. Por favor inicia sesión.",
+            "passwordWeak": "La contraseña es muy débil. Por favor usa una contraseña más fuerte.",
+            "passwordLength": "La contraseña debe tener al menos 6 caracteres.",
+            "network": "Error de red. Por favor revisa tu conexión e inténtalo de nuevo."
+        }
+    },
+    "dashboard": {
+        "loading": "Cargando hábitos...",
+        "errorTitle": "Error al cargar hábitos",
+        "retry": "Reintentar",
+        "signOutError": "Error al cerrar sesión",
+        "signOutErrorMessage": "Ocurrió un error al cerrar la sesión.",
+        "title": "Hábitos de hoy",
+        "stats": {
+            "completed": "{{completed}} de {{total}} completados"
+        },
+        "noHabits": "Aún no tienes hábitos. ¡Crea tu primer hábito para comenzar!",
+        "addHabit": "Agregar nuevo hábito"
+    },
+    "modals": {
+        "addHabit": {
+            "title": "Nuevo Hábito",
+            "description": "Pequeños pasos llevan a grandes cambios. ¿Qué sigue?",
+            "labelIconName": "Icono y Nombre del Hábito",
+            "placeholderName": "Nombra tu hábito...",
+            "labelColor": "Color del Hábito",
+            "submit": "Crear Hábito",
+            "submitting": "Creando...",
+            "error": "Algo salió mal. Por favor intenta de nuevo.",
+            "successToast": "Hábito creado",
+            "successToastDesc": "\"{{title}}\" ha sido añadido con éxito.",
+            "errorToast": "Error al crear el hábito",
+            "errorToastDesc": "El hábito no pudo ser creado. Por favor intenta de nuevo."
+        },
+        "editHabit": {
+            "title": "Editar Hábito",
+            "description": "Actualiza los detalles de tu hábito a continuación.",
+            "labelIconName": "Icono y Nombre",
+            "submit": "Actualizar Hábito",
+            "submitting": "Actualizando...",
+            "successToast": "Hábito actualizado",
+            "successToastDesc": "\"{{title}}\" ha sido actualizado con éxito.",
+            "errorToast": "Error al actualizar el hábito",
+            "errorToastDesc": "El hábito no pudo ser actualizado. Por favor intenta de nuevo."
+        },
+        "deleteHabit": {
+            "title": "Eliminar Hábito",
+            "description": "¿Estás seguro de que quieres eliminar \"{{title}}\"?",
+            "warning": "Esta acción no se puede deshacer y se perderá todo el historial de este hábito.",
+            "submit": "Eliminar Hábito",
+            "submitting": "Eliminando...",
+            "successToast": "Hábito eliminado",
+            "successToastDesc": "\"{{title}}\" fue eliminado con éxito.",
+            "errorToast": "Error al eliminar el hábito:",
+            "errorToastDesc": "No se pudo eliminar \"{{title}}\". Por favor intenta de nuevo."
+        },
+        "common": {
+            "cancel": "Cancelar",
+            "minChars": "Se requieren al menos {{count}} caracteres",
+            "maxChars": "Se permite un máximo de {{count}} caracteres"
+        }
+    },
+    "habits": {
+        "management": {
+            "addNew": "Agregar nuevo hábito"
+        },
+        "emojiPicker": {
+            "search": "Buscar iconos...",
+            "recent": "Recientes",
+            "noResults": "No se encontraron emojis",
+            "tryKeywords": "Prueba con diferentes palabras clave",
+            "categories": {
+                "productivity": "Productividad",
+                "fitness": "Salud y Fitness",
+                "wellness": "Mente y Sueño",
+                "food": "Comida y Bebida",
+                "learning": "Aprendizaje y Tecno",
+                "creativity": "Creatividad",
+                "feelings": "Sentimientos",
+                "nature": "Naturaleza",
+                "lifestyle": "Estilo de vida"
+            }
+        },
+        "card": {
+            "streak": "Racha de {{count}} días",
+            "edit": "Editar",
+            "delete": "Eliminar"
+        },
+        "list": {
+            "excellent": "¡Excelente!",
+            "wellDone": "¡Bien hecho!",
+            "habitCompleted": "Hábito completado",
+            "habitUnchecked": "Hábito desmarcado",
+            "completedContextHigh": "Has completado “{{title}}”. ¡{{count}} días seguidos! 🔥",
+            "completedContextMid": "Has completado “{{title}}”. {{count}} días seguidos.",
+            "completedContextLow": "Has completado “{{title}}” hoy.",
+            "uncheckedContext": "Has desmarcado “{{title}}” por hoy.",
+            "errorUpdating": "Error al actualizar el hábito",
+            "couldNotCheck": "No se pudo marcar \"{{title}}\". Por favor intenta de nuevo.",
+            "couldNotUncheck": "No se pudo desmarcar \"{{title}}\". Por favor intenta de nuevo.",
+            "errorLoading": "Error al cargar los hábitos",
+            "errorLoadingLogs": "Error al cargar los registros",
+            "retry": "Reintentar",
+            "noHabits": "Aún no hay hábitos",
+            "createFirstDesc": "¡Crea tu primer hábito para empezar a seguir tu progreso!",
+            "createFirstBtn": "Crea tu primer hábito",
+            "genericError": "Ocurrió un error. Por favor intenta de nuevo."
+        }
+    },
+    "settings": {
+        "title": "Configuración",
+        "account": {
+            "title": "Cuenta",
+            "description": "Administra la configuración de tu cuenta",
+            "email": "Correo electrónico",
+            "password": "Contraseña",
+            "change": "Cambiar"
+        },
+        "notifications": {
+            "title": "Notificaciones",
+            "description": "Configura cómo recibes los recordatorios",
+            "comingSoon": "Próximamente",
+            "comingSoonDesc": "La configuración de notificaciones estará disponible en una futura actualización",
+            "dailyReminders": "Recordatorios diarios",
+            "dailyRemindersDesc": "Recibe recordatorios para seguir tus hábitos",
+            "streakAlerts": "Alertas de racha",
+            "streakAlertsDesc": "Celebra tus hitos"
+        },
+        "appearance": {
+            "title": "Apariencia",
+            "description": "Personaliza cómo se ve Streaky",
+            "theme": "Tema",
+            "light": "Claro",
+            "dark": "Oscuro",
+            "system": "Sistema"
+        },
+        "language": {
+            "title": "Idioma",
+            "description": "Elige tu idioma preferido",
+            "appLanguage": "Idioma de la aplicación",
+            "english": "Inglés",
+            "spanish": "Español",
+            "portuguese": "Portugués",
+            "french": "Francés",
+            "german": "Alemán",
+            "currentLanguage": "Español"
+        },
+        "app": {
+            "title": "Aplicación",
+            "description": "Configuración de la Aplicación Web Progresiva",
+            "installApp": "Instalar aplicación",
+            "installed": "La aplicación está instalada en tu dispositivo",
+            "installDesc": "Añade Streaky y a tu pantalla de inicio",
+            "installBtn": "Instalar",
+            "installedBtn": "Instalada",
+            "notAvailable": "No disponible"
+        },
+        "dangerZone": {
+            "title": "Zona de peligro",
+            "deleteAccount": "Eliminar cuenta",
+            "deleteAccountDesc": "Elimina permanentemente tu cuenta y todos los datos",
+            "deleteBtn": "Eliminar",
+            "signOut": "Cerrar sesión",
+            "signOutDesc": "Cierra la sesión de tu cuenta",
+            "signingOut": "Cerrando sesión..."
+        },
+        "modals": {
+            "changeEmail": {
+                "title": "Cambiar Correo",
+                "description": "Ingresa tu nueva dirección de correo electrónico. Se enviará un correo de confirmación para verificar el cambio.",
+                "currentEmail": "Correo Actual",
+                "newEmailLabel": "Nuevo Correo",
+                "newEmailPlaceholder": "nuevocorreo@ejemplo.com",
+                "submit": "Actualizar Correo",
+                "submitting": "Actualizando...",
+                "validation": {
+                    "different": "El nuevo correo debe ser diferente al actual",
+                    "alreadyRegistered": "Este correo ya está registrado",
+                    "error": "Error al actualizar el correo. Inténtalo de nuevo."
+                },
+                "successToast": "Correo actualizado",
+                "successToastDesc": "Se ha enviado un correo de confirmación a {{email}}. Por favor, revisa tu bandeja de entrada."
+            },
+            "changePassword": {
+                "title": "Cambiar Contraseña",
+                "description": "Ingresa tu contraseña actual y elige una nueva contraseña segura.",
+                "currentPasswordLabel": "Contraseña Actual",
+                "currentPasswordPlaceholder": "Ingresa tu contraseña actual",
+                "newPasswordLabel": "Nueva Contraseña",
+                "newPasswordPlaceholder": "Ingresa tu nueva contraseña",
+                "confirmPasswordLabel": "Confirmar Nueva Contraseña",
+                "confirmPasswordPlaceholder": "Confirma tu nueva contraseña",
+                "requirements": "Debe tener al menos 8 caracteres con mayúsculas, minúsculas y un número",
+                "submit": "Actualizar Contraseña",
+                "submitting": "Actualizando...",
+                "successToast": "Contraseña actualizada",
+                "successToastDesc": "Tu contraseña se ha actualizado correctamente."
+            },
+            "deleteAccount": {
+                "title": "Eliminar Cuenta",
+                "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y todos tus datos de nuestros servidores. Esto incluye tus hábitos, registros y ajustes.",
+                "warningTitle": "Advertencia: Esta acción es permanente",
+                "warningText": "Todos tus datos serán eliminados permanentemente y no se podrán recuperar.",
+                "confirmPrompt": "Escribe {{confirmText}} para confirmar",
+                "confirmError": "Por favor, escribe \"{{confirmText}}\" para confirmar",
+                "submit": "Eliminar Cuenta",
+                "submitting": "Eliminando...",
+                "successToast": "Cuenta eliminada",
+                "successToastDesc": "Tu cuenta y todos los datos asociados han sido eliminados."
+            }
+        }
+    },
+    "calendar": {
+        "title": "Calendario",
+        "noHabits": "Aún no has creado hábitos.",
+        "createFirst": "Crea tu primer hábito",
+        "stats": {
+            "completed": "Completados",
+            "missed": "Perdidos",
+            "successRate": "Tasa de éxito",
+            "bestStreak": "Mejor racha"
+        },
+        "months": {
+            "january": "Enero",
+            "february": "Febrero",
+            "march": "Marzo",
+            "april": "Abril",
+            "may": "Mayo",
+            "june": "Junio",
+            "july": "Julio",
+            "august": "Agosto",
+            "september": "Septiembre",
+            "october": "Octubre",
+            "november": "Noviembre",
+            "december": "Diciembre"
+        },
+        "days": {
+            "sun": "Dom",
+            "mon": "Lun",
+            "tue": "Mar",
+            "wed": "Mié",
+            "thu": "Jue",
+            "fri": "Vie",
+            "sat": "Sáb"
+        }
+    },
+    "stats": {
+        "title": "Estadísticas",
+        "loading": "Cargando estadísticas...",
+        "error": "Error al cargar las estadísticas. Por favor, inténtalo de nuevo.",
+        "noHabits": "Aún no tienes hábitos. Crea uno para ver tus estadísticas.",
+        "periods": {
+            "week": "Semana",
+            "month": "Mes",
+            "year": "Año",
+            "thisWeek": "esta semana",
+            "thisMonth": "este mes",
+            "thisYear": "este año"
+        },
+        "cards": {
+            "bestStreak": {
+                "label": "Mejor Racha",
+                "description": "El mayor número de días consecutivos que has completado al menos un hábito (récord histórico).",
+                "unit": "días",
+                "context": "¡Sigue así!"
+            },
+            "avgCompletion": {
+                "label": "Cumplimiento Promedio",
+                "description": "El porcentaje promedio de tus hábitos completados durante {{period}}."
+            },
+            "activeHabits": {
+                "label": "Hábitos Activos",
+                "description": "El número total de hábitos que estás siguiendo activamente.",
+                "context": "En seguimiento"
+            },
+            "totalDays": {
+                "label": "Total de Días",
+                "description": "El número total de días únicos en los que has registrado actividad de hábitos (histórico).",
+                "context": "Días registrados"
+            }
+        },
+        "breakdown": {
+            "title": "Desglose de Hábitos",
+            "days": "días",
+            "completionOf": "{{completed}} de {{total}} días"
+        },
+        "insights": {
+            "performance": {
+                "title": "Rendimiento",
+                "desc": "Completaste tus hábitos el {{rate}}% del tiempo {{period}}."
+            },
+            "topHabit": {
+                "title": "Mejor Hábito",
+                "desc": "\"{{name}}\" es tu hábito más fuerte {{period}} con una tasa de cumplimiento del {{rate}}%."
+            },
+            "focus": {
+                "title": "Enfoque",
+                "desc": "\"{{name}}\" necesita atención {{period}}. Intenta hacerlo mañana a primera hora."
+            }
+        }
+    },
+    "nav": {
+        "today": "Hoy",
+        "habits": "Mis Hábitos",
+        "calendar": "Calendario",
+        "stats": "Estadísticas",
+        "settings": "Ajustes",
+        "signOut": "Cerrar Sesión"
+    }
+}

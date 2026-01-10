@@ -10,6 +10,8 @@ import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useUIStore } from '@/store/ui';
+import { useTranslation } from 'react-i18next';
+import I18nProvider from '@/components/I18nProvider';
 
 /**
  * Dashboard page
@@ -17,10 +19,11 @@ import { useUIStore } from '@/store/ui';
  * Displays user's habits with completion tracking, streaks, and progress.
  */
 export default function DashboardPage() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { signOutError } = useAuth();
   const { openAddHabitModal } = useUIStore();
-  
+
   // Use centralized hook for habits with data (for stats only)
   const {
     habitsWithData,
@@ -28,7 +31,7 @@ export default function DashboardPage() {
     habitsError,
     logsError: habitsDataLogsError,
   } = useHabitsWithData();
-  
+
   // Note: toggleError is handled by HabitList component
 
   // Calculate today's completion stats
@@ -39,116 +42,122 @@ export default function DashboardPage() {
   // Loading state
   if (isLoadingHabitsData) {
     return (
-      <div className="flex min-h-screen flex-col bg-muted/30">
-        <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
-          <div className="text-center">
-            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
-            <p className="text-lg">Loading habits...</p>
+      <I18nProvider>
+        <div className="flex min-h-screen flex-col bg-muted/30">
+          <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
+            <div className="text-center">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+              <p className="text-lg">{t('dashboard.loading')}</p>
+            </div>
           </div>
         </div>
-      </div>
+      </I18nProvider>
     );
   }
 
   // Error state - show error if habits fail to load (critical error)
   if (habitsError) {
     return (
-      <div className="flex min-h-screen flex-col bg-muted/30">
-        <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
-          <div className="text-center max-w-md">
-            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-            <p className="text-lg font-semibold mb-2">Error loading habits</p>
-            <p className="text-sm text-muted-foreground mb-6">{habitsError.message}</p>
-            <Button onClick={() => window.location.reload()}>Retry</Button>
+      <I18nProvider>
+        <div className="flex min-h-screen flex-col bg-muted/30">
+          <div className="container mx-auto flex-1 flex items-center justify-center px-4 py-8">
+            <div className="text-center max-w-md">
+              <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+              <p className="text-lg font-semibold mb-2">{t('dashboard.errorTitle')}</p>
+              <p className="text-sm text-muted-foreground mb-6">{habitsError.message}</p>
+              <Button onClick={() => window.location.reload()}>{t('dashboard.retry')}</Button>
+            </div>
           </div>
         </div>
-      </div>
+      </I18nProvider>
     );
   }
 
   // Note: habitsDataLogsError and toggleError are handled by HabitList component
 
   return (
-    <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
-      {/* Header */}
-      <Header />
+    <I18nProvider>
+      <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
+        {/* Header */}
+        <Header />
 
-      {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
-        {/* Error Messages */}
-        {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
-        {signOutError && (
-          <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-            <div className="flex-1">
-              <p className="text-sm font-semibold text-destructive mb-1">Sign out error</p>
-              <p className="text-sm text-muted-foreground">
-                {signOutError.message || 'An error occurred while signing out.'}
-              </p>
-            </div>
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-6 w-6 shrink-0"
-              onClick={() => {
-                // Force redirect even on error
-                router.push('/auth/login');
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
-        )}
-
-        {/* Stats Overview */}
-        <div className="mb-8">
-          <h1 className="mb-2 font-bold text-3xl">Today's Habits</h1>
-          {totalHabits > 0 ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <p className="text-muted-foreground">
-                  {completedToday} of {totalHabits} completed
+        {/* Main Content */}
+        <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
+          {/* Error Messages */}
+          {/* Note: habitsDataLogsError and toggleError are handled by HabitList component */}
+          {signOutError && (
+            <div className="mb-4 rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-destructive mb-1">{t('dashboard.signOutError')}</p>
+                <p className="text-sm text-muted-foreground">
+                  {signOutError.message || t('dashboard.signOutErrorMessage')}
                 </p>
-                <span className="text-sm text-muted-foreground">
-                  {Math.round(completionPercentage)}%
-                </span>
               </div>
-              
-              <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
-                <div
-                  className={cn(
-                    "h-full transition-all duration-700 ease-out",
-                    completionPercentage < 25 && "bg-amber-500/70",
-                    completionPercentage >= 25 && completionPercentage < 50 && "bg-amber-400/75",
-                    completionPercentage >= 50 && completionPercentage < 75 && "bg-yellow-400/80",
-                    completionPercentage >= 75 && completionPercentage < 100 && "bg-lime-400/80",
-                    completionPercentage === 100 && "bg-emerald-600"
-                  )}
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-6 w-6 shrink-0"
+                onClick={() => {
+                  // Force redirect even on error
+                  router.push('/auth/login');
+                }}
+              >
+                <X className="h-4 w-4" />
+              </Button>
             </div>
-          ) : (
-            <p className="text-muted-foreground">No habits yet. Create your first habit to get started!</p>
           )}
-        </div>
 
-        {/* Habits List - uses HabitList component to avoid duplication */}
-        <div className="mb-8">
-          <HabitList mode="execution" />
-        </div>
+          {/* Stats Overview */}
+          <div className="mb-8">
+            <h1 className="mb-2 font-bold text-3xl">{t('dashboard.title')}</h1>
+            {totalHabits > 0 ? (
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <p className="text-muted-foreground">
+                    {t('dashboard.stats.completed', { completed: completedToday, total: totalHabits })}
+                  </p>
+                  <span className="text-sm text-muted-foreground">
+                    {Math.round(completionPercentage)}%
+                  </span>
+                </div>
 
-        {/* Add Habit Button (only show if there are habits) */}
-        {totalHabits > 0 && (
-          <Button size="lg" className="w-full md:w-auto" onClick={openAddHabitModal}>
-            <Plus className="mr-2 h-5 w-5" />
-            Add New Habit
-          </Button>
-        )}
-      </main>
+                <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+                  <div
+                    className={cn(
+                      "h-full transition-all duration-700 ease-out",
+                      completionPercentage < 25 && "bg-amber-500/70",
+                      completionPercentage >= 25 && completionPercentage < 50 && "bg-amber-400/75",
+                      completionPercentage >= 50 && completionPercentage < 75 && "bg-yellow-400/80",
+                      completionPercentage >= 75 && completionPercentage < 100 && "bg-lime-400/80",
+                      completionPercentage === 100 && "bg-emerald-600"
+                    )}
+                    style={{ width: `${completionPercentage}%` }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <p className="text-muted-foreground">{t('dashboard.noHabits')}</p>
+            )}
+          </div>
 
-      {/* Bottom Navigation for Mobile */}
-      <BottomNav />
-    </div>
+          {/* Habits List - uses HabitList component to avoid duplication */}
+          <div className="mb-8">
+            <HabitList mode="execution" />
+          </div>
+
+          {/* Add Habit Button (only show if there are habits) */}
+          {totalHabits > 0 && (
+            <Button size="lg" className="w-full md:w-auto" onClick={openAddHabitModal}>
+              <Plus className="mr-2 h-5 w-5" />
+              {t('dashboard.addHabit')}
+            </Button>
+          )}
+        </main>
+
+        {/* Bottom Navigation for Mobile */}
+        <BottomNav />
+      </div>
+    </I18nProvider>
   );
 }

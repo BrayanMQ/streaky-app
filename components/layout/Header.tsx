@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/button';
 import { Flame, Calendar, TrendingUp, Settings, Loader2, LogOut, ClipboardList, LayoutDashboard, ArrowLeft } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useTopLoadingBar } from '@/hooks/useTopLoadingBar';
+import { useTranslation } from 'react-i18next';
+import I18nProvider from '@/components/I18nProvider';
 
 /**
  * Header component
@@ -18,6 +20,7 @@ import { useTopLoadingBar } from '@/hooks/useTopLoadingBar';
  * On desktop: Shows logo and navigation icons
  */
 export function Header() {
+  const { t } = useTranslation();
   const router = useRouter();
   const pathname = usePathname();
   const { signOut, signOutPending } = useAuth();
@@ -25,11 +28,11 @@ export function Header() {
 
   // Map routes to page titles and icons
   const pageInfo: Record<string, { title: string; icon: React.ComponentType<{ className?: string }> }> = {
-    '/dashboard': { title: 'Today', icon: LayoutDashboard },
-    '/dashboard/habits': { title: 'My Habits', icon: ClipboardList },
-    '/dashboard/calendar': { title: 'Calendar', icon: Calendar },
-    '/dashboard/stats': { title: 'Statistics', icon: TrendingUp },
-    '/dashboard/settings': { title: 'Settings', icon: Settings },
+    '/dashboard': { title: t('nav.today'), icon: LayoutDashboard },
+    '/dashboard/habits': { title: t('nav.habits'), icon: ClipboardList },
+    '/dashboard/calendar': { title: t('nav.calendar'), icon: Calendar },
+    '/dashboard/stats': { title: t('nav.stats'), icon: TrendingUp },
+    '/dashboard/settings': { title: t('nav.settings'), icon: Settings },
   };
 
   const currentPage = pageInfo[pathname] || { title: 'Streaky', icon: Flame };
@@ -62,144 +65,145 @@ export function Header() {
   const IconComponent = currentPage.icon;
 
   return (
-    <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-      <div className="container mx-auto flex h-16 items-center justify-between px-4">
-        {/* Mobile: Page title only (no back button) */}
-        <div className="flex items-center gap-2 md:hidden">
-          <IconComponent className="size-6 text-primary" />
-          <span className="font-bold text-xl">{currentPage.title}</span>
-        </div>
+    <I18nProvider>
+      <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+        <div className="container mx-auto flex h-16 items-center justify-between px-4">
+          {/* Mobile: Page title only (no back button) */}
+          <div className="flex items-center gap-2 md:hidden">
+            <IconComponent className="size-6 text-primary" />
+            <span className="font-bold text-xl">{currentPage.title}</span>
+          </div>
 
-        {/* Desktop: Back button + Logo */}
-        <div className="hidden md:flex items-center gap-4">
-          {pathname !== '/dashboard' && (
-            <Button 
-              variant="ghost" 
-              size="icon" 
-              onClick={handleBack}
-              className="hover:bg-muted/80"
-            >
-              <ArrowLeft className="size-5" />
-            </Button>
-          )}
-          <Link 
-            href="/dashboard" 
-            onClick={() => {
-              if (pathname !== '/dashboard') {
-                startLoading();
-              }
-            }}
-            className="flex items-center gap-2 font-bold text-xl"
-          >
-            <Flame className="h-6 w-6 text-primary" />
-            <span>Streaky</span>
-          </Link>
-        </div>
-
-        {/* Desktop: Navigation icons */}
-        <nav className="hidden md:flex items-center gap-2">
-          <Link 
-            href="/dashboard"
-            onClick={() => {
-              if (pathname !== '/dashboard') {
-                startLoading();
-              }
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Today"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <LayoutDashboard className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Link 
-            href="/dashboard/habits"
-            onClick={() => {
-              if (pathname !== '/dashboard/habits') {
-                startLoading();
-              }
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              title="My Habits"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <ClipboardList className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Link 
-            href="/dashboard/calendar"
-            onClick={() => {
-              if (pathname !== '/dashboard/calendar') {
-                startLoading();
-              }
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Calendar"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <Calendar className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Link 
-            href="/dashboard/stats"
-            onClick={() => {
-              if (pathname !== '/dashboard/stats') {
-                startLoading();
-              }
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Stats"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <TrendingUp className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Link 
-            href="/dashboard/settings"
-            onClick={() => {
-              if (pathname !== '/dashboard/settings') {
-                startLoading();
-              }
-            }}
-          >
-            <Button
-              variant="ghost"
-              size="icon"
-              title="Settings"
-              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
-            >
-              <Settings className="h-5 w-5 relative z-10" />
-            </Button>
-          </Link>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={handleSignOut}
-            disabled={signOutPending}
-            title="Sign out"
-            className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:border-0 disabled:hover:shadow-none"
-          >
-            {signOutPending ? (
-              <Loader2 className="h-5 w-5 animate-spin relative z-10" />
-            ) : (
-              <LogOut className="h-5 w-5 relative z-10" />
+          {/* Desktop: Back button + Logo */}
+          <div className="hidden md:flex items-center gap-4">
+            {pathname !== '/dashboard' && (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={handleBack}
+                className="hover:bg-muted/80"
+              >
+                <ArrowLeft className="size-5" />
+              </Button>
             )}
-          </Button>
-        </nav>
-      </div>
-    </header>
+            <Link
+              href="/dashboard"
+              onClick={() => {
+                if (pathname !== '/dashboard') {
+                  startLoading();
+                }
+              }}
+              className="flex items-center gap-2 font-bold text-xl"
+            >
+              <Flame className="h-6 w-6 text-primary" />
+              <span>Streaky</span>
+            </Link>
+          </div>
+
+          {/* Desktop: Navigation icons */}
+          <nav className="hidden md:flex items-center gap-2">
+            <Link
+              href="/dashboard"
+              onClick={() => {
+                if (pathname !== '/dashboard') {
+                  startLoading();
+                }
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('nav.today')}
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <LayoutDashboard className="h-5 w-5 relative z-10" />
+              </Button>
+            </Link>
+            <Link
+              href="/dashboard/habits"
+              onClick={() => {
+                if (pathname !== '/dashboard/habits') {
+                  startLoading();
+                }
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('nav.habits')}
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <ClipboardList className="h-5 w-5 relative z-10" />
+              </Button>
+            </Link>
+            <Link
+              href="/dashboard/calendar"
+              onClick={() => {
+                if (pathname !== '/dashboard/calendar') {
+                  startLoading();
+                }
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('nav.calendar')}
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <Calendar className="h-5 w-5 relative z-10" />
+              </Button>
+            </Link>
+            <Link
+              href="/dashboard/stats"
+              onClick={() => {
+                if (pathname !== '/dashboard/stats') {
+                  startLoading();
+                }
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('nav.stats')}
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <TrendingUp className="h-5 w-5 relative z-10" />
+              </Button>
+            </Link>
+            <Link
+              href="/dashboard/settings"
+              onClick={() => {
+                if (pathname !== '/dashboard/settings') {
+                  startLoading();
+                }
+              }}
+            >
+              <Button
+                variant="ghost"
+                size="icon"
+                title={t('nav.settings')}
+                className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110"
+              >
+                <Settings className="h-5 w-5 relative z-10" />
+              </Button>
+            </Link>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleSignOut}
+              disabled={signOutPending}
+              title={t('nav.signOut')}
+              className="relative !hover:bg-[hsl(var(--primary)/0.25)] hover:border hover:border-[hsl(var(--primary)/0.35)]! hover:shadow-lg hover:shadow-[hsl(var(--primary)/0.25)]! rounded-lg transition-all duration-200 hover:scale-110 disabled:hover:scale-100 disabled:hover:bg-transparent disabled:hover:border-0 disabled:hover:shadow-none"
+            >
+              {signOutPending ? (
+                <Loader2 className="h-5 w-5 animate-spin relative z-10" />
+              ) : (
+                <LogOut className="h-5 w-5 relative z-10" />
+              )}
+            </Button>
+          </nav>
+        </div>
+      </header>
+    </I18nProvider>
   );
 }
-

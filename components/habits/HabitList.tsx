@@ -13,6 +13,8 @@ import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useHabits } from '@/hooks/useHabits';
 import { useUIStore } from '@/store/ui';
+import { useTranslation } from 'react-i18next';
+import I18nProvider from '@/components/I18nProvider';
 
 /**
  * HabitList component
@@ -26,8 +28,9 @@ import { useUIStore } from '@/store/ui';
  * - Support for execution (dashboard) and management (habits page) modes
  */
 export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'management' }) {
+  const { t } = useTranslation();
   const { openAddHabitModal } = useUIStore();
-  
+
   // Use centralized hook for habits with data
   const {
     habitsWithData,
@@ -36,7 +39,7 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
     habitsError,
     logsError: habitsDataLogsError,
   } = useHabitsWithData();
-  
+
   // Get toggle functionality from useHabitLogs
   const {
     toggleCompletion,
@@ -44,7 +47,7 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
     toggleError,
     refetch: refetchLogs,
   } = useHabitLogs();
-  
+
   // Get refetch for habits
   const { refetch: refetchHabits } = useHabits();
 
@@ -52,35 +55,37 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
     try {
       const habit = habitsWithData.find(h => h.id === habitId);
       const wasCompleted = habit?.completedToday ?? false;
-      
+
       await toggleCompletion({ habitId });
-      
+
       // Show success toast with contextual message
       if (!wasCompleted) {
         const streak = habit?.streak ?? 0;
         if (streak >= 7) {
-          toast.success('Excellent!', {
-            description: `You have completed “${habit?.title}”. ${streak} days in a row! 🔥`,
+          toast.success(t('habits.list.excellent'), {
+            description: t('habits.list.completedContextHigh', { title: habit?.title, count: streak }),
           });
         } else if (streak >= 3) {
-          toast.success('Well done!', {
-            description: `You have completed “${habit?.title}”. ${streak} days in a row.`,
+          toast.success(t('habits.list.wellDone'), {
+            description: t('habits.list.completedContextMid', { title: habit?.title, count: streak }),
           });
         } else {
-          toast.success('Habit completed', {
-            description: `You have completed “${habit?.title}” today.`,
+          toast.success(t('habits.list.habitCompleted'), {
+            description: t('habits.list.completedContextLow', { title: habit?.title }),
           });
         }
       } else {
-        toast.info('Habit unchecked', {
-          description: `You have unchecked “${habit?.title}” for today.`,
+        toast.info(t('habits.list.habitUnchecked'), {
+          description: t('habits.list.uncheckedContext', { title: habit?.title }),
         });
       }
     } catch (error) {
       console.error('Error toggling habit:', error);
       const habit = habitsWithData.find(h => h.id === habitId);
-      toast.error('Error updating habit', {
-        description: `Could not ${habit?.completedToday ? 'uncheck' : 'check'} "${habit?.title}". Please try again.`,
+      toast.error(t('habits.list.errorUpdating'), {
+        description: habit?.completedToday
+          ? t('habits.list.couldNotUncheck', { title: habit?.title })
+          : t('habits.list.couldNotCheck', { title: habit?.title }),
       });
     }
   };
@@ -108,36 +113,38 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
   // Error state - show error if habits fail to load (critical error)
   if (habitsError) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center max-w-md">
-          <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
-          <p className="text-lg font-semibold mb-2">Error loading habits</p>
-          <p className="text-sm text-muted-foreground mb-6">{habitsError.message}</p>
-          <Button onClick={handleRetry}>Retry</Button>
+      <I18nProvider>
+        <div className="flex items-center justify-center py-12">
+          <div className="text-center max-w-md">
+            <AlertCircle className="h-12 w-12 text-destructive mx-auto mb-4" />
+            <p className="text-lg font-semibold mb-2">{t('habits.list.errorLoading')}</p>
+            <p className="text-sm text-muted-foreground mb-6">{habitsError.message}</p>
+            <Button onClick={handleRetry}>{t('habits.list.retry')}</Button>
+          </div>
         </div>
-      </div>
+      </I18nProvider>
     );
   }
 
   // Empty state - show when no habits exist
   if (habitsWithData.length === 0) {
     return (
-      <>
+      <I18nProvider>
         <div className="text-center py-12">
           <div className="mb-4">
             <Flame className="h-16 w-16 mx-auto text-muted-foreground opacity-50" />
           </div>
-          <h2 className="text-2xl font-semibold mb-2">No habits yet</h2>
+          <h2 className="text-2xl font-semibold mb-2">{t('habits.list.noHabits')}</h2>
           <p className="text-muted-foreground mb-6">
-            Create your first habit to start tracking your progress!
+            {t('habits.list.createFirstDesc')}
           </p>
           <Button size="lg" onClick={openAddHabitModal}>
             <Plus className="mr-2 h-5 w-5" />
-            Create Your First Habit
+            {t('habits.list.createFirstBtn')}
           </Button>
         </div>
         <AddHabitModal />
-      </>
+      </I18nProvider>
     );
   }
 
@@ -145,63 +152,65 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
   const hasNonCriticalError = habitsDataLogsError || toggleError;
 
   return (
-    <div className="space-y-4">
-      {/* Non-critical error messages */}
-      {hasNonCriticalError && (
-        <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
-          <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
-          <div className="flex-1">
-            <p className="text-sm font-semibold text-destructive mb-1">
-              {habitsDataLogsError ? 'Error loading habit logs' : 'Error updating habit'}
-            </p>
-            <p className="text-sm text-muted-foreground">
-              {habitsDataLogsError?.message || toggleError?.message || 'An error occurred. Please try again.'}
-            </p>
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 shrink-0"
-            onClick={handleRetry}
-          >
-            <AlertCircle className="h-4 w-4" />
-          </Button>
-        </div>
-      )}
-
-      {/* Habits List */}
+    <I18nProvider>
       <div className="space-y-4">
-        {habitsWithData.map((habit, index) => (
-          <motion.div
-            key={habit.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{
-              duration: 0.3,
-              delay: index * 0.05,
-              ease: 'easeOut',
-            }}
-          >
-            <HabitCard
-              habit={habit}
-              onToggle={handleToggleHabit}
-              isToggling={isToggling}
-              getHabitColor={getHabitColor}
-              mode={mode}
-            />
-          </motion.div>
-        ))}
+        {/* Non-critical error messages */}
+        {hasNonCriticalError && (
+          <div className="rounded-md bg-destructive/10 border border-destructive/20 p-4 flex items-start gap-3">
+            <AlertCircle className="h-5 w-5 text-destructive mt-0.5 shrink-0" />
+            <div className="flex-1">
+              <p className="text-sm font-semibold text-destructive mb-1">
+                {habitsDataLogsError ? t('habits.list.errorLoadingLogs') : t('habits.list.errorUpdating')}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {habitsDataLogsError?.message || toggleError?.message || t('habits.list.genericError')}
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-6 w-6 shrink-0"
+              onClick={handleRetry}
+            >
+              <AlertCircle className="h-4 w-4" />
+            </Button>
+          </div>
+        )}
+
+        {/* Habits List */}
+        <div className="space-y-4">
+          {habitsWithData.map((habit, index) => (
+            <motion.div
+              key={habit.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{
+                duration: 0.3,
+                delay: index * 0.05,
+                ease: 'easeOut',
+              }}
+            >
+              <HabitCard
+                habit={habit}
+                onToggle={handleToggleHabit}
+                isToggling={isToggling}
+                getHabitColor={getHabitColor}
+                mode={mode}
+              />
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Add Habit Modal */}
+        <AddHabitModal />
+
+        {/* Edit Habit Modal */}
+        <EditHabitModal />
+
+        {/* Delete Habit Confirmation Modal */}
+        <DeleteHabitConfirmModal />
       </div>
-
-      {/* Add Habit Modal */}
-      <AddHabitModal />
-      
-      {/* Edit Habit Modal */}
-      <EditHabitModal />
-
-      {/* Delete Habit Confirmation Modal */}
-      <DeleteHabitConfirmModal />
-    </div>
+    </I18nProvider>
   );
 }
 

@@ -17,6 +17,8 @@ import { Loader2, AlertCircle, Mail } from "lucide-react"
 import { updateEmail } from "@/lib/auth"
 import { cn } from "@/lib/utils"
 import { changeEmailSchema } from "@/lib/validations"
+import { useTranslation } from "react-i18next"
+import I18nProvider from "@/components/I18nProvider"
 
 interface ChangeEmailModalProps {
   open: boolean
@@ -25,6 +27,7 @@ interface ChangeEmailModalProps {
 }
 
 export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEmailModalProps) {
+  const { t } = useTranslation()
   const [newEmail, setNewEmail] = useState("")
   const [isUpdating, setIsUpdating] = useState(false)
   const [validationError, setValidationError] = useState<string | null>(null)
@@ -52,7 +55,7 @@ export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEma
 
     // Additional validation: email must be different from current
     if (trimmedEmail === currentEmail) {
-      setValidationError("New email must be different from current email")
+      setValidationError(t("settings.modals.changeEmail.validation.different"))
       return
     }
 
@@ -65,109 +68,110 @@ export function ChangeEmailModal({ open, onOpenChange, currentEmail }: ChangeEma
       if (error) {
         // Handle specific error cases
         if (error.message?.includes('already registered')) {
-          setValidationError("This email is already registered")
+          setValidationError(t("settings.modals.changeEmail.validation.alreadyRegistered"))
         } else {
-          setValidationError(error.message || "Failed to update email. Please try again.")
+          setValidationError(error.message || t("settings.modals.changeEmail.validation.error"))
         }
         setIsUpdating(false)
         return
       }
 
-      toast.success('Email updated', {
-        description: `A confirmation email has been sent to ${trimmedEmail}. Please check your inbox.`,
+      toast.success(t("settings.modals.changeEmail.successToast"), {
+        description: t("settings.modals.changeEmail.successToastDesc", { email: trimmedEmail }),
         duration: 5000,
       })
 
       onOpenChange(false)
     } catch (error) {
       console.error("Error updating email:", error)
-      setValidationError("An unexpected error occurred. Please try again.")
+      setValidationError(t("settings.modals.changeEmail.validation.error"))
     } finally {
       setIsUpdating(false)
     }
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[425px]">
-        <DialogHeader>
-          <div className="flex items-center gap-3 mb-2">
-            <div className="p-2 rounded-full bg-primary/10">
-              <Mail className="h-5 w-5 text-primary" />
-            </div>
-            <DialogTitle className="text-xl font-bold">Change Email</DialogTitle>
-          </div>
-          <DialogDescription className="text-base pt-2">
-            Enter your new email address. A confirmation email will be sent to verify the change.
-          </DialogDescription>
-        </DialogHeader>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Current Email Display */}
-          <div className="space-y-2">
-            <Label className="text-sm font-semibold">Current Email</Label>
-            <div className="p-3 rounded-lg bg-muted text-sm text-muted-foreground">
-              {currentEmail}
-            </div>
-          </div>
-
-          {/* New Email Input */}
-          <div className="space-y-2">
-            <Label htmlFor="new-email" className="text-sm font-semibold">
-              New Email
-            </Label>
-            <Input
-              id="new-email"
-              type="email"
-              placeholder="newemail@example.com"
-              value={newEmail}
-              onChange={(e) => {
-                setNewEmail(e.target.value)
-                setValidationError(null)
-              }}
-              disabled={isUpdating}
-              autoFocus
-              className={cn(
-                "h-11",
-                validationError && "border-destructive focus-visible:ring-destructive"
-              )}
-            />
-            {validationError && (
-              <div className="flex items-center gap-2 text-destructive text-xs">
-                <AlertCircle className="h-3 w-3" />
-                <p>{validationError}</p>
+    <I18nProvider>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 rounded-full bg-primary/10">
+                <Mail className="h-5 w-5 text-primary" />
               </div>
-            )}
-          </div>
+              <DialogTitle className="text-xl font-bold">{t("settings.modals.changeEmail.title")}</DialogTitle>
+            </div>
+            <DialogDescription className="text-base pt-2">
+              {t("settings.modals.changeEmail.description")}
+            </DialogDescription>
+          </DialogHeader>
 
-          <DialogFooter className="flex-col gap-3 sm:flex-row sm:justify-end">
-            <Button
-              type="button"
-              variant="secondary"
-              onClick={() => onOpenChange(false)}
-              disabled={isUpdating}
-              className="w-full sm:w-auto"
-            >
-              Cancel
-            </Button>
-            <Button
-              type="submit"
-              disabled={isUpdating || !newEmail.trim()}
-              className="w-full sm:w-auto"
-            >
-              {isUpdating ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Updating...
-                </>
-              ) : (
-                "Update Email"
+          <form onSubmit={handleSubmit} className="space-y-4">
+            {/* Current Email Display */}
+            <div className="space-y-2">
+              <Label className="text-sm font-semibold">{t("settings.modals.changeEmail.currentEmail")}</Label>
+              <div className="p-3 rounded-lg bg-muted text-sm text-muted-foreground">
+                {currentEmail}
+              </div>
+            </div>
+
+            {/* New Email Input */}
+            <div className="space-y-2">
+              <Label htmlFor="new-email" className="text-sm font-semibold">
+                {t("settings.modals.changeEmail.newEmailLabel")}
+              </Label>
+              <Input
+                id="new-email"
+                type="email"
+                placeholder={t("settings.modals.changeEmail.newEmailPlaceholder")}
+                value={newEmail}
+                onChange={(e) => {
+                  setNewEmail(e.target.value)
+                  setValidationError(null)
+                }}
+                disabled={isUpdating}
+                autoFocus
+                className={cn(
+                  "h-11",
+                  validationError && "border-destructive focus-visible:ring-destructive"
+                )}
+              />
+              {validationError && (
+                <div className="flex items-center gap-2 text-destructive text-xs">
+                  <AlertCircle className="h-3 w-3" />
+                  <p>{validationError}</p>
+                </div>
               )}
-            </Button>
-          </DialogFooter>
-        </form>
-      </DialogContent>
-    </Dialog>
+            </div>
+
+            <DialogFooter className="flex-col gap-3 sm:flex-row sm:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                onClick={() => onOpenChange(false)}
+                disabled={isUpdating}
+                className="w-full sm:w-auto"
+              >
+                {t("modals.common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={isUpdating || !newEmail.trim()}
+                className="w-full sm:w-auto"
+              >
+                {isUpdating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {t("settings.modals.changeEmail.submitting")}
+                  </>
+                ) : (
+                  t("settings.modals.changeEmail.submit")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+    </I18nProvider>
   )
 }
-

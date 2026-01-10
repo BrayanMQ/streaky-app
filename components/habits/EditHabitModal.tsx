@@ -21,11 +21,14 @@ import { useUpdateHabit } from "@/hooks/useHabits"
 import { HABIT_COLORS } from "@/lib/habitColors"
 import { habitSchema } from "@/lib/validations"
 import { HabitEmojiPicker } from "./habit-emoji-picker"
+import { useTranslation } from "react-i18next"
+import I18nProvider from "@/components/I18nProvider"
 
 const MIN_LENGTH = 2
 const MAX_LENGTH = 100
 
 export function EditHabitModal() {
+  const { t } = useTranslation()
   const { isEditHabitModalOpen, closeEditHabitModal, selectedHabit } = useUIStore()
   const { updateHabit, isUpdating, updateError } = useUpdateHabit()
   const [selectedIcon, setSelectedIcon] = useState(selectedHabit?.icon || "🎯");
@@ -64,14 +67,14 @@ export function EditHabitModal() {
       setTitleError(null) // Don't show error while typing
       return
     }
-    
+
     const trimmed = title.trim()
     if (trimmed.length < MIN_LENGTH) {
-      setTitleError(`Minimum ${MIN_LENGTH} characters required`)
+      setTitleError(t('modals.common.minChars', { count: MIN_LENGTH }))
       return
     }
     if (trimmed.length > MAX_LENGTH) {
-      setTitleError(`Maximum ${MAX_LENGTH} characters allowed`)
+      setTitleError(t('modals.common.maxChars', { count: MAX_LENGTH }))
       return
     }
     setTitleError(null)
@@ -109,14 +112,14 @@ export function EditHabitModal() {
         icon: selectedIcon,
         frequency: null,
       })
-      toast.success('Habit updated', {
-        description: `"${habitTitle.trim()}" has been successfully updated.`,
+      toast.success(t('modals.editHabit.successToast'), {
+        description: t('modals.editHabit.successToastDesc', { title: habitTitle.trim() }),
       })
       closeEditHabitModal()
     } catch (err) {
       console.error(err)
-      toast.error('Error updating habit', {
-        description: 'The habit could not be updated. Please try again.',
+      toast.error(t('modals.editHabit.errorToast'), {
+        description: t('modals.editHabit.errorToastDesc'),
       })
     }
   }
@@ -144,143 +147,145 @@ export function EditHabitModal() {
   return (
     <Dialog open={isEditHabitModalOpen} onOpenChange={open => !open && closeEditHabitModal()}>
       <DialogContent className="sm:max-w-[450px] gap-0 p-0 overflow-hidden border-none shadow-2xl">
-        {/* Decorative top bar with selected color */}
-        <div 
-          className="h-1.5 w-full transition-colors duration-500" 
-          style={{ backgroundColor: selectedColor.hex }}
-        />
-        
-        <div className="p-6 space-y-6">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold tracking-tight">Edit Habit</DialogTitle>
-            <DialogDescription>
-              Update your habit details below.
-            </DialogDescription>
-          </DialogHeader>
+        <I18nProvider>
+          {/* Decorative top bar with selected color */}
+          <div
+            className="h-1.5 w-full transition-colors duration-500"
+            style={{ backgroundColor: selectedColor.hex }}
+          />
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Global API Error */}
-            {updateError && (
-              <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1">
-                <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-                <p className="text-sm font-medium text-destructive">Something went wrong. Please try again.</p>
-              </div>
-            )}
+          <div className="p-6 space-y-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold tracking-tight">{t('modals.editHabit.title')}</DialogTitle>
+              <DialogDescription>
+                {t('modals.editHabit.description')}
+              </DialogDescription>
+            </DialogHeader>
 
-            {/* Input Section */}
-            <div className="space-y-2">
-              <div className="flex justify-between">
-                <Label htmlFor="edit-habit-title" className="text-sm font-semibold">
-                  Icon & Name
-                </Label>
-                <span className={cn("text-[10px] font-mono uppercase tracking-wider", 
-                  habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
-                  {habitTitle.length}/{MAX_LENGTH}
-                </span>
-              </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Global API Error */}
+              {updateError && (
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1">
+                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                  <p className="text-sm font-medium text-destructive">{t('modals.editHabit.error')}</p>
+                </div>
+              )}
 
-              <div className="flex gap-2">
-                {/* Icon Picker component */}
-                <HabitEmojiPicker 
-                  selectedEmoji={selectedIcon} 
-                  onSelect={setSelectedIcon}
-                  disabled={isUpdating}
-                  color={selectedColor.hex}
-                />
+              {/* Input Section */}
+              <div className="space-y-2">
+                <div className="flex justify-between">
+                  <Label htmlFor="edit-habit-title" className="text-sm font-semibold">
+                    {t('modals.editHabit.labelIconName')}
+                  </Label>
+                  <span className={cn("text-[10px] font-mono uppercase tracking-wider",
+                    habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
+                    {habitTitle.length}/{MAX_LENGTH}
+                  </span>
+                </div>
 
-                <div className="flex-1">
-                  <Input
-                    id="edit-habit-title"
-                    placeholder="Name your habit..."
-                    value={habitTitle}
-                    onChange={(e) => {
-                      const newValue = e.target.value
-                      setHabitTitle(newValue)
-                      validateTitle(newValue)
-                    }}
+                <div className="flex gap-2">
+                  {/* Icon Picker component */}
+                  <HabitEmojiPicker
+                    selectedEmoji={selectedIcon}
+                    onSelect={setSelectedIcon}
                     disabled={isUpdating}
-                    className={cn(
-                      "h-11 transition-all focus-visible:ring-offset-0",
-                      titleError && "border-destructive focus-visible:ring-destructive"
-                    )}
+                    color={selectedColor.hex}
                   />
+
+                  <div className="flex-1">
+                    <Input
+                      id="edit-habit-title"
+                      placeholder={t('modals.addHabit.placeholderName')}
+                      value={habitTitle}
+                      onChange={(e) => {
+                        const newValue = e.target.value
+                        setHabitTitle(newValue)
+                        validateTitle(newValue)
+                      }}
+                      disabled={isUpdating}
+                      className={cn(
+                        "h-11 transition-all focus-visible:ring-offset-0",
+                        titleError && "border-destructive focus-visible:ring-destructive"
+                      )}
+                    />
+                  </div>
+                </div>
+
+                {titleError && (
+                  <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
+                )}
+              </div>
+
+              {/* Color Picker Section */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <Label className="text-sm font-semibold">
+                    {t('modals.addHabit.labelColor')}
+                  </Label>
+                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
+                    {selectedColor.name}
+                  </span>
+                </div>
+
+                <div className="flex flex-wrap gap-3 p-1">
+                  {HABIT_COLORS.map((color) => {
+                    const isSelected = selectedColor.value === color.value
+                    return (
+                      <button
+                        key={color.value}
+                        type="button"
+                        onClick={() => setSelectedColor(color)}
+                        disabled={isUpdating}
+                        className={cn(
+                          "group relative h-9 w-9 rounded-full transition-all duration-300 active:scale-95 touch-manipulation shadow-sm",
+                          color.value,
+                          isSelected
+                            ? "ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-md"
+                            : "hover:scale-110 opacity-90 hover:opacity-100"
+                        )}
+                        aria-label={`Select ${color.name} color`}
+                      >
+                        {isSelected && (
+                          <Check
+                            className="h-5 w-5 text-white absolute inset-0 m-auto animate-in zoom-in-50 duration-300"
+                            strokeWidth={3}
+                          />
+                        )}
+                      </button>
+                    )
+                  })}
                 </div>
               </div>
 
-              {titleError && (
-                <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
-              )}
-            </div>
-
-            {/* Color Picker Section */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <Label className="text-sm font-semibold">
-                  Habit Color
-                </Label>
-                <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
-                  {selectedColor.name}
-                </span>
-              </div>
-
-              <div className="flex flex-wrap gap-3 p-1">
-                {HABIT_COLORS.map((color) => {
-                  const isSelected = selectedColor.value === color.value
-                  return (
-                    <button
-                      key={color.value}
-                      type="button"
-                      onClick={() => setSelectedColor(color)}
-                      disabled={isUpdating}
-                      className={cn(
-                        "group relative h-9 w-9 rounded-full transition-all duration-300 active:scale-95 touch-manipulation shadow-sm",
-                        color.value,
-                        isSelected 
-                          ? "ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-md" 
-                          : "hover:scale-110 opacity-90 hover:opacity-100"
-                      )}
-                      aria-label={`Select ${color.name} color`}
-                    >
-                      {isSelected && (
-                        <Check 
-                          className="h-5 w-5 text-white absolute inset-0 m-auto animate-in zoom-in-50 duration-300" 
-                          strokeWidth={3} 
-                        />
-                      )}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-
-            <DialogFooter className="flex flex-col gap-3 pt-2">
-              <Button
-                type="submit"
-                disabled={isUpdating || !isFormValid()}
-                className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
-                style={buttonStyle}
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Update Habit"
-                )}
-              </Button>
-              <Button
-                type="button"
-                variant="secondary"
-                onClick={closeEditHabitModal}
-                disabled={isUpdating}
-                className="w-full h-11 text-muted-foreground hover:text-foreground"
-              >
-                Cancel
-              </Button>
-            </DialogFooter>
-          </form>
-        </div>
+              <DialogFooter className="flex flex-col gap-3 pt-2">
+                <Button
+                  type="submit"
+                  disabled={isUpdating || !isFormValid()}
+                  className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
+                  style={buttonStyle}
+                >
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {t('modals.editHabit.submitting')}
+                    </>
+                  ) : (
+                    t('modals.editHabit.submit')
+                  )}
+                </Button>
+                <Button
+                  type="button"
+                  variant="secondary"
+                  onClick={closeEditHabitModal}
+                  disabled={isUpdating}
+                  className="w-full h-11 text-muted-foreground hover:text-foreground"
+                >
+                  {t('modals.common.cancel')}
+                </Button>
+              </DialogFooter>
+            </form>
+          </div>
+        </I18nProvider>
       </DialogContent>
     </Dialog>
   )
