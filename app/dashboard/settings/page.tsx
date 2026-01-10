@@ -55,14 +55,16 @@ export default function SettingsPage() {
   }
 
   const currentTheme = settings?.theme || "system"
-  const currentLanguageCode = i18n.language || "en"
+
+  // Normalize language code (e.g., 'es-ES' -> 'es')
+  const currentLanguageCode = (i18n.language || "en").split("-")[0]
 
   const languages = [
-    { code: "en", label: t("settings.language.english"), flag: "🇺🇸" },
-    { code: "es", label: t("settings.language.spanish"), flag: "🇪🇸" },
-    { code: "pt", label: t("settings.language.portuguese"), flag: "🇧🇷", disabled: true },
-    { code: "fr", label: t("settings.language.french"), flag: "🇫🇷", disabled: true },
-    { code: "de", label: t("settings.language.german"), flag: "🇩🇪", disabled: true },
+    { code: "en", label: "English", flag: "🇺🇸" },
+    { code: "es", label: "Español", flag: "🇪🇸" },
+    { code: "pt", label: "Português", flag: "🇧🇷", disabled: true },
+    { code: "fr", label: "Français", flag: "🇫🇷", disabled: true },
+    { code: "de", label: "Deutsch", flag: "🇩🇪", disabled: true },
   ]
 
   const currentLanguage = languages.find(l => l.code === currentLanguageCode) || languages[0]
