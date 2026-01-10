@@ -29,5 +29,48 @@
         },
         "noHabits": "Aún no tienes hábitos. ¡Crea tu primer hábito para comenzar!",
         "addHabit": "Agregar nuevo hábito"
+    },
+    "modals": {
+        "addHabit": {
+            "title": "Nuevo Hábito",
+            "description": "Pequeños pasos llevan a grandes cambios. ¿Qué sigue?",
+            "labelIconName": "Icono y Nombre del Hábito",
+            "placeholderName": "Nombra tu hábito...",
+            "labelColor": "Color del Hábito",
+            "submit": "Crear Hábito",
+            "submitting": "Creando...",
+            "error": "Algo salió mal. Por favor intenta de nuevo.",
+            "successToast": "Hábito creado",
+            "successToastDesc": "\"{{title}}\" ha sido añadido con éxito.",
+            "errorToast": "Error al crear el hábito",
+            "errorToastDesc": "El hábito no pudo ser creado. Por favor intenta de nuevo."
+        },
+        "editHabit": {
+            "title": "Editar Hábito",
+            "description": "Actualiza los detalles de tu hábito a continuación.",
+            "labelIconName": "Icono y Nombre",
+            "submit": "Actualizar Hábito",
+            "submitting": "Actualizando...",
+            "successToast": "Hábito actualizado",
+            "successToastDesc": "\"{{title}}\" ha sido actualizado con éxito.",
+            "errorToast": "Error al actualizar el hábito",
+            "errorToastDesc": "El hábito no pudo ser actualizado. Por favor intenta de nuevo."
+        },
+        "deleteHabit": {
+            "title": "Eliminar Hábito",
+            "description": "¿Estás seguro de que quieres eliminar \"{{title}}\"?",
+            "warning": "Esta acción no se puede deshacer y se perderá todo el historial de este hábito.",
+            "submit": "Eliminar Hábito",
+            "submitting": "Eliminando...",
+            "successToast": "Hábito eliminado",
+            "successToastDesc": "\"{{title}}\" fue eliminado con éxito.",
+            "errorToast": "Error al eliminar el hábito:",
+            "errorToastDesc": "No se pudo eliminar \"{{title}}\". Por favor intenta de nuevo."
+        },
+        "common": {
+            "cancel": "Cancelar",
+            "minChars": "Se requieren al menos {{count}} caracteres",
+            "maxChars": "Se permite un máximo de {{count}} caracteres"
+        }
     }
 }

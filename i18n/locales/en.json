@@ -29,5 +29,48 @@
         },
         "noHabits": "No habits yet. Create your first habit to get started!",
         "addHabit": "Add New Habit"
+    },
+    "modals": {
+        "addHabit": {
+            "title": "New Habit",
+            "description": "Small steps lead to big changes. What's next?",
+            "labelIconName": "Habit Icon & Name",
+            "placeholderName": "Name your habit...",
+            "labelColor": "Habit Color",
+            "submit": "Create Habit",
+            "submitting": "Creating...",
+            "error": "Something went wrong. Please try again.",
+            "successToast": "Habit created",
+            "successToastDesc": "\"{{title}}\" has been successfully added.",
+            "errorToast": "Error creating habit",
+            "errorToastDesc": "The habit could not be created. Please try again."
+        },
+        "editHabit": {
+            "title": "Edit Habit",
+            "description": "Update your habit details below.",
+            "labelIconName": "Icon & Name",
+            "submit": "Update Habit",
+            "submitting": "Updating...",
+            "successToast": "Habit updated",
+            "successToastDesc": "\"{{title}}\" has been successfully updated.",
+            "errorToast": "Error updating habit",
+            "errorToastDesc": "The habit could not be updated. Please try again."
+        },
+        "deleteHabit": {
+            "title": "Delete Habit",
+            "description": "Are you sure you want to delete \"{{title}}\"?",
+            "warning": "This action cannot be undone and all history for this habit will be lost.",
+            "submit": "Delete Habit",
+            "submitting": "Deleting...",
+            "successToast": "Habit deleted",
+            "successToastDesc": "\"{{title}}\" was successfully deleted.",
+            "errorToast": "Error deleting habit:",
+            "errorToastDesc": "Could not delete \"{{title}}\". Please try again."
+        },
+        "common": {
+            "cancel": "Cancel",
+            "minChars": "Minimum {{count}} characters required",
+            "maxChars": "Maximum {{count}} characters allowed"
+        }
     }
 }
