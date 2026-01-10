@@ -176,6 +176,51 @@
             "signOut": "Cerrar sesión",
             "signOutDesc": "Cierra la sesión de tu cuenta",
             "signingOut": "Cerrando sesión..."
+        },
+        "modals": {
+            "changeEmail": {
+                "title": "Cambiar Correo",
+                "description": "Ingresa tu nueva dirección de correo electrónico. Se enviará un correo de confirmación para verificar el cambio.",
+                "currentEmail": "Correo Actual",
+                "newEmailLabel": "Nuevo Correo",
+                "newEmailPlaceholder": "nuevocorreo@ejemplo.com",
+                "submit": "Actualizar Correo",
+                "submitting": "Actualizando...",
+                "validation": {
+                    "different": "El nuevo correo debe ser diferente al actual",
+                    "alreadyRegistered": "Este correo ya está registrado",
+                    "error": "Error al actualizar el correo. Inténtalo de nuevo."
+                },
+                "successToast": "Correo actualizado",
+                "successToastDesc": "Se ha enviado un correo de confirmación a {{email}}. Por favor, revisa tu bandeja de entrada."
+            },
+            "changePassword": {
+                "title": "Cambiar Contraseña",
+                "description": "Ingresa tu contraseña actual y elige una nueva contraseña segura.",
+                "currentPasswordLabel": "Contraseña Actual",
+                "currentPasswordPlaceholder": "Ingresa tu contraseña actual",
+                "newPasswordLabel": "Nueva Contraseña",
+                "newPasswordPlaceholder": "Ingresa tu nueva contraseña",
+                "confirmPasswordLabel": "Confirmar Nueva Contraseña",
+                "confirmPasswordPlaceholder": "Confirma tu nueva contraseña",
+                "requirements": "Debe tener al menos 8 caracteres con mayúsculas, minúsculas y un número",
+                "submit": "Actualizar Contraseña",
+                "submitting": "Actualizando...",
+                "successToast": "Contraseña actualizada",
+                "successToastDesc": "Tu contraseña se ha actualizado correctamente."
+            },
+            "deleteAccount": {
+                "title": "Eliminar Cuenta",
+                "description": "Esta acción no se puede deshacer. Esto eliminará permanentemente tu cuenta y todos tus datos de nuestros servidores. Esto incluye tus hábitos, registros y ajustes.",
+                "warningTitle": "Advertencia: Esta acción es permanente",
+                "warningText": "Todos tus datos serán eliminados permanentemente y no se podrán recuperar.",
+                "confirmPrompt": "Escribe {{confirmText}} para confirmar",
+                "confirmError": "Por favor, escribe \"{{confirmText}}\" para confirmar",
+                "submit": "Eliminar Cuenta",
+                "submitting": "Eliminando...",
+                "successToast": "Cuenta eliminada",
+                "successToastDesc": "Tu cuenta y todos los datos asociados han sido eliminados."
+            }
         }
     },
     "calendar": {
@@ -210,6 +255,61 @@
             "thu": "Jue",
             "fri": "Vie",
             "sat": "Sáb"
+        }
+    },
+    "stats": {
+        "title": "Estadísticas",
+        "loading": "Cargando estadísticas...",
+        "error": "Error al cargar las estadísticas. Por favor, inténtalo de nuevo.",
+        "noHabits": "Aún no tienes hábitos. Crea uno para ver tus estadísticas.",
+        "periods": {
+            "week": "Semana",
+            "month": "Mes",
+            "year": "Año",
+            "thisWeek": "esta semana",
+            "thisMonth": "este mes",
+            "thisYear": "este año"
+        },
+        "cards": {
+            "bestStreak": {
+                "label": "Mejor Racha",
+                "description": "El mayor número de días consecutivos que has completado al menos un hábito (récord histórico).",
+                "unit": "días",
+                "context": "¡Sigue así!"
+            },
+            "avgCompletion": {
+                "label": "Cumplimiento Promedio",
+                "description": "El porcentaje promedio de tus hábitos completados durante {{period}}."
+            },
+            "activeHabits": {
+                "label": "Hábitos Activos",
+                "description": "El número total de hábitos que estás siguiendo activamente.",
+                "context": "En seguimiento"
+            },
+            "totalDays": {
+                "label": "Total de Días",
+                "description": "El número total de días únicos en los que has registrado actividad de hábitos (histórico).",
+                "context": "Días registrados"
+            }
+        },
+        "breakdown": {
+            "title": "Desglose de Hábitos",
+            "days": "días",
+            "completionOf": "{{completed}} de {{total}} días"
+        },
+        "insights": {
+            "performance": {
+                "title": "Rendimiento",
+                "desc": "Completaste tus hábitos el {{rate}}% del tiempo {{period}}."
+            },
+            "topHabit": {
+                "title": "Mejor Hábito",
+                "desc": "\"{{name}}\" es tu hábito más fuerte {{period}} con una tasa de cumplimiento del {{rate}}%."
+            },
+            "focus": {
+                "title": "Enfoque",
+                "desc": "\"{{name}}\" necesita atención {{period}}. Intenta hacerlo mañana a primera hora."
+            }
         }
     }
 }

@@ -9,7 +9,7 @@
         "passwordHint": "Password must be at least 6 characters long",
         "forgotPassword": "Forgot password?",
         "signIn": "Sign In",
-        "signUp": "Sign Up",
+        "signUp": "SignUp",
         "processing": "Processing...",
         "orContinue": "Or continue with",
         "connecting": "Connecting...",
@@ -176,6 +176,51 @@
             "signOut": "Sign Out",
             "signOutDesc": "Sign out of your account",
             "signingOut": "Signing out..."
+        },
+        "modals": {
+            "changeEmail": {
+                "title": "Change Email",
+                "description": "Enter your new email address. A confirmation email will be sent to verify the change.",
+                "currentEmail": "Current Email",
+                "newEmailLabel": "New Email",
+                "newEmailPlaceholder": "newemail@example.com",
+                "submit": "Update Email",
+                "submitting": "Updating...",
+                "validation": {
+                    "different": "New email must be different from current email",
+                    "alreadyRegistered": "This email is already registered",
+                    "error": "Failed to update email. Please try again."
+                },
+                "successToast": "Email updated",
+                "successToastDesc": "A confirmation email has been sent to {{email}}. Please check your inbox."
+            },
+            "changePassword": {
+                "title": "Change Password",
+                "description": "Enter your current password and choose a new secure password.",
+                "currentPasswordLabel": "Current Password",
+                "currentPasswordPlaceholder": "Enter current password",
+                "newPasswordLabel": "New Password",
+                "newPasswordPlaceholder": "Enter new password",
+                "confirmPasswordLabel": "Confirm New Password",
+                "confirmPasswordPlaceholder": "Confirm new password",
+                "requirements": "Must be at least 8 characters with uppercase, lowercase, and a number",
+                "submit": "Update Password",
+                "submitting": "Updating...",
+                "successToast": "Password updated",
+                "successToastDesc": "Your password has been successfully updated."
+            },
+            "deleteAccount": {
+                "title": "Delete Account",
+                "description": "This action cannot be undone. This will permanently delete your account and remove all of your data from our servers. This includes all your habits, logs, and settings.",
+                "warningTitle": "Warning: This action is permanent",
+                "warningText": "All your data will be permanently deleted and cannot be recovered.",
+                "confirmPrompt": "Type {{confirmText}} to confirm",
+                "confirmError": "Please type \"{{confirmText}}\" to confirm",
+                "submit": "Delete Account",
+                "submitting": "Deleting...",
+                "successToast": "Account deleted",
+                "successToastDesc": "Your account and all associated data have been deleted."
+            }
         }
     },
     "calendar": {
@@ -210,6 +255,61 @@
             "thu": "Thu",
             "fri": "Fri",
             "sat": "Sat"
+        }
+    },
+    "stats": {
+        "title": "Statistics",
+        "loading": "Loading statistics...",
+        "error": "Error loading statistics. Please try again.",
+        "noHabits": "You don't have any habits yet. Create one to see your statistics.",
+        "periods": {
+            "week": "Week",
+            "month": "Month",
+            "year": "Year",
+            "thisWeek": "this week",
+            "thisMonth": "this month",
+            "thisYear": "this year"
+        },
+        "cards": {
+            "bestStreak": {
+                "label": "Best Streak",
+                "description": "The longest consecutive number of days you've completed at least one habit (all-time record).",
+                "unit": "days",
+                "context": "Keep it going!"
+            },
+            "avgCompletion": {
+                "label": "Avg Completion",
+                "description": "The average percentage of your habits completed over the {{period}}."
+            },
+            "activeHabits": {
+                "label": "Active Habits",
+                "description": "The total number of habits you are currently actively tracking.",
+                "context": "Being tracked"
+            },
+            "totalDays": {
+                "label": "Total Days",
+                "description": "The total number of unique days you have recorded any habit activity (all-time).",
+                "context": "Days tracked"
+            }
+        },
+        "breakdown": {
+            "title": "Habit Breakdown",
+            "days": "days",
+            "completionOf": "{{completed}} of {{total}} days"
+        },
+        "insights": {
+            "performance": {
+                "title": "Performance",
+                "desc": "You completed your habits {{rate}}% of the time {{period}}."
+            },
+            "topHabit": {
+                "title": "Top Habit",
+                "desc": "\"{{name}}\" is your strongest habit {{period}} with a {{rate}}% completion rate."
+            },
+            "focus": {
+                "title": "Focus",
+                "desc": "\"{{name}}\" needs attention {{period}}. Try tackling it first thing tomorrow."
+            }
         }
     }
 }

@@ -13,6 +13,8 @@ import { getHabitColor } from "@/lib/habitColors"
 import { motion } from "framer-motion"
 import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
+import { useTranslation } from "react-i18next"
+import I18nProvider from "@/components/I18nProvider"
 import {
   getBestStreak,
   getAverageCompletionRate,
@@ -50,7 +52,7 @@ function StatInfo({ description }: { description: string }) {
   }, [isOpen])
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="relative ml-1.5 inline-block"
       onMouseEnter={() => setIsOpen(true)}
@@ -67,7 +69,7 @@ function StatInfo({ description }: { description: string }) {
       >
         <Info className="size-3.5" />
       </button>
-      
+
       {isOpen && (
         <div className="absolute bottom-full left-1/2 mb-2 w-48 -translate-x-1/2 rounded-lg border bg-popover p-2.5 text-xs font-normal text-popover-foreground shadow-xl animate-in fade-in zoom-in duration-200 z-50 pointer-events-auto">
           <div className="absolute left-1/2 top-full -translate-x-1/2 border-8 border-transparent border-t-popover" />
@@ -79,6 +81,7 @@ function StatInfo({ description }: { description: string }) {
 }
 
 export default function StatsPage() {
+  const { t } = useTranslation()
   const [period, setPeriod] = useState<Period>('month')
   const { habits, isLoading: isLoadingHabits, error: habitsError } = useHabits()
   const { logs: allLogs, isLoading: isLoadingLogs, error: logsError } = useHabitLogs()
@@ -182,277 +185,298 @@ export default function StatsPage() {
     }
   }, [habitBreakdown])
 
-  // Get period text for insights
-  const getPeriodText = (period: Period): string => {
+  // Get period text for insights - This now uses translations
+  const getTranslatedPeriodText = (period: Period): string => {
     switch (period) {
       case 'week':
-        return 'this week'
+        return t('stats.periods.thisWeek')
       case 'month':
-        return 'this month'
+        return t('stats.periods.thisMonth')
       case 'year':
-        return 'this year'
+        return t('stats.periods.thisYear')
       default:
-        return 'this month'
+        return t('stats.periods.thisMonth')
+    }
+  }
+
+  // Get period label for stats cards - This now uses translations
+  const getTranslatedPeriodLabel = (period: Period): string => {
+    switch (period) {
+      case 'week':
+        return t('stats.periods.week')
+      case 'month':
+        return t('stats.periods.month')
+      case 'year':
+        return t('stats.periods.year')
+      default:
+        return t('stats.periods.month')
     }
   }
 
   // Loading state
   if (isLoading) {
     return (
-      <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
-        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className="hover:bg-muted/80">
-                  <ArrowLeft className="size-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="size-6 text-primary" />
-                <span className="font-bold text-xl">Statistics</span>
+      <I18nProvider>
+        <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
+          <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="icon" className="hover:bg-muted/80">
+                    <ArrowLeft className="size-5" />
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-6 text-primary" />
+                  <span className="font-bold text-xl">{t("stats.title")}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-        <main className="container mx-auto flex-1 px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">Loading statistics...</p>
-          </div>
-        </main>
-      </div>
+          </header>
+          <main className="container mx-auto flex-1 px-4 py-8">
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">{t("stats.loading")}</p>
+            </div>
+          </main>
+        </div>
+      </I18nProvider>
     )
   }
 
   // Error state
   if (error) {
     return (
-      <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
-        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className="hover:bg-muted/80">
-                  <ArrowLeft className="size-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="size-6 text-primary" />
-                <span className="font-bold text-xl">Statistics</span>
+      <I18nProvider>
+        <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
+          <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="icon" className="hover:bg-muted/80">
+                    <ArrowLeft className="size-5" />
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-6 text-primary" />
+                  <span className="font-bold text-xl">{t("stats.title")}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-        <main className="container mx-auto flex-1 px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <p className="text-destructive">Error loading statistics. Please try again.</p>
-          </div>
-        </main>
-      </div>
+          </header>
+          <main className="container mx-auto flex-1 px-4 py-8">
+            <div className="flex items-center justify-center py-12">
+              <p className="text-destructive">{t("stats.error")}</p>
+            </div>
+          </main>
+        </div>
+      </I18nProvider>
     )
   }
 
   // Empty state
   if (habits.length === 0) {
     return (
-      <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
-        <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
-          <div className="container mx-auto flex h-16 items-center justify-between px-4">
-            <div className="flex items-center gap-4">
-              <Link href="/dashboard">
-                <Button variant="ghost" size="icon" className="hover:bg-muted/80">
-                  <ArrowLeft className="size-5" />
-                </Button>
-              </Link>
-              <div className="flex items-center gap-2">
-                <TrendingUp className="size-6 text-primary" />
-                <span className="font-bold text-xl">Statistics</span>
+      <I18nProvider>
+        <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
+          <header className="sticky top-0 z-50 border-b bg-background/80 backdrop-blur-md">
+            <div className="container mx-auto flex h-16 items-center justify-between px-4">
+              <div className="flex items-center gap-4">
+                <Link href="/dashboard">
+                  <Button variant="ghost" size="icon" className="hover:bg-muted/80">
+                    <ArrowLeft className="size-5" />
+                  </Button>
+                </Link>
+                <div className="flex items-center gap-2">
+                  <TrendingUp className="size-6 text-primary" />
+                  <span className="font-bold text-xl">{t("stats.title")}</span>
+                </div>
               </div>
             </div>
-          </div>
-        </header>
-        <main className="container mx-auto flex-1 px-4 py-8">
-          <div className="flex items-center justify-center py-12">
-            <p className="text-muted-foreground">You don't have any habits yet. Create one to see your statistics.</p>
-          </div>
-        </main>
-      </div>
+          </header>
+          <main className="container mx-auto flex-1 px-4 py-8">
+            <div className="flex items-center justify-center py-12">
+              <p className="text-muted-foreground">{t("stats.noHabits")}</p>
+            </div>
+          </main>
+        </div>
+      </I18nProvider>
     )
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
-      {/* Header */}
-      <Header />
+    <I18nProvider>
+      <div className="flex min-h-screen flex-col bg-linear-to-b from-muted/50 to-background">
+        {/* Header */}
+        <Header />
 
-      {/* Main Content */}
-      <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
-        {/* Period Selector */}
-        <div className="mb-8 flex justify-end">
-          <div className="relative flex w-full sm:w-auto p-1 bg-muted/80 backdrop-blur-sm rounded-xl border shadow-inner">
-            {(['week', 'month', 'year'] as Period[]).map((p) => (
-              <button
-                key={p}
-                onClick={() => setPeriod(p)}
-                className={`relative z-10 flex-1 sm:flex-none px-6 py-2 text-sm font-medium capitalize transition-colors duration-200 ${
-                  period === p 
-                    ? 'text-foreground' 
-                    : 'text-muted-foreground hover:text-foreground/80'
-                }`}
-              >
-                {/* Animated background indicator */}
-                {period === p && (
-                  <motion.div
-                    layoutId="active-period"
-                    className="absolute inset-0 bg-background rounded-lg shadow-sm"
-                    transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
-                  />
-                )}
-                <span className="relative z-20 whitespace-nowrap">
-                  {p === 'week' ? 'Week' : p === 'month' ? 'Month' : 'Year'}
-                </span>
-              </button>
-            ))}
+        {/* Main Content */}
+        <main className="container mx-auto flex-1 px-4 py-8 pb-20 md:pb-8">
+          {/* Period Selector */}
+          <div className="mb-8 flex justify-end">
+            <div className="relative flex w-full sm:w-auto p-1 bg-muted/80 backdrop-blur-sm rounded-xl border shadow-inner">
+              {(['week', 'month', 'year'] as Period[]).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`relative z-10 flex-1 sm:flex-none px-6 py-2 text-sm font-medium capitalize transition-colors duration-200 ${period === p
+                      ? 'text-foreground'
+                      : 'text-muted-foreground hover:text-foreground/80'
+                    }`}
+                >
+                  {/* Animated background indicator */}
+                  {period === p && (
+                    <motion.div
+                      layoutId="active-period"
+                      className="absolute inset-0 bg-background rounded-lg shadow-sm"
+                      transition={{ type: "spring", bounce: 0.2, duration: 0.6 }}
+                    />
+                  )}
+                  <span className="relative z-20 whitespace-nowrap">
+                    {t(`stats.periods.${p}`)}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
 
-        {/* Overview Stats */}
-        <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-          <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                Best Streak
-                <StatInfo description="The longest consecutive number of days you've completed at least one habit (all-time record)." />
-              </CardTitle>
-              <div className="rounded-full bg-orange-500/10 p-2">
-                <Flame className="size-4 text-orange-500" />
-              </div>
+          {/* Overview Stats */}
+          <div className="mb-8 grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+            <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-orange-500/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                  {t("stats.cards.bestStreak.label")}
+                  <StatInfo description={t("stats.cards.bestStreak.description")} />
+                </CardTitle>
+                <div className="rounded-full bg-orange-500/10 p-2">
+                  <Flame className="size-4 text-orange-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold tracking-tight">{stats.bestStreak} {t("stats.cards.bestStreak.unit")}</div>
+                <p className="text-xs text-muted-foreground mt-1">{t("stats.cards.bestStreak.context")}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                  {t("stats.cards.avgCompletion.label")}
+                  <StatInfo description={t("stats.cards.avgCompletion.description", { period: getTranslatedPeriodLabel(period).toLowerCase() })} />
+                </CardTitle>
+                <div className="rounded-full bg-blue-500/10 p-2">
+                  <Target className="size-4 text-blue-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold tracking-tight">{stats.avgCompletionRate}%</div>
+                <p className="text-xs text-muted-foreground mt-1">{getTranslatedPeriodLabel(period)}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                  {t("stats.cards.activeHabits.label")}
+                  <StatInfo description={t("stats.cards.activeHabits.description")} />
+                </CardTitle>
+                <div className="rounded-full bg-primary/10 p-2">
+                  <CalendarIcon className="size-4 text-primary" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold tracking-tight">{stats.activeHabits}</div>
+                <p className="text-xs text-muted-foreground mt-1">{t("stats.cards.activeHabits.context")}</p>
+              </CardContent>
+            </Card>
+
+            <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
+                  {t("stats.cards.totalDays.label")}
+                  <StatInfo description={t("stats.cards.totalDays.description")} />
+                </CardTitle>
+                <div className="rounded-full bg-purple-500/10 p-2">
+                  <Award className="size-4 text-purple-500" />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold tracking-tight">{stats.totalDays}</div>
+                <p className="text-xs text-muted-foreground mt-1">{t("stats.cards.totalDays.context")}</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Habit Breakdown */}
+          <Card className="overflow-hidden shadow-sm border-muted/40">
+            <CardHeader className="bg-muted/10">
+              <CardTitle>{t("stats.breakdown.title")}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tracking-tight">{stats.bestStreak} days</div>
-              <p className="text-xs text-muted-foreground mt-1">Keep it going!</p>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-blue-500/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                Avg Completion
-                <StatInfo description={`The average percentage of your habits completed over the ${getPeriodLabel(period).toLowerCase()}.`} />
-              </CardTitle>
-              <div className="rounded-full bg-blue-500/10 p-2">
-                <Target className="size-4 text-blue-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tracking-tight">{stats.avgCompletionRate}%</div>
-              <p className="text-xs text-muted-foreground mt-1">{getPeriodLabel(period)}</p>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-primary/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                Active Habits
-                <StatInfo description="The total number of habits you are currently actively tracking." />
-              </CardTitle>
-              <div className="rounded-full bg-primary/10 p-2">
-                <CalendarIcon className="size-4 text-primary" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tracking-tight">{stats.activeHabits}</div>
-              <p className="text-xs text-muted-foreground mt-1">Being tracked</p>
-            </CardContent>
-          </Card>
-
-          <Card className="transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:shadow-purple-500/10">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-muted-foreground flex items-center">
-                Total Days
-                <StatInfo description="The total number of unique days you have recorded any habit activity (all-time)." />
-              </CardTitle>
-              <div className="rounded-full bg-purple-500/10 p-2">
-                <Award className="size-4 text-purple-500" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tracking-tight">{stats.totalDays}</div>
-              <p className="text-xs text-muted-foreground mt-1">Days tracked</p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Habit Breakdown */}
-        <Card className="overflow-hidden shadow-sm border-muted/40">
-          <CardHeader className="bg-muted/10">
-            <CardTitle>Habit Breakdown</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6 p-6">
-            {habitBreakdown.map((habit) => (
-              <div key={habit.id} className="group space-y-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className={`size-3 rounded-full ${habit.color} shadow-[0_0_10px] ${habit.shadow}`} />
-                    <span className="font-semibold tracking-tight">{habit.name}</span>
-                  </div>
-                  <div className="flex items-center gap-4 text-sm">
-                    <div className="flex items-center gap-1 text-muted-foreground group-hover:text-foreground transition-colors">
-                      <Flame className="size-3.5 text-orange-500/80" />
-                      <span>{habit.streak} days</span>
+            <CardContent className="space-y-6 p-6">
+              {habitBreakdown.map((habit) => (
+                <div key={habit.id} className="group space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className={`size-3 rounded-full ${habit.color} shadow-[0_0_10px] ${habit.shadow}`} />
+                      <span className="font-semibold tracking-tight">{habit.name}</span>
                     </div>
-                    <span className="font-bold tabular-nums">{habit.rate}%</span>
+                    <div className="flex items-center gap-4 text-sm">
+                      <div className="flex items-center gap-1 text-muted-foreground group-hover:text-foreground transition-colors">
+                        <Flame className="size-3.5 text-orange-500/80" />
+                        <span>{habit.streak} {t("stats.breakdown.days")}</span>
+                      </div>
+                      <span className="font-bold tabular-nums">{habit.rate}%</span>
+                    </div>
+                  </div>
+                  <Progress
+                    value={habit.rate}
+                    className="h-2.5 bg-muted/50"
+                    indicatorClassName={`${habit.color} transition-all duration-500`}
+                  />
+                  <div className="flex justify-between text-xs font-medium text-muted-foreground/70">
+                    <span>{t("stats.breakdown.completionOf", { completed: habit.completedDays, total: habit.total })}</span>
+                    <span>{getTranslatedPeriodLabel(period)}</span>
                   </div>
                 </div>
-                <Progress 
-                  value={habit.rate} 
-                  className="h-2.5 bg-muted/50" 
-                  indicatorClassName={`${habit.color} transition-all duration-500`} 
-                />
-                <div className="flex justify-between text-xs font-medium text-muted-foreground/70">
-                  <span>{habit.completedDays} of {habit.total} days</span>
-                  <span>{getPeriodLabel(period)}</span>
-                </div>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Insights */}
+          <div className="mt-8 grid gap-4 sm:grid-cols-3">
+            <div className="rounded-xl border border-primary/10 bg-linear-to-br from-primary/10 to-transparent p-4">
+              <h4 className="mb-2 flex items-center gap-2 font-bold text-primary">
+                <CheckCircle2 className="size-4" /> {t("stats.insights.performance.title")}
+              </h4>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {t("stats.insights.performance.desc", { rate: stats.avgCompletionRate, period: getTranslatedPeriodText(period) })}
+              </p>
+            </div>
+
+            {insights.topHabit && (
+              <div className="rounded-xl border border-blue-500/10 bg-linear-to-br from-blue-500/10 to-transparent p-4">
+                <h4 className="mb-2 flex items-center gap-2 font-bold text-blue-600 dark:text-blue-400">
+                  <Award className="size-4" /> {t("stats.insights.topHabit.title")}
+                </h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t("stats.insights.topHabit.desc", { name: insights.topHabit.name, period: getTranslatedPeriodText(period), rate: insights.topHabit.rate })}
+                </p>
               </div>
-            ))}
-          </CardContent>
-        </Card>
+            )}
 
-        {/* Insights */}
-        <div className="mt-8 grid gap-4 sm:grid-cols-3">
-          <div className="rounded-xl border border-primary/10 bg-linear-to-br from-primary/10 to-transparent p-4">
-            <h4 className="mb-2 flex items-center gap-2 font-bold text-primary">
-              <CheckCircle2 className="size-4" /> Performance
-            </h4>
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              You completed your habits <span className="text-foreground font-semibold">{stats.avgCompletionRate}%</span> of the time {getPeriodText(period)}.
-            </p>
+            {insights.worstHabit && insights.worstHabit.rate < 50 && (
+              <div className="rounded-xl border border-orange-500/10 bg-linear-to-br from-orange-500/10 to-transparent p-4">
+                <h4 className="mb-2 flex items-center gap-2 font-bold text-orange-600 dark:text-orange-400">
+                  <AlertCircle className="size-4" /> {t("stats.insights.focus.title")}
+                </h4>
+                <p className="text-sm text-muted-foreground leading-relaxed">
+                  {t("stats.insights.focus.desc", { name: insights.worstHabit.name, period: getTranslatedPeriodText(period) })}
+                </p>
+              </div>
+            )}
           </div>
-
-          {insights.topHabit && (
-            <div className="rounded-xl border border-blue-500/10 bg-linear-to-br from-blue-500/10 to-transparent p-4">
-              <h4 className="mb-2 flex items-center gap-2 font-bold text-blue-600 dark:text-blue-400">
-                <Award className="size-4" /> Top Habit
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                "{insights.topHabit.name}" is your strongest habit {getPeriodText(period)} with a <span className="text-foreground font-semibold">{insights.topHabit.rate}%</span> completion rate.
-              </p>
-            </div>
-          )}
-
-          {insights.worstHabit && insights.worstHabit.rate < 50 && (
-            <div className="rounded-xl border border-orange-500/10 bg-linear-to-br from-orange-500/10 to-transparent p-4">
-              <h4 className="mb-2 flex items-center gap-2 font-bold text-orange-600 dark:text-orange-400">
-                <AlertCircle className="size-4" /> Focus
-              </h4>
-              <p className="text-sm text-muted-foreground leading-relaxed">
-                "{insights.worstHabit.name}" needs attention {getPeriodText(period)}. Try tackling it first thing tomorrow.
-              </p>
-            </div>
-          )}
-        </div>
-      </main>
-      <BottomNav />
-    </div>
+        </main>
+        <BottomNav />
+      </div>
+    </I18nProvider>
   )
 }
