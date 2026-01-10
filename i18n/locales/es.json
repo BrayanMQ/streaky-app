@@ -93,6 +93,31 @@
                 "nature": "Naturaleza",
                 "lifestyle": "Estilo de vida"
             }
+        },
+        "card": {
+            "streak": "Racha de {{count}} días",
+            "edit": "Editar",
+            "delete": "Eliminar"
+        },
+        "list": {
+            "excellent": "¡Excelente!",
+            "wellDone": "¡Bien hecho!",
+            "habitCompleted": "Hábito completado",
+            "habitUnchecked": "Hábito desmarcado",
+            "completedContextHigh": "Has completado “{{title}}”. ¡{{count}} días seguidos! 🔥",
+            "completedContextMid": "Has completado “{{title}}”. {{count}} días seguidos.",
+            "completedContextLow": "Has completado “{{title}}” hoy.",
+            "uncheckedContext": "Has desmarcado “{{title}}” por hoy.",
+            "errorUpdating": "Error al actualizar el hábito",
+            "couldNotCheck": "No se pudo marcar \"{{title}}\". Por favor intenta de nuevo.",
+            "couldNotUncheck": "No se pudo desmarcar \"{{title}}\". Por favor intenta de nuevo.",
+            "errorLoading": "Error al cargar los hábitos",
+            "errorLoadingLogs": "Error al cargar los registros",
+            "retry": "Reintentar",
+            "noHabits": "Aún no hay hábitos",
+            "createFirstDesc": "¡Crea tu primer hábito para empezar a seguir tu progreso!",
+            "createFirstBtn": "Crea tu primer hábito",
+            "genericError": "Ocurrió un error. Por favor intenta de nuevo."
         }
     }
 }

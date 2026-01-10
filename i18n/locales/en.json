@@ -93,6 +93,31 @@
                 "nature": "Nature",
                 "lifestyle": "Lifestyle"
             }
+        },
+        "card": {
+            "streak": "{{count}} day streak",
+            "edit": "Edit",
+            "delete": "Delete"
+        },
+        "list": {
+            "excellent": "Excellent!",
+            "wellDone": "Well done!",
+            "habitCompleted": "Habit completed",
+            "habitUnchecked": "Habit unchecked",
+            "completedContextHigh": "You have completed “{{title}}”. {{count}} days in a row! 🔥",
+            "completedContextMid": "You have completed “{{title}}”. {{count}} days in a row.",
+            "completedContextLow": "You have completed “{{title}}” today.",
+            "uncheckedContext": "You have unchecked “{{title}}” for today.",
+            "errorUpdating": "Error updating habit",
+            "couldNotCheck": "Could not check \"{{title}}\". Please try again.",
+            "couldNotUncheck": "Could not uncheck \"{{title}}\". Please try again.",
+            "errorLoading": "Error loading habits",
+            "errorLoadingLogs": "Error loading habit logs",
+            "retry": "Retry",
+            "noHabits": "No habits yet",
+            "createFirstDesc": "Create your first habit to start tracking your progress!",
+            "createFirstBtn": "Create Your First Habit",
+            "genericError": "An error occurred. Please try again."
         }
     }
 }
