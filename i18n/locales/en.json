@@ -26,6 +26,26 @@
             "network": "Network error. Please check your connection and try again."
         }
     },
+    "errors": {
+        "boundary": {
+            "title": "Something went wrong",
+            "description": "We're sorry, but something unexpected happened.",
+            "tryAgain": "Try Again",
+            "goHome": "Go to Dashboard"
+        },
+        "serverError": {
+            "title": "Server Error",
+            "description": "We're having trouble connecting. Please try again later."
+        },
+        "network": {
+            "offline": "You're offline",
+            "offlineDesc": "Please check your internet connection.",
+            "online": "You're back online",
+            "onlineDesc": "Connection restored."
+        },
+        "notFound": "The requested resource was not found.",
+        "tooManyRequests": "Too many requests. Please wait a moment and try again."
+    },
     "dashboard": {
         "loading": "Loading habits...",
         "errorTitle": "Error loading habits",
