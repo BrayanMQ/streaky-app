@@ -26,6 +26,26 @@
             "network": "Error de red. Por favor revisa tu conexión e inténtalo de nuevo."
         }
     },
+    "errors": {
+        "boundary": {
+            "title": "Algo salió mal",
+            "description": "Lo sentimos, pero ocurrió algo inesperado.",
+            "tryAgain": "Intentar de nuevo",
+            "goHome": "Ir al Dashboard"
+        },
+        "serverError": {
+            "title": "Error del servidor",
+            "description": "Tenemos problemas para conectar. Por favor, inténtalo más tarde."
+        },
+        "network": {
+            "offline": "Estás sin conexión",
+            "offlineDesc": "Por favor, revisa tu conexión a internet.",
+            "online": "Estás conectado de nuevo",
+            "onlineDesc": "Conexión restaurada."
+        },
+        "notFound": "El recurso solicitado no fue encontrado.",
+        "tooManyRequests": "Demasiadas solicitudes. Por favor, espera un momento e inténtalo de nuevo."
+    },
     "dashboard": {
         "loading": "Cargando hábitos...",
         "errorTitle": "Error al cargar hábitos",
