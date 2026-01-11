@@ -8,6 +8,7 @@ import { Toaster } from '@/components/ui/sonner';
 import { ServiceWorkerProvider } from './ServiceWorkerProvider';
 import { ThemeSync } from './ThemeSync';
 import { TopLoadingBar } from './TopLoadingBar';
+import { NetworkStatusProvider } from './NetworkStatusProvider';
 
 /**
  * Providers component that wraps the app with React Query
@@ -65,7 +66,9 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <ThemeSync />
         <TopLoadingBar />
         <ServiceWorkerProvider>
-          {children}
+          <NetworkStatusProvider>
+            {children}
+          </NetworkStatusProvider>
           <Toaster />
           {/* Only show devtools in development */}
           {process.env.NODE_ENV === 'development' && <ReactQueryDevtools initialIsOpen={false} />}
