@@ -83,7 +83,16 @@
             "successToast": "Habit updated",
             "successToastDesc": "\"{{title}}\" has been successfully updated.",
             "errorToast": "Error updating habit",
-            "errorToastDesc": "The habit could not be updated. Please try again."
+            "errorToastDesc": "The habit could not be updated. Please try again.",
+            "cloneConfirm": {
+                "title": "Habit Has History",
+                "description": "This habit already has recorded history. Changing its name will create a new habit and keep the previous history intact.",
+                "keepOriginal": "The original habit \"{{title}}\" will remain unchanged with all its logs.",
+                "cancel": "Cancel",
+                "confirm": "Create New Habit"
+            },
+            "cloneSuccessToast": "New habit created",
+            "cloneSuccessToastDesc": "\"{{title}}\" has been created. Your original habit remains unchanged."
         },
         "deleteHabit": {
             "title": "Delete Habit",

@@ -83,7 +83,16 @@
             "successToast": "Hábito actualizado",
             "successToastDesc": "\"{{title}}\" ha sido actualizado con éxito.",
             "errorToast": "Error al actualizar el hábito",
-            "errorToastDesc": "El hábito no pudo ser actualizado. Por favor intenta de nuevo."
+            "errorToastDesc": "El hábito no pudo ser actualizado. Por favor intenta de nuevo.",
+            "cloneConfirm": {
+                "title": "El hábito tiene historial",
+                "description": "Este hábito ya tiene historial registrado. Cambiar su nombre creará un hábito nuevo y mantendrá el historial anterior intacto.",
+                "keepOriginal": "El hábito original \"{{title}}\" permanecerá sin cambios con todos sus registros.",
+                "cancel": "Cancelar",
+                "confirm": "Crear nuevo hábito"
+            },
+            "cloneSuccessToast": "Nuevo hábito creado",
+            "cloneSuccessToastDesc": "\"{{title}}\" ha sido creado. Tu hábito original permanece sin cambios."
         },
         "deleteHabit": {
             "title": "Eliminar Hábito",
