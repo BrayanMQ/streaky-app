@@ -18,25 +18,25 @@ import type { PostgrestError } from '@supabase/supabase-js';
  */
 function validateAndNormalizeDate(date: string | Date): string {
   const normalized = formatDate(date);
-  
+
   // Validate that the date is in correct format (YYYY-MM-DD)
   const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
   if (!dateRegex.test(normalized)) {
     throw new Error(`Invalid date format: ${date}. Expected YYYY-MM-DD format.`);
   }
-  
+
   // Validate that it's a valid date
   const dateObj = new Date(normalized);
   if (isNaN(dateObj.getTime())) {
     throw new Error(`Invalid date: ${date}. The date does not exist.`);
   }
-  
+
   // Check if the normalized date matches the input (to catch invalid dates like 2025-13-45)
   const normalizedCheck = formatDate(dateObj);
   if (normalized !== normalizedCheck) {
     throw new Error(`Invalid date: ${date}. The date is not valid.`);
   }
-  
+
   return normalized;
 }
 
@@ -49,10 +49,10 @@ function validateAndNormalizeDate(date: string | Date): string {
 function validateDateRange(startDate: string, endDate: string): void {
   const normalizedStart = validateAndNormalizeDate(startDate);
   const normalizedEnd = validateAndNormalizeDate(endDate);
-  
+
   const start = new Date(normalizedStart);
   const end = new Date(normalizedEnd);
-  
+
   if (start > end) {
     throw new Error(
       `Invalid date range: startDate (${normalizedStart}) must be less than or equal to endDate (${normalizedEnd}).`
@@ -105,11 +105,11 @@ function updateDateRangeQueriesOptimistically(
     if (keyArray.length >= 6) {
       const startDate = String(keyArray[4]);
       const endDate = String(keyArray[5]);
-      
+
       if (isDateInRange(targetDate, startDate, endDate)) {
         // Save previous data for rollback
         previousData.set(queryKey, data);
-        
+
         if (data) {
           const existingIndex = data.findIndex(
             (log) => log.habit_id === habitId && formatDateLocal(log.date) === targetDate
@@ -139,11 +139,11 @@ function updateDateRangeQueriesOptimistically(
     if (keyArray.length >= 6) {
       const startDate = String(keyArray[4]);
       const endDate = String(keyArray[5]);
-      
+
       if (isDateInRange(targetDate, startDate, endDate)) {
         // Save previous data for rollback
         previousData.set(queryKey, data);
-        
+
         if (data) {
           const existingIndex = data.findIndex(
             (log) => log.habit_id === habitId && formatDateLocal(log.date) === targetDate
@@ -257,7 +257,7 @@ export function useHabitLogs(options?: {
   // Validate and normalize date range if both dates are provided
   let normalizedStartDate: string | undefined;
   let normalizedEndDate: string | undefined;
-  
+
   if (startDate && endDate) {
     validateDateRange(startDate, endDate);
     normalizedStartDate = validateAndNormalizeDate(startDate);
@@ -303,7 +303,7 @@ export function useHabitLogs(options?: {
       }
 
       const supabase = createBrowserClient();
-      
+
       // Optimized: Select only needed fields for better performance
       // RLS policies automatically filter by user_id, so we can query directly
       let query = supabase
@@ -420,7 +420,7 @@ export function useToggleHabitLog() {
       }
 
       const supabase = createBrowserClient();
-      const targetDate = params.date 
+      const targetDate = params.date
         ? validateAndNormalizeDate(params.date)
         : getTodayDateLocal();
 
@@ -513,7 +513,7 @@ export function useToggleHabitLog() {
         habitLogsKeys.user(user?.id ?? null)
       );
 
-      const targetDate = params.date 
+      const targetDate = params.date
         ? validateAndNormalizeDate(params.date)
         : getTodayDateLocal();
 
@@ -684,7 +684,7 @@ export function useToggleHabitLog() {
       throw new Error('habitId is required');
     }
 
-    const targetDate = params.date 
+    const targetDate = params.date
       ? validateAndNormalizeDate(params.date)
       : getTodayDateLocal();
 
@@ -693,14 +693,14 @@ export function useToggleHabitLog() {
     let currentLogs = queryClient.getQueryData<HabitLog[]>(
       habitLogsKeys.habit(params.habitId)
     );
-    
+
     // If not found, try user logs query (used by dashboard)
     if (!currentLogs) {
       currentLogs = queryClient.getQueryData<HabitLog[]>(
         habitLogsKeys.user(user?.id ?? null)
       );
     }
-    
+
     const todayLog = currentLogs?.find((log) => log.habit_id === params.habitId && formatDateLocal(log.date) === targetDate);
     const currentCompleted = todayLog?.completed ?? false;
 
@@ -764,5 +764,61 @@ export function useTodayLogs(habitId?: string) {
     habitId,
     includeTodayOnly: true,
   });
+}
+
+/**
+ * Custom hook for checking if a habit has any logs
+ * 
+ * This hook is useful for determining if a habit has any history before
+ * allowing certain operations (like renaming which would orphan historical data).
+ * 
+ * @param habitId - The habit ID to check for logs
+ * @returns Object containing:
+ *   - hasLogs: Boolean indicating if the habit has any logs
+ *   - isLoading: Loading state
+ *   - error: Error object if query failed
+ * 
+ * @example
+ * ```tsx
+ * 'use client'
+ * import { useHabitHasLogs } from '@/hooks/useHabitLogs'
+ * 
+ * function EditHabitForm({ habitId }) {
+ *   const { hasLogs, isLoading } = useHabitHasLogs(habitId)
+ *   
+ *   if (isLoading) return <div>Checking...</div>
+ *   
+ *   if (hasLogs) {
+ *     // Show warning about renaming
+ *   }
+ * }
+ * ```
+ */
+export function useHabitHasLogs(habitId?: string) {
+  const supabase = createBrowserClient();
+
+  const query = useQuery({
+    queryKey: ['habit_logs', 'exists', habitId],
+    queryFn: async () => {
+      if (!habitId) return false;
+
+      const { count, error } = await supabase
+        .from('habit_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('habit_id', habitId)
+        .limit(1);
+
+      if (error) throw error;
+      return (count ?? 0) > 0;
+    },
+    enabled: !!habitId,
+    staleTime: 30000, // 30 seconds - reasonable cache time
+  });
+
+  return {
+    hasLogs: query.data ?? false,
+    isLoading: query.isLoading,
+    error: query.error as PostgrestError | null,
+  };
 }
 
