@@ -48,7 +48,8 @@ describe('HabitCard', () => {
         icon: '🎯',
         created_at: '2024-01-01',
         user_id: 'user-1',
-        frequency: null
+        frequency: null,
+        archived_at: null
     }
 
     const mockOnToggle = jest.fn()
