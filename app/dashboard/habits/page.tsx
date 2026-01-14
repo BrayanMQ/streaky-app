@@ -1,6 +1,7 @@
 'use client';
 
 import { HabitList } from '@/components/habits/HabitList';
+import { ArchivedHabitsSection } from '@/components/habits/ArchivedHabitsSection';
 import { BottomNav } from '@/components/layout/BottomNav';
 import { Header } from '@/components/layout/Header';
 import { Button } from '@/components/ui/button';
@@ -36,6 +37,7 @@ export default function HabitsPage() {
             )}
           </div>
           <HabitList mode="management" />
+          <ArchivedHabitsSection />
           {totalHabits > 0 && (
             <div className="mt-6 md:hidden">
               <Button size="lg" className="w-full" onClick={openAddHabitModal}>
