@@ -17,7 +17,7 @@ import {
 import { AlertCircle, Loader2, Check, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/ui"
-import { useUpdateHabit, useCreateHabit } from "@/hooks/useHabits"
+import { useUpdateHabit, useCreateHabit, useArchiveHabit } from "@/hooks/useHabits"
 import { useHabitHasLogs } from "@/hooks/useHabitLogs"
 import { HABIT_COLORS } from "@/lib/habitColors"
 import { habitSchema } from "@/lib/validations"
@@ -34,6 +34,7 @@ export function EditHabitModal() {
   const { updateHabit, isUpdating, updateError } = useUpdateHabit()
   const { createHabit, isCreating } = useCreateHabit()
   const { hasLogs, isLoading: isCheckingLogs } = useHabitHasLogs(selectedHabit?.id)
+  const { archiveHabit, isArchiving } = useArchiveHabit()
 
   const [selectedIcon, setSelectedIcon] = useState(selectedHabit?.icon || "🎯");
   const [habitTitle, setHabitTitle] = useState("")
@@ -42,7 +43,7 @@ export function EditHabitModal() {
   const [showCloneConfirmation, setShowCloneConfirmation] = useState(false)
 
   // Track if any processing is happening
-  const isProcessing = isUpdating || isCreating
+  const isProcessing = isUpdating || isCreating || isArchiving
 
   // Initialize form when modal opens or selectedHabit changes
   useEffect(() => {
@@ -151,17 +152,22 @@ export function EditHabitModal() {
     }
   }
 
-  // Handle confirmation to create a new habit instead of renaming
+  // Handle confirmation to create a new habit and archive the original
   const handleConfirmClone = async () => {
     if (!selectedHabit) return
 
     try {
+      // First, create the new habit with the new name
       await createHabit({
         title: habitTitle.trim(),
         color: selectedColor.value,
         icon: selectedIcon,
         frequency: null,
       })
+
+      // Then, archive the original habit
+      await archiveHabit(selectedHabit.id)
+
       toast.success(t('modals.editHabit.cloneSuccessToast'), {
         description: t('modals.editHabit.cloneSuccessToastDesc', { title: habitTitle.trim() }),
       })
