@@ -14,6 +14,7 @@ import type { Json } from '@/types/database';
 export const habitsKeys = {
   all: ['habits'] as const,
   user: (userId: string | null) => ['habits', userId] as const,
+  archived: (userId: string | null) => ['habits', 'archived', userId] as const,
 };
 
 /**
@@ -66,8 +67,9 @@ export function useHabits() {
       // Select only needed fields for better performance
       const { data, error: queryError } = await supabase
         .from('habits')
-        .select('id,user_id,title,icon,color,frequency,created_at')
+        .select('id,user_id,title,icon,color,frequency,created_at,archived_at')
         .eq('user_id', user.id)
+        .is('archived_at', null) // Only show active habits
         .order('created_at', { ascending: false });
 
       if (queryError) {
@@ -425,3 +427,110 @@ export function useDeleteHabit() {
   };
 }
 
+/**
+ * Custom hook for fetching archived habits using React Query
+ * 
+ * @returns Object containing:
+ *   - archivedHabits: Array of archived habits
+ *   - isLoading: Loading state
+ *   - error: Error object if query failed
+ */
+export function useArchivedHabits() {
+  const { user } = useAuth();
+
+  const {
+    data: archivedHabits,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: habitsKeys.archived(user?.id ?? null),
+    queryFn: async () => {
+      if (!user?.id) {
+        return [];
+      }
+
+      const supabase = createBrowserClient();
+      const { data, error: queryError } = await supabase
+        .from('habits')
+        .select('id,user_id,title,icon,color,frequency,created_at,archived_at')
+        .eq('user_id', user.id)
+        .not('archived_at', 'is', null) // Only archived habits
+        .order('archived_at', { ascending: false });
+
+      if (queryError) {
+        throw queryError;
+      }
+
+      return (data as Habit[]) ?? [];
+    },
+    enabled: !!user?.id,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 10 * 60 * 1000,
+  });
+
+  return {
+    archivedHabits: archivedHabits ?? [],
+    isLoading,
+    error: error as PostgrestError | null,
+  };
+}
+
+/**
+ * Custom hook for archiving a habit using React Query
+ * 
+ * Archives a habit by setting its archived_at timestamp.
+ * Used when renaming a habit with existing logs.
+ * 
+ * @returns Object containing:
+ *   - archiveHabit: Function to archive a habit
+ *   - isArchiving: Loading state
+ *   - archiveError: Error object if mutation failed
+ */
+export function useArchiveHabit() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const archiveMutation = useMutation({
+    mutationFn: async (habitId: string) => {
+      if (!user?.id) {
+        throw new Error('User must be authenticated');
+      }
+
+      const supabase = createBrowserClient();
+
+      const { data, error: updateError } = await supabase
+        .from('habits')
+        .update({ archived_at: new Date().toISOString() })
+        .eq('id', habitId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return data as Habit;
+    },
+    onSuccess: () => {
+      if (user?.id) {
+        // Invalidate both active and archived habits lists
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.user(user.id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.archived(user.id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.all,
+        });
+      }
+    },
+  });
+
+  return {
+    archiveHabit: archiveMutation.mutateAsync,
+    isArchiving: archiveMutation.isPending,
+    archiveError: archiveMutation.error as PostgrestError | null,
+  };
+}
