@@ -44,7 +44,8 @@ describe('CalendarPage', () => {
             icon: 'test',
             created_at: '2024-01-01',
             user_id: 'user-1',
-            frequency: null
+            frequency: null,
+            archived_at: null
         },
         {
             id: 'habit-2',
@@ -53,7 +54,8 @@ describe('CalendarPage', () => {
             icon: 'test',
             created_at: '2024-01-01',
             user_id: 'user-1',
-            frequency: null
+            frequency: null,
+            archived_at: null
         }
     ]
 

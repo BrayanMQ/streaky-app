@@ -14,10 +14,11 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { AlertCircle, Loader2, Check } from "lucide-react"
+import { AlertCircle, Loader2, Check, AlertTriangle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useUIStore } from "@/store/ui"
-import { useUpdateHabit } from "@/hooks/useHabits"
+import { useUpdateHabit, useCreateHabit, useArchiveHabit } from "@/hooks/useHabits"
+import { useHabitHasLogs } from "@/hooks/useHabitLogs"
 import { HABIT_COLORS } from "@/lib/habitColors"
 import { habitSchema } from "@/lib/validations"
 import { HabitEmojiPicker } from "./habit-emoji-picker"
@@ -31,10 +32,18 @@ export function EditHabitModal() {
   const { t } = useTranslation()
   const { isEditHabitModalOpen, closeEditHabitModal, selectedHabit } = useUIStore()
   const { updateHabit, isUpdating, updateError } = useUpdateHabit()
+  const { createHabit, isCreating } = useCreateHabit()
+  const { hasLogs, isLoading: isCheckingLogs } = useHabitHasLogs(selectedHabit?.id)
+  const { archiveHabit, isArchiving } = useArchiveHabit()
+
   const [selectedIcon, setSelectedIcon] = useState(selectedHabit?.icon || "🎯");
   const [habitTitle, setHabitTitle] = useState("")
   const [selectedColor, setSelectedColor] = useState(HABIT_COLORS[0])
   const [titleError, setTitleError] = useState<string | null>(null)
+  const [showCloneConfirmation, setShowCloneConfirmation] = useState(false)
+
+  // Track if any processing is happening
+  const isProcessing = isUpdating || isCreating || isArchiving
 
   // Initialize form when modal opens or selectedHabit changes
   useEffect(() => {
@@ -47,6 +56,7 @@ export function EditHabitModal() {
       ) || HABIT_COLORS[0]
       setSelectedColor(colorOption)
       setTitleError(null)
+      setShowCloneConfirmation(false)
     }
   }, [isEditHabitModalOpen, selectedHabit])
 
@@ -56,6 +66,7 @@ export function EditHabitModal() {
       setHabitTitle("")
       setSelectedColor(HABIT_COLORS[0])
       setTitleError(null)
+      setShowCloneConfirmation(false)
     }
   }, [isEditHabitModalOpen])
 
@@ -79,6 +90,9 @@ export function EditHabitModal() {
     }
     setTitleError(null)
   }
+
+  // Check if the title has changed
+  const isTitleChanged = selectedHabit?.title?.trim() !== habitTitle.trim()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -104,6 +118,20 @@ export function EditHabitModal() {
     // Clear any existing errors
     setTitleError(null)
 
+    // If the habit has logs and the title changed, show confirmation dialog
+    if (hasLogs && isTitleChanged) {
+      setShowCloneConfirmation(true)
+      return
+    }
+
+    // Normal update (no logs or title didn't change)
+    await performUpdate()
+  }
+
+  // Perform the normal update
+  const performUpdate = async () => {
+    if (!selectedHabit) return
+
     try {
       await updateHabit({
         id: selectedHabit.id,
@@ -124,6 +152,40 @@ export function EditHabitModal() {
     }
   }
 
+  // Handle confirmation to create a new habit and archive the original
+  const handleConfirmClone = async () => {
+    if (!selectedHabit) return
+
+    try {
+      // First, create the new habit with the new name
+      await createHabit({
+        title: habitTitle.trim(),
+        color: selectedColor.value,
+        icon: selectedIcon,
+        frequency: null,
+      })
+
+      // Then, archive the original habit
+      await archiveHabit(selectedHabit.id)
+
+      toast.success(t('modals.editHabit.cloneSuccessToast'), {
+        description: t('modals.editHabit.cloneSuccessToastDesc', { title: habitTitle.trim() }),
+      })
+      setShowCloneConfirmation(false)
+      closeEditHabitModal()
+    } catch (err) {
+      console.error(err)
+      toast.error(t('modals.editHabit.errorToast'), {
+        description: t('modals.editHabit.errorToastDesc'),
+      })
+    }
+  }
+
+  // Cancel the clone confirmation
+  const handleCancelClone = () => {
+    setShowCloneConfirmation(false)
+  }
+
   // Check if form is valid for button disabled state
   const isFormValid = () => {
     const result = habitSchema.safeParse({
@@ -136,158 +198,216 @@ export function EditHabitModal() {
   }
 
   const buttonStyle = useMemo(() => ({
-    backgroundColor: isUpdating ? undefined : selectedColor.hex,
+    backgroundColor: isProcessing ? undefined : selectedColor.hex,
     transition: 'background-color 0.3s ease'
-  }), [selectedColor, isUpdating])
+  }), [selectedColor, isProcessing])
 
   if (!selectedHabit) {
     return null
   }
 
   return (
-    <Dialog open={isEditHabitModalOpen} onOpenChange={open => !open && closeEditHabitModal()}>
-      <DialogContent className="sm:max-w-[450px] gap-0 p-0 overflow-hidden border-none shadow-2xl">
-        <I18nProvider>
-          {/* Decorative top bar with selected color */}
-          <div
-            className="h-1.5 w-full transition-colors duration-500"
-            style={{ backgroundColor: selectedColor.hex }}
-          />
+    <>
+      <Dialog open={isEditHabitModalOpen && !showCloneConfirmation} onOpenChange={open => !open && closeEditHabitModal()}>
+        <DialogContent className="sm:max-w-[450px] gap-0 p-0 overflow-hidden border-none shadow-2xl">
+          <I18nProvider>
+            {/* Decorative top bar with selected color */}
+            <div
+              className="h-1.5 w-full transition-colors duration-500"
+              style={{ backgroundColor: selectedColor.hex }}
+            />
 
-          <div className="p-6 space-y-6">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold tracking-tight">{t('modals.editHabit.title')}</DialogTitle>
-              <DialogDescription>
-                {t('modals.editHabit.description')}
-              </DialogDescription>
-            </DialogHeader>
+            <div className="p-6 space-y-6">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold tracking-tight">{t('modals.editHabit.title')}</DialogTitle>
+                <DialogDescription>
+                  {t('modals.editHabit.description')}
+                </DialogDescription>
+              </DialogHeader>
 
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Global API Error */}
-              {updateError && (
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1">
-                  <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
-                  <p className="text-sm font-medium text-destructive">{t('modals.editHabit.error')}</p>
-                </div>
-              )}
+              <form onSubmit={handleSubmit} className="space-y-6">
+                {/* Global API Error */}
+                {updateError && (
+                  <div className="flex items-center gap-3 p-3 rounded-lg bg-destructive/10 border border-destructive/20 animate-in fade-in slide-in-from-top-1">
+                    <AlertCircle className="h-4 w-4 text-destructive shrink-0" />
+                    <p className="text-sm font-medium text-destructive">{t('modals.editHabit.error')}</p>
+                  </div>
+                )}
 
-              {/* Input Section */}
-              <div className="space-y-2">
-                <div className="flex justify-between">
-                  <Label htmlFor="edit-habit-title" className="text-sm font-semibold">
-                    {t('modals.editHabit.labelIconName')}
-                  </Label>
-                  <span className={cn("text-[10px] font-mono uppercase tracking-wider",
-                    habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
-                    {habitTitle.length}/{MAX_LENGTH}
-                  </span>
-                </div>
+                {/* Input Section */}
+                <div className="space-y-2">
+                  <div className="flex justify-between">
+                    <Label htmlFor="edit-habit-title" className="text-sm font-semibold">
+                      {t('modals.editHabit.labelIconName')}
+                    </Label>
+                    <span className={cn("text-[10px] font-mono uppercase tracking-wider",
+                      habitTitle.length > MAX_LENGTH ? "text-destructive" : "text-muted-foreground")}>
+                      {habitTitle.length}/{MAX_LENGTH}
+                    </span>
+                  </div>
 
-                <div className="flex gap-2">
-                  {/* Icon Picker component */}
-                  <HabitEmojiPicker
-                    selectedEmoji={selectedIcon}
-                    onSelect={setSelectedIcon}
-                    disabled={isUpdating}
-                    color={selectedColor.hex}
-                  />
-
-                  <div className="flex-1">
-                    <Input
-                      id="edit-habit-title"
-                      placeholder={t('modals.addHabit.placeholderName')}
-                      value={habitTitle}
-                      onChange={(e) => {
-                        const newValue = e.target.value
-                        setHabitTitle(newValue)
-                        validateTitle(newValue)
-                      }}
-                      disabled={isUpdating}
-                      className={cn(
-                        "h-11 transition-all focus-visible:ring-offset-0",
-                        titleError && "border-destructive focus-visible:ring-destructive"
-                      )}
+                  <div className="flex gap-2">
+                    {/* Icon Picker component */}
+                    <HabitEmojiPicker
+                      selectedEmoji={selectedIcon}
+                      onSelect={setSelectedIcon}
+                      disabled={isProcessing}
+                      color={selectedColor.hex}
                     />
+
+                    <div className="flex-1">
+                      <Input
+                        id="edit-habit-title"
+                        placeholder={t('modals.addHabit.placeholderName')}
+                        value={habitTitle}
+                        onChange={(e) => {
+                          const newValue = e.target.value
+                          setHabitTitle(newValue)
+                          validateTitle(newValue)
+                        }}
+                        disabled={isProcessing}
+                        className={cn(
+                          "h-11 transition-all focus-visible:ring-offset-0",
+                          titleError && "border-destructive focus-visible:ring-destructive"
+                        )}
+                      />
+                    </div>
+                  </div>
+
+                  {titleError && (
+                    <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
+                  )}
+                </div>
+
+                {/* Color Picker Section */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <Label className="text-sm font-semibold">
+                      {t('modals.addHabit.labelColor')}
+                    </Label>
+                    <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
+                      {selectedColor.name}
+                    </span>
+                  </div>
+
+                  <div className="flex flex-wrap gap-3 p-1">
+                    {HABIT_COLORS.map((color) => {
+                      const isSelected = selectedColor.value === color.value
+                      return (
+                        <button
+                          key={color.value}
+                          type="button"
+                          onClick={() => setSelectedColor(color)}
+                          disabled={isProcessing}
+                          className={cn(
+                            "group relative h-9 w-9 rounded-full transition-all duration-300 active:scale-95 touch-manipulation shadow-sm",
+                            color.value,
+                            isSelected
+                              ? "ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-md"
+                              : "hover:scale-110 opacity-90 hover:opacity-100"
+                          )}
+                          aria-label={`Select ${color.name} color`}
+                        >
+                          {isSelected && (
+                            <Check
+                              className="h-5 w-5 text-white absolute inset-0 m-auto animate-in zoom-in-50 duration-300"
+                              strokeWidth={3}
+                            />
+                          )}
+                        </button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {titleError && (
-                  <p className="text-destructive text-xs font-medium animate-in zoom-in-95">{titleError}</p>
-                )}
-              </div>
+                <DialogFooter className="flex flex-col gap-3 pt-2">
+                  <Button
+                    type="submit"
+                    disabled={isProcessing || isCheckingLogs || !isFormValid()}
+                    className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
+                    style={buttonStyle}
+                  >
+                    {isProcessing || isCheckingLogs ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        {t('modals.editHabit.submitting')}
+                      </>
+                    ) : (
+                      t('modals.editHabit.submit')
+                    )}
+                  </Button>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={closeEditHabitModal}
+                    disabled={isProcessing}
+                    className="w-full h-11 text-muted-foreground hover:text-foreground"
+                  >
+                    {t('modals.common.cancel')}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </div>
+          </I18nProvider>
+        </DialogContent>
+      </Dialog>
 
-              {/* Color Picker Section */}
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <Label className="text-sm font-semibold">
-                    {t('modals.addHabit.labelColor')}
-                  </Label>
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border">
-                    {selectedColor.name}
-                  </span>
-                </div>
+      {/* Clone Confirmation Dialog */}
+      <Dialog open={showCloneConfirmation} onOpenChange={(open) => !open && handleCancelClone()}>
+        <DialogContent className="sm:max-w-[450px] gap-0 p-0 overflow-hidden border-none shadow-2xl">
+          <I18nProvider>
+            {/* Warning top bar */}
+            <div className="h-1.5 w-full bg-amber-500" />
 
-                <div className="flex flex-wrap gap-3 p-1">
-                  {HABIT_COLORS.map((color) => {
-                    const isSelected = selectedColor.value === color.value
-                    return (
-                      <button
-                        key={color.value}
-                        type="button"
-                        onClick={() => setSelectedColor(color)}
-                        disabled={isUpdating}
-                        className={cn(
-                          "group relative h-9 w-9 rounded-full transition-all duration-300 active:scale-95 touch-manipulation shadow-sm",
-                          color.value,
-                          isSelected
-                            ? "ring-2 ring-offset-2 ring-[#2563EB] scale-110 shadow-md"
-                            : "hover:scale-110 opacity-90 hover:opacity-100"
-                        )}
-                        aria-label={`Select ${color.name} color`}
-                      >
-                        {isSelected && (
-                          <Check
-                            className="h-5 w-5 text-white absolute inset-0 m-auto animate-in zoom-in-50 duration-300"
-                            strokeWidth={3}
-                          />
-                        )}
-                      </button>
-                    )
-                  })}
+            <div className="p-6 space-y-6">
+              <DialogHeader>
+                <div className="flex items-center gap-3">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-amber-100 dark:bg-amber-900/30">
+                    <AlertTriangle className="h-5 w-5 text-amber-600 dark:text-amber-500" />
+                  </div>
+                  <DialogTitle className="text-xl font-bold tracking-tight">
+                    {t('modals.editHabit.cloneConfirm.title')}
+                  </DialogTitle>
                 </div>
+                <DialogDescription className="pt-3 text-base">
+                  {t('modals.editHabit.cloneConfirm.description')}
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="rounded-lg bg-muted/50 p-4 text-sm text-muted-foreground">
+                {t('modals.editHabit.cloneConfirm.keepOriginal', { title: selectedHabit?.title })}
               </div>
 
               <DialogFooter className="flex flex-col gap-3 pt-2">
                 <Button
-                  type="submit"
-                  disabled={isUpdating || !isFormValid()}
-                  className="w-full h-11 text-base font-semibold shadow-lg shadow-primary/20 hover:brightness-110"
-                  style={buttonStyle}
+                  type="button"
+                  onClick={handleConfirmClone}
+                  disabled={isCreating}
+                  className="w-full h-11 text-base font-semibold bg-amber-500 hover:bg-amber-600 text-white shadow-lg"
                 >
-                  {isUpdating ? (
+                  {isCreating ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                       {t('modals.editHabit.submitting')}
                     </>
                   ) : (
-                    t('modals.editHabit.submit')
+                    t('modals.editHabit.cloneConfirm.confirm')
                   )}
                 </Button>
                 <Button
                   type="button"
                   variant="secondary"
-                  onClick={closeEditHabitModal}
-                  disabled={isUpdating}
+                  onClick={handleCancelClone}
+                  disabled={isCreating}
                   className="w-full h-11 text-muted-foreground hover:text-foreground"
                 >
-                  {t('modals.common.cancel')}
+                  {t('modals.editHabit.cloneConfirm.cancel')}
                 </Button>
               </DialogFooter>
-            </form>
-          </div>
-        </I18nProvider>
-      </DialogContent>
-    </Dialog>
+            </div>
+          </I18nProvider>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }
-
