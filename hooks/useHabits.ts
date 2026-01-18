@@ -534,3 +534,62 @@ export function useArchiveHabit() {
     archiveError: archiveMutation.error as PostgrestError | null,
   };
 }
+
+/**
+ * Custom hook for restoring an archived habit using React Query
+ * 
+ * Restores a habit by setting its archived_at timestamp to null.
+ * 
+ * @returns Object containing:
+ *   - restoreHabit: Function to restore a habit
+ *   - isRestoring: Loading state
+ *   - restoreError: Error object if mutation failed
+ */
+export function useRestoreHabit() {
+  const queryClient = useQueryClient();
+  const { user } = useAuth();
+
+  const restoreMutation = useMutation({
+    mutationFn: async (habitId: string) => {
+      if (!user?.id) {
+        throw new Error('User must be authenticated');
+      }
+
+      const supabase = createBrowserClient();
+
+      const { data, error: updateError } = await supabase
+        .from('habits')
+        .update({ archived_at: null })
+        .eq('id', habitId)
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return data as Habit;
+    },
+    onSuccess: () => {
+      if (user?.id) {
+        // Invalidate both active and archived habits lists
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.user(user.id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.archived(user.id),
+        });
+        queryClient.invalidateQueries({
+          queryKey: habitsKeys.all,
+        });
+      }
+    },
+  });
+
+  return {
+    restoreHabit: restoreMutation.mutateAsync,
+    isRestoring: restoreMutation.isPending,
+    restoreError: restoreMutation.error as PostgrestError | null,
+  };
+}

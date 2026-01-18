@@ -1,10 +1,12 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, Archive } from 'lucide-react';
+import { ChevronDown, ChevronUp, Archive, MoreVertical, RefreshCw, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { useArchivedHabits } from '@/hooks/useHabits';
+import { useUIStore } from '@/store/ui';
+import { RestoreHabitConfirmModal } from './RestoreHabitConfirmModal';
 import { useTranslation } from 'react-i18next';
 import { cn } from '@/lib/utils';
 import { getHabitColor } from '@/lib/habitColors';
@@ -19,7 +21,9 @@ import type { Habit } from '@/types/database';
 export function ArchivedHabitsSection() {
     const { t } = useTranslation();
     const { archivedHabits, isLoading } = useArchivedHabits();
+    const { setSelectedHabit, openRestoreHabitModal, openDeleteHabitModal } = useUIStore();
     const [isExpanded, setIsExpanded] = useState(false);
+    const [openMenuHabitId, setOpenMenuHabitId] = useState<string | null>(null);
 
     // Don't render anything if there are no archived habits
     if (!isLoading && archivedHabits.length === 0) {
@@ -34,6 +38,23 @@ export function ArchivedHabitsSection() {
             month: 'short',
             day: 'numeric',
         });
+    };
+
+    const handleRestore = (habit: Habit) => {
+        setSelectedHabit(habit);
+        openRestoreHabitModal();
+        setOpenMenuHabitId(null);
+    };
+
+    const handleDelete = (habit: Habit) => {
+        setSelectedHabit(habit);
+        openDeleteHabitModal();
+        setOpenMenuHabitId(null);
+    };
+
+    const toggleMenu = (e: React.MouseEvent, habitId: string) => {
+        e.stopPropagation();
+        setOpenMenuHabitId(openMenuHabitId === habitId ? null : habitId);
     };
 
     return (
@@ -75,7 +96,10 @@ export function ArchivedHabitsSection() {
                         archivedHabits.map((habit: Habit) => (
                             <Card
                                 key={habit.id}
-                                className="opacity-60 hover:opacity-80 transition-opacity"
+                                className={cn(
+                                    'opacity-60 hover:opacity-80 transition-opacity relative',
+                                    openMenuHabitId === habit.id && 'z-50 opacity-100'
+                                )}
                             >
                                 <CardContent className="flex items-center justify-between p-4">
                                     <div className="flex items-center gap-3">
@@ -96,12 +120,54 @@ export function ArchivedHabitsSection() {
                                             </p>
                                         </div>
                                     </div>
+
+                                    {/* Actions Menu */}
+                                    <div className="relative">
+                                        <Button
+                                            variant="ghost"
+                                            size="icon"
+                                            className="h-8 w-8"
+                                            onClick={(e) => toggleMenu(e, habit.id)}
+                                        >
+                                            <MoreVertical className="h-4 w-4" />
+                                        </Button>
+
+                                        {openMenuHabitId === habit.id && (
+                                            <>
+                                                <div
+                                                    className="fixed inset-0 z-40"
+                                                    onClick={() => setOpenMenuHabitId(null)}
+                                                />
+                                                <div className="absolute right-0 top-10 z-50 w-40 rounded-md border bg-background shadow-lg p-1 space-y-1">
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => handleRestore(habit)}
+                                                        className="w-full justify-start font-normal h-9 px-2 text-primary hover:bg-primary/10 hover:text-primary active:bg-primary/20"
+                                                    >
+                                                        <RefreshCw className="h-4 w-4 mr-2" />
+                                                        {t('habits.card.restore')}
+                                                    </Button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        onClick={() => handleDelete(habit)}
+                                                        className="w-full justify-start font-normal h-9 px-2 text-destructive hover:bg-destructive/10 hover:text-destructive active:bg-destructive/20"
+                                                    >
+                                                        <Trash2 className="h-4 w-4 mr-2" />
+                                                        {t('habits.card.delete')}
+                                                    </Button>
+                                                </div>
+                                            </>
+                                        )}
+                                    </div>
                                 </CardContent>
                             </Card>
                         ))
                     )}
                 </div>
             )}
+
+            {/* Restore Habit Confirmation Modal */}
+            <RestoreHabitConfirmModal />
         </div>
     );
 }

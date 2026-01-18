@@ -6,6 +6,8 @@ interface UIStore {
   isAddHabitModalOpen: boolean;
   isEditHabitModalOpen: boolean;
   isDeleteHabitModalOpen: boolean;
+  isArchiveHabitModalOpen: boolean;
+  isRestoreHabitModalOpen: boolean;
 
   // Selected habit for editing/deleting
   selectedHabit: Habit | null;
@@ -17,6 +19,10 @@ interface UIStore {
   closeEditHabitModal: () => void;
   openDeleteHabitModal: () => void;
   closeDeleteHabitModal: () => void;
+  openArchiveHabitModal: () => void;
+  closeArchiveHabitModal: () => void;
+  openRestoreHabitModal: () => void;
+  closeRestoreHabitModal: () => void;
   closeAllModals: () => void;
   setSelectedHabit: (habit: Habit | null) => void;
   clearSelectedHabit: () => void;
@@ -27,6 +33,8 @@ export const useUIStore = create<UIStore>((set) => ({
   isAddHabitModalOpen: false,
   isEditHabitModalOpen: false,
   isDeleteHabitModalOpen: false,
+  isArchiveHabitModalOpen: false,
+  isRestoreHabitModalOpen: false,
   selectedHabit: null,
 
   // Modal actions
@@ -36,11 +44,17 @@ export const useUIStore = create<UIStore>((set) => ({
   closeEditHabitModal: () => set({ isEditHabitModalOpen: false }),
   openDeleteHabitModal: () => set({ isDeleteHabitModalOpen: true }),
   closeDeleteHabitModal: () => set({ isDeleteHabitModalOpen: false }),
+  openArchiveHabitModal: () => set({ isArchiveHabitModalOpen: true }),
+  closeArchiveHabitModal: () => set({ isArchiveHabitModalOpen: false }),
+  openRestoreHabitModal: () => set({ isRestoreHabitModalOpen: true }),
+  closeRestoreHabitModal: () => set({ isRestoreHabitModalOpen: false }),
   closeAllModals: () =>
     set({
       isAddHabitModalOpen: false,
       isEditHabitModalOpen: false,
       isDeleteHabitModalOpen: false,
+      isArchiveHabitModalOpen: false,
+      isRestoreHabitModalOpen: false,
     }),
 
   // Selected habit actions
