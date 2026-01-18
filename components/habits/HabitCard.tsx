@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Flame, MoreVertical, Edit, Trash2 } from 'lucide-react';
+import { Flame, MoreVertical, Edit, Trash2, Archive } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { getHabitColor as getHabitColorUtil } from '@/lib/habitColors';
 import { useUIStore } from '@/store/ui';
@@ -44,7 +44,7 @@ export function HabitCard({
   const [prevCompleted, setPrevCompleted] = useState(habit.completedToday);
   const [prevStreak, setPrevStreak] = useState(habit.streak ?? 0);
   const menuRef = useRef<HTMLDivElement>(null);
-  const { setSelectedHabit, openEditHabitModal, openDeleteHabitModal } = useUIStore();
+  const { setSelectedHabit, openEditHabitModal, openDeleteHabitModal, openArchiveHabitModal } = useUIStore();
 
   // Use provided color function or fallback to centralized utility
   const getColor = getHabitColor || ((h: HabitWithLogs) => getHabitColorUtil(h));
@@ -120,6 +120,13 @@ export function HabitCard({
     setIsMenuOpen(false);
   };
 
+  const handleArchive = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedHabit(habit);
+    openArchiveHabitModal();
+    setIsMenuOpen(false);
+  };
+
   const handleMenuToggle = (e: React.MouseEvent) => {
     e.stopPropagation();
     setIsMenuOpen(!isMenuOpen);
@@ -151,6 +158,7 @@ export function HabitCard({
           isExecution ? 'cursor-pointer hover:shadow-md active:scale-[0.98] touch-manipulation' : 'cursor-default',
           isExecution && habit.completedToday && 'border-primary bg-primary/5',
           isToggling && 'opacity-50 pointer-events-none',
+          isMenuOpen && 'z-50',
         )}
         onClick={handleCardClick}
         onTouchStart={handleTouchStart}
@@ -235,6 +243,14 @@ export function HabitCard({
                       >
                         <Edit className="h-4 w-4 mr-2" />
                         {t('habits.card.edit')}
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        onClick={handleArchive}
+                        className="w-full justify-start font-normal h-9 px-2 text-primary hover:bg-primary/10 hover:text-primary active:bg-primary/20"
+                      >
+                        <Archive className="h-4 w-4 mr-2" />
+                        {t('habits.card.archive')}
                       </Button>
                       <Button
                         variant="ghost"

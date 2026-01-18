@@ -9,6 +9,7 @@ import { HabitCardSkeleton } from './HabitCardSkeleton';
 import { AddHabitModal } from './AddHabitModal';
 import { EditHabitModal } from './EditHabitModal';
 import { DeleteHabitConfirmModal } from './DeleteHabitConfirmModal';
+import { ArchiveHabitConfirmModal } from './ArchiveHabitConfirmModal';
 import { useHabitsWithData } from '@/hooks/useHabitsWithData';
 import { useHabitLogs } from '@/hooks/useHabitLogs';
 import { useHabits } from '@/hooks/useHabits';
@@ -209,6 +210,9 @@ export function HabitList({ mode = 'execution' }: { mode?: 'execution' | 'manage
 
         {/* Delete Habit Confirmation Modal */}
         <DeleteHabitConfirmModal />
+
+        {/* Archive Habit Confirmation Modal */}
+        <ArchiveHabitConfirmModal />
       </div>
     </I18nProvider>
   );
