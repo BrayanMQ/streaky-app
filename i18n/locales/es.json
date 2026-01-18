@@ -105,6 +105,28 @@
             "errorToast": "Error al eliminar el hábito:",
             "errorToastDesc": "No se pudo eliminar \"{{title}}\". Por favor intenta de nuevo."
         },
+        "archiveHabit": {
+            "title": "Archivar Hábito",
+            "description": "¿Estás seguro de que quieres archivar \"{{title}}\"?",
+            "warning": "Los hábitos archivados se ocultan de tu lista activa pero conservan todo su historial. Puedes encontrarlos en Ajustes > Hábitos Archivados.",
+            "submit": "Archivar Hábito",
+            "submitting": "Archivando...",
+            "successToast": "Hábito archivado",
+            "successToastDesc": "\"{{title}}\" fue archivado con éxito.",
+            "errorToast": "Error al archivar el hábito",
+            "errorToastDesc": "No se pudo archivar \"{{title}}\". Por favor intenta de nuevo."
+        },
+        "restoreHabit": {
+            "title": "Restaurar Hábito",
+            "description": "¿Estás seguro de que quieres restaurar \"{{title}}\"?",
+            "warning": "Este hábito volverá a tu lista activa y podrás seguir registrándolo.",
+            "submit": "Restaurar Hábito",
+            "submitting": "Restaurando...",
+            "successToast": "Hábito restaurado",
+            "successToastDesc": "\"{{title}}\" fue restaurado con éxito.",
+            "errorToast": "Error al restaurar el hábito",
+            "errorToastDesc": "No se pudo restaurar \"{{title}}\". Por favor intenta de nuevo."
+        },
         "common": {
             "cancel": "Cancelar",
             "minChars": "Se requieren al menos {{count}} caracteres",
@@ -135,6 +157,8 @@
         "card": {
             "streak": "Racha de {{count}} días",
             "edit": "Editar",
+            "archive": "Archivar",
+            "restore": "Restaurar",
             "delete": "Eliminar"
         },
         "list": {

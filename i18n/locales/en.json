@@ -105,6 +105,28 @@
             "errorToast": "Error deleting habit:",
             "errorToastDesc": "Could not delete \"{{title}}\". Please try again."
         },
+        "archiveHabit": {
+            "title": "Archive Habit",
+            "description": "Are you sure you want to archive \"{{title}}\"?",
+            "warning": "Archived habits are hidden from your active list but keep all their history. You can find them in Settings > Archived Habits.",
+            "submit": "Archive Habit",
+            "submitting": "Archiving...",
+            "successToast": "Habit archived",
+            "successToastDesc": "\"{{title}}\" was successfully archived.",
+            "errorToast": "Error archiving habit",
+            "errorToastDesc": "Could not archive \"{{title}}\". Please try again."
+        },
+        "restoreHabit": {
+            "title": "Restore Habit",
+            "description": "Are you sure you want to restore \"{{title}}\"?",
+            "warning": "This habit will be moved back to your active list and you can continue tracking it.",
+            "submit": "Restore Habit",
+            "submitting": "Restoring...",
+            "successToast": "Habit restored",
+            "successToastDesc": "\"{{title}}\" was successfully restored.",
+            "errorToast": "Error restoring habit",
+            "errorToastDesc": "Could not restore \"{{title}}\". Please try again."
+        },
         "common": {
             "cancel": "Cancel",
             "minChars": "Minimum {{count}} characters required",
@@ -135,6 +157,8 @@
         "card": {
             "streak": "{{count}} day streak",
             "edit": "Edit",
+            "archive": "Archive",
+            "restore": "Restore",
             "delete": "Delete"
         },
         "list": {
