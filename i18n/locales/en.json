@@ -327,9 +327,11 @@
         "habitMarked": "Habit marked",
         "habitUnmarked": "Habit unmarked",
         "toggleError": "Could not update habit",
+        "habitNotCreatedYet": "This habit didn't exist on that day",
         "editMode": {
             "title": "Missed tracking a day?",
             "description": "Enable editing to update your progress for the past 3 days.",
+            "descriptionLimited": "This habit was created recently. You can only edit logs from its creation date.",
             "enable": "Edit",
             "active": "Editing"
         }

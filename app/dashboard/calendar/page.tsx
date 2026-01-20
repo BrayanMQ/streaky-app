@@ -9,7 +9,7 @@ import { useHabits } from "@/hooks/useHabits"
 import { useHabitLogs, useToggleHabitLog } from "@/hooks/useHabitLogs"
 import { getHabitColor } from "@/lib/habitColors"
 import { getLongestStreak, formatDateLocal } from "@/lib/streaks"
-import { canEditDay } from "@/lib/dates"
+import { canEditDay, getOldestEditableDate } from "@/lib/dates"
 import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { useTranslation } from "react-i18next"
@@ -169,11 +169,24 @@ export default function CalendarPage() {
     return `${selectedYear}-${month}-${day}`
   }, [selectedMonth, selectedYear])
 
-  // Check if a day is editable (within last 3 days)
+  // Check if a day is editable (within last 3 days AND after habit creation)
   const isDayEditable = useCallback((dayNumber: number): boolean => {
+    if (!selectedHabit) return false
+
     const dateStr = getDateString(dayNumber)
-    return canEditDay(dateStr)
-  }, [getDateString])
+
+    // Check if within 3-day window
+    if (!canEditDay(dateStr)) {
+      return false
+    }
+
+    // Check if day is on or after habit creation date
+    const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+    const dayDate = dateStr
+
+    // Day must be on or after the habit was created
+    return dayDate >= habitCreatedDate
+  }, [getDateString, selectedHabit])
 
   // Handle day click to toggle habit completion
   const handleDayClick = useCallback(async (dayNumber: number) => {
@@ -181,10 +194,19 @@ export default function CalendarPage() {
 
     const dateStr = getDateString(dayNumber)
 
-    // Check if the day is editable
+    // Check if the day is within the 3-day window
     if (!canEditDay(dateStr)) {
       toast.info(t("calendar.editRestricted"))
       return
+    }
+
+    // Check if the day is before habit creation
+    if (selectedHabit) {
+      const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+      if (dateStr < habitCreatedDate) {
+        toast.info(t("calendar.habitNotCreatedYet"))
+        return
+      }
     }
 
     // Must be in edit mode to toggle
@@ -213,6 +235,14 @@ export default function CalendarPage() {
   }, [selectedHabitId, getDateString, completionMap, toggleCompletion, t, isEditMode])
 
   const isLoading = isLoadingHabits || isLoadingLogs
+
+  // Check if the current habit's editing window is limited by its creation date
+  const isCreationRestricted = useMemo(() => {
+    if (!selectedHabit) return false
+    const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+    const oldestEditable = getOldestEditableDate()
+    return habitCreatedDate > oldestEditable
+  }, [selectedHabit])
 
   // Edge case: No habits
   if (!isLoading && habits.length === 0) {
@@ -437,7 +467,9 @@ export default function CalendarPage() {
                       {t("calendar.editMode.title")}
                     </p>
                     <p className="text-xs text-muted-foreground mt-0.5">
-                      {t("calendar.editMode.description")}
+                      {isCreationRestricted
+                        ? t("calendar.editMode.descriptionLimited")
+                        : t("calendar.editMode.description")}
                     </p>
                   </div>
                   <Button
