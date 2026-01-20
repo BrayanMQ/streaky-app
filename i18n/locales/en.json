@@ -298,7 +298,13 @@
             "completed": "Completed",
             "missed": "Missed",
             "successRate": "Success Rate",
-            "bestStreak": "Best Streak"
+            "bestStreak": "Best Streak",
+            "descriptions": {
+                "completed": "Number of days you completed this habit during the month currently displayed.",
+                "missed": "Number of days you didn't complete this habit this month.",
+                "successRate": "Your completion percentage for the month currently displayed.",
+                "bestStreak": "The longest consecutive run of completions for this habit (all-time record)."
+            }
         },
         "months": {
             "january": "January",
@@ -323,6 +329,7 @@
             "fri": "Fri",
             "sat": "Sat"
         },
+        "habitStarted": "Habit started!",
         "editRestricted": "You can only edit the last 3 days",
         "habitMarked": "Habit marked",
         "habitUnmarked": "Habit unmarked",

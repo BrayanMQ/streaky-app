@@ -298,7 +298,13 @@
             "completed": "Completados",
             "missed": "Perdidos",
             "successRate": "Tasa de éxito",
-            "bestStreak": "Mejor racha"
+            "bestStreak": "Mejor racha",
+            "descriptions": {
+                "completed": "Días que completaste este hábito durante el mes que estás visualizando.",
+                "missed": "Días que no completaste este hábito este mes.",
+                "successRate": "Porcentaje de cumplimiento para el mes visualizado.",
+                "bestStreak": "La racha más larga de días consecutivos completados para este hábito (récord histórico)."
+            }
         },
         "months": {
             "january": "Enero",
@@ -323,6 +329,7 @@
             "fri": "Vie",
             "sat": "Sáb"
         },
+        "habitStarted": "¡Hábito iniciado!",
         "editRestricted": "Solo puedes editar los últimos 3 días",
         "habitMarked": "Hábito marcado",
         "habitUnmarked": "Hábito desmarcado",
