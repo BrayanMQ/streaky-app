@@ -1,7 +1,8 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import CalendarPage from '../page'
 import { useHabits } from '@/hooks/useHabits'
-import { useHabitLogs } from '@/hooks/useHabitLogs'
+import { useHabitLogs, useToggleHabitLog } from '@/hooks/useHabitLogs'
+import { canEditDay, getOldestEditableDate } from '@/lib/dates'
 import { Habit, HabitLog } from '@/types/database'
 
 // Mock dependencies
@@ -30,6 +31,12 @@ jest.mock('@/hooks/useHabits', () => ({
 
 jest.mock('@/hooks/useHabitLogs', () => ({
     useHabitLogs: jest.fn(),
+    useToggleHabitLog: jest.fn(),
+}))
+
+jest.mock('@/lib/dates', () => ({
+    canEditDay: jest.fn(),
+    getOldestEditableDate: jest.fn(),
 }))
 
 // Mock scrollIntoView and other DOM methods not present in jsdom
@@ -81,6 +88,14 @@ describe('CalendarPage', () => {
                 logs: mockLogs,
                 isLoading: false,
             })
+
+            ; (useToggleHabitLog as jest.Mock).mockReturnValue({
+                toggleCompletion: jest.fn(),
+                isToggling: false,
+            })
+
+            ; (canEditDay as jest.Mock).mockReturnValue(true)
+            ; (getOldestEditableDate as jest.Mock).mockReturnValue('2024-01-08')
 
         // Mock date to consistent value (Jan 2024)
         jest.useFakeTimers()
@@ -162,23 +177,20 @@ describe('CalendarPage', () => {
 
         expect(screen.getByText('calendar.months.january')).toBeInTheDocument()
 
-        // Find next month button (chevron right)
-        // It's an icon button, might need ari-label or role.
-        // The code shows <ChevronRight /> inside a Button.
-        // Let's assume buttons are in order? Or try to get by role 'button' with icon?
-        // There are habit buttons too.
-
-        // Easier: render writes "calendar.months.january".
-        // Next button logic: select month + 1.
-
-        // The buttons have no text, just icons.
-        // We can add data-testid or aria-label in source, or select by class/icon.
-        // For now, let's try selecting all buttons and clicking the last one (Next) 
-        // or typically Previous is earlier in DOM than Next in the header.
-
+        // Find navigation buttons (they act as icons and have no text content)
+        // Buttons: Habit 1, Habit 2, Prev, Next, Edit Mode
         const buttons = screen.getAllByRole('button')
-        // Habit buttons (2) + Previous + Next
-        const nextBtn = buttons[buttons.length - 1]
+
+        // Filter for buttons that don't have text (nav buttons)
+        // Habit buttons have text, Edit button has text. Nav buttons only have icons.
+        // in jsdom, svg might be hidden or textContent might be empty
+        const navButtons = buttons.filter(b => !b.textContent)
+
+        // Expect at least 2 nav buttons (Prev, Next)
+        expect(navButtons.length).toBeGreaterThanOrEqual(2)
+
+        // Next button should be the second one (Prev, Next)
+        const nextBtn = navButtons[1]
 
         fireEvent.click(nextBtn)
 
