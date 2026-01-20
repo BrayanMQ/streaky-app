@@ -148,7 +148,7 @@ export default function StatsPage() {
     return habits.map((habit, index) => {
       const habitLogs = logsByHabitId.get(habit.id) || []
       const streak = getCurrentStreak(habit.id, habitLogs)
-      const rate = getCompletionRate(habit.id, habitLogs, periodDays)
+      const rate = getCompletionRate(habit.id, habitLogs, periodDays, habit.created_at)
       const completedDays = getCompletedDaysInRange(habit.id, habitLogs, periodDays)
       const color = getHabitColor(habit, index)
       const shadow = getShadowFromColor(color)
@@ -319,8 +319,8 @@ export default function StatsPage() {
                   key={p}
                   onClick={() => setPeriod(p)}
                   className={`relative z-10 flex-1 sm:flex-none px-6 py-2 text-sm font-medium capitalize transition-colors duration-200 ${period === p
-                      ? 'text-foreground'
-                      : 'text-muted-foreground hover:text-foreground/80'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground/80'
                     }`}
                 >
                   {/* Animated background indicator */}
