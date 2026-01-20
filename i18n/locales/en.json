@@ -322,6 +322,16 @@
             "thu": "Thu",
             "fri": "Fri",
             "sat": "Sat"
+        },
+        "editRestricted": "You can only edit the last 3 days",
+        "habitMarked": "Habit marked",
+        "habitUnmarked": "Habit unmarked",
+        "toggleError": "Could not update habit",
+        "editMode": {
+            "title": "Missed tracking a day?",
+            "description": "Enable editing to update your progress for the past 3 days.",
+            "enable": "Edit",
+            "active": "Editing"
         }
     },
     "stats": {
