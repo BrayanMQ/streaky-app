@@ -3,12 +3,12 @@
 import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Target, Zap, Trophy, Calendar as CalendarIcon, Pencil } from "lucide-react"
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Target, Zap, Trophy, Calendar as CalendarIcon, Pencil, Info, Rocket } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useHabits } from "@/hooks/useHabits"
 import { useHabitLogs, useToggleHabitLog } from "@/hooks/useHabitLogs"
 import { getHabitColor } from "@/lib/habitColors"
-import { getLongestStreak, formatDateLocal } from "@/lib/streaks"
+import { getLongestStreak, formatDateLocal, getTodayDateLocal } from "@/lib/streaks"
 import { canEditDay, getOldestEditableDate } from "@/lib/dates"
 import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
@@ -16,12 +16,132 @@ import { useTranslation } from "react-i18next"
 import I18nProvider from "@/components/I18nProvider"
 import { toast } from "sonner"
 
+function StatInfo({ description }: { description: string }) {
+  const [isOpen, setIsOpen] = useState(false)
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    const handleScroll = () => {
+      if (isOpen) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isOpen])
+
+  return (
+    <div
+      ref={containerRef}
+      className="relative ml-1.5 inline-block"
+      onMouseEnter={() => setIsOpen(true)}
+      onMouseLeave={() => setIsOpen(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.preventDefault()
+          setIsOpen(!isOpen)
+        }}
+        className="flex items-center text-muted-foreground/60 hover:text-muted-foreground transition-colors outline-none"
+        aria-label="More information"
+      >
+        <Info className="size-3.5" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-full left-1/2 mb-2 w-48 -translate-x-1/2 rounded-lg border bg-popover p-2.5 text-xs font-normal text-popover-foreground shadow-xl animate-in fade-in zoom-in duration-200 z-50 pointer-events-auto">
+          <div className="absolute left-1/2 top-full -translate-x-1/2 border-8 border-transparent border-t-popover" />
+          {description}
+        </div>
+      )}
+    </div>
+  )
+}
+
+function RocketIndicator({
+  description,
+  isCompleted,
+  isOpen,
+  onOpenChange
+}: {
+  description: string,
+  isCompleted: boolean,
+  isOpen: boolean,
+  onOpenChange: (open: boolean) => void
+}) {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        onOpenChange(false)
+      }
+    }
+    const handleScroll = () => {
+      if (isOpen) {
+        onOpenChange(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside)
+      window.addEventListener('scroll', handleScroll, { passive: true });
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside)
+      window.removeEventListener('scroll', handleScroll);
+    }
+  }, [isOpen, onOpenChange])
+
+  return (
+    <div
+      ref={containerRef}
+      className="absolute -bottom-1 -right-1 z-20"
+      onMouseEnter={() => onOpenChange(true)}
+      onMouseLeave={() => onOpenChange(false)}
+    >
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation() // Prevent day toggle click
+          onOpenChange(!isOpen)
+        }}
+        className={cn(
+          "flex size-5 items-center justify-center rounded-full shadow-sm ring-2 ring-background transition-transform active:scale-90 outline-none",
+          isCompleted ? "bg-white text-orange-500" : "bg-orange-500 text-white"
+        )}
+      >
+        <Rocket className="size-3" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute bottom-full left-1/2 mb-2 w-28 -translate-x-1/2 rounded-lg border bg-popover p-2 text-[10px] font-bold text-popover-foreground shadow-xl animate-in fade-in zoom-in duration-200 z-50 pointer-events-auto text-center leading-tight">
+          <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-popover" />
+          {description}
+        </div>
+      )}
+    </div>
+  )
+}
+
 export default function CalendarPage() {
   const { t } = useTranslation()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null)
   const [isEditMode, setIsEditMode] = useState(false)
+  const [openRocketDay, setOpenRocketDay] = useState<number | null>(null)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const { habits, isLoading: isLoadingHabits } = useHabits()
@@ -100,35 +220,51 @@ export default function CalendarPage() {
     return map
   }, [currentHabitLogs, selectedMonth, selectedYear])
 
+  // Get selected habit details
+  const selectedHabit = habits.find((h) => h.id === selectedHabitId)
+  const habitColorClass = selectedHabit
+    ? getHabitColor(selectedHabit, habits.findIndex((h) => h.id === selectedHabitId))
+    : "bg-primary"
+  const habitColorWithShadow = habitColorClass + " shadow-md"
+  const habitCreatedDate = selectedHabit ? formatDateLocal(selectedHabit.created_at) : null
+
   // Calculate statistics using preloaded habit logs
   const stats = useMemo(() => {
     let completedDays = 0
     let missedDays = 0
 
+    const todayStr = getTodayDateLocal()
+    const habitCreatedDate = selectedHabit ? formatDateLocal(selectedHabit.created_at) : null
+
     for (let day = 1; day <= daysInMonth; day++) {
-      const isCompleted = completionMap.get(day)
-      if (isCompleted === true) {
+      // Build date string for this day
+      const monthStr = String(selectedMonth + 1).padStart(2, '0')
+      const dayStr = String(day).padStart(2, '0')
+      const dateStr = `${selectedYear}-${monthStr}-${dayStr}`
+
+      // Skip future days
+      if (dateStr > todayStr) continue
+
+      // Skip days before habit creation
+      if (habitCreatedDate && dateStr < habitCreatedDate) continue
+
+      const isCompleted = completionMap.get(day) === true
+      if (isCompleted) {
         completedDays++
-      } else {
+      } else if (dateStr < todayStr) {
+        // Only count as missed if it's strictly in the past
         missedDays++
       }
     }
 
-    const completionRate = daysInMonth > 0 ? Math.round((completedDays / daysInMonth) * 100) : 0
+    const totalRelevantDays = completedDays + missedDays
+    const completionRate = totalRelevantDays > 0 ? Math.round((completedDays / totalRelevantDays) * 100) : 0
     // Use all preloaded logs for the habit to get the true best streak
     const bestStreak = selectedHabitId ? getLongestStreak(selectedHabitId, currentHabitLogs) : 0
 
     return { completedDays, missedDays, completionRate, bestStreak }
-  }, [completionMap, daysInMonth, selectedHabitId, currentHabitLogs])
+  }, [completionMap, daysInMonth, selectedHabitId, currentHabitLogs, selectedMonth, selectedYear, selectedHabit])
 
-  // Get selected habit color
-  const selectedHabit = habits.find((h) => h.id === selectedHabitId)
-  const habitColorClass = selectedHabit
-    ? getHabitColor(selectedHabit, habits.findIndex((h) => h.id === selectedHabitId))
-    : "bg-primary"
-
-  // Add shadow class based on color
-  const habitColorWithShadow = habitColorClass + " shadow-md"
 
   // Month navigation handlers
   const handlePreviousMonth = () => {
@@ -316,54 +452,69 @@ export default function CalendarPage() {
             </div>
 
             {/* Stats Grid - More compact for better visibility */}
-            <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-4">
-              {[
-                {
-                  label: t("calendar.stats.completed"),
-                  value: isLoading ? "..." : stats.completedDays,
-                  icon: CheckCircle2,
-                  color: "text-green-500",
-                  bg: "bg-green-500/10"
-                },
-                {
-                  label: t("calendar.stats.missed"),
-                  value: isLoading ? "..." : stats.missedDays,
-                  icon: XCircle,
-                  color: "text-red-500",
-                  bg: "bg-red-500/10"
-                },
-                {
-                  label: t("calendar.stats.successRate"),
-                  value: isLoading ? "..." : `${stats.completionRate}%`,
-                  icon: Target,
-                  color: "text-blue-500",
-                  bg: "bg-blue-500/10"
-                },
-                {
-                  label: t("calendar.stats.bestStreak"),
-                  value: isLoading ? "..." : stats.bestStreak,
-                  icon: Zap,
-                  color: "text-orange-500",
-                  bg: "bg-orange-500/10"
-                },
-              ].map((stat) => (
-                <Card key={stat.label} className="group relative overflow-hidden border-none bg-muted/20 shadow-none transition-all duration-300 hover:bg-muted/30">
-                  <div className={cn("absolute top-0 left-0 h-full w-0.5 transition-all duration-300", stat.color.replace("text-", "bg-"))} />
-                  <CardContent className="p-3 sm:p-4 flex flex-col gap-1">
-                    <div className="flex items-center gap-2">
-                      <div className={cn("p-1 rounded-lg", stat.bg)}>
-                        <stat.icon className={cn("size-3.5", stat.color)} />
+            <div className="flex flex-col gap-3">
+              <div className="flex items-center gap-2 px-1">
+                <Target className="size-4 text-primary/60" />
+                <h2 className="text-sm font-bold tracking-tight text-foreground/70">
+                  {t(`calendar.months.${monthKeys[selectedMonth]}`)} {selectedYear} - {t("calendar.stats.monthlyOverview", { defaultValue: "Monthly Overview" })}
+                </h2>
+              </div>
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-4 lg:gap-4">
+                {[
+                  {
+                    label: t("calendar.stats.completed"),
+                    value: isLoading ? "..." : stats.completedDays,
+                    icon: CheckCircle2,
+                    color: "text-green-500",
+                    bg: "bg-green-500/10",
+                    description: t("calendar.stats.descriptions.completed")
+                  },
+                  {
+                    label: t("calendar.stats.missed"),
+                    value: isLoading ? "..." : stats.missedDays,
+                    icon: XCircle,
+                    color: "text-red-500",
+                    bg: "bg-red-500/10",
+                    description: t("calendar.stats.descriptions.missed")
+                  },
+                  {
+                    label: t("calendar.stats.successRate"),
+                    value: isLoading ? "..." : `${stats.completionRate}%`,
+                    icon: Target,
+                    color: "text-blue-500",
+                    bg: "bg-blue-500/10",
+                    description: t("calendar.stats.descriptions.successRate")
+                  },
+                  {
+                    label: t("calendar.stats.bestStreak"),
+                    value: isLoading ? "..." : stats.bestStreak,
+                    icon: Zap,
+                    color: "text-orange-500",
+                    bg: "bg-orange-500/10",
+                    description: t("calendar.stats.descriptions.bestStreak")
+                  },
+                ].map((stat) => (
+                  <Card key={stat.label} className="group relative border-none bg-muted/20 shadow-none transition-all duration-300 hover:bg-muted/30 hover:z-10">
+                    <div className={cn("absolute top-0 left-0 h-full w-0.5 transition-all duration-300", stat.color.replace("text-", "bg-"))} />
+                    <CardContent className="p-3 sm:p-4 flex flex-col gap-1">
+                      <div className="flex items-center gap-2">
+                        <div className={cn("p-1 rounded-lg", stat.bg)}>
+                          <stat.icon className={cn("size-3.5", stat.color)} />
+                        </div>
+                        <div className="flex items-center">
+                          <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">{stat.label}</p>
+                          <StatInfo description={stat.description} />
+                        </div>
                       </div>
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/50">{stat.label}</p>
-                    </div>
-                    <p className="text-xl sm:text-2xl font-bold tracking-tight pl-0.5">{stat.value}</p>
-                  </CardContent>
-                </Card>
-              ))}
+                      <p className="text-xl sm:text-2xl font-bold tracking-tight pl-0.5">{stat.value}</p>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
             </div>
 
             {/* Calendar Card - Refined typography and spacing */}
-            <Card className="overflow-hidden border-none bg-card shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] ring-1 ring-border/50 rounded-3xl">
+            <Card className="border-none bg-card shadow-[0_20px_40px_-12px_rgba(0,0,0,0.1)] ring-1 ring-border/50 rounded-3xl">
               <CardHeader className="flex flex-row items-center justify-between border-b border-border/40 bg-muted/5 px-6 py-4">
                 <div className="flex items-center gap-3">
                   <div className="p-2 rounded-xl bg-primary/10 text-primary">
@@ -418,17 +569,24 @@ export default function CalendarPage() {
                       const isCompleted = completionMap.get(dayNumber) === true
                       const dayIsToday = isToday(dayNumber)
                       const isEditable = isDayEditable(dayNumber)
+                      const monthStr = String(selectedMonth + 1).padStart(2, '0')
+                      const dayStr = String(dayNumber).padStart(2, '0')
+                      const dateStr = `${selectedYear}-${monthStr}-${dayStr}`
+                      const isCreationDay = habitCreatedDate === dateStr
+                      const isRocketOpen = openRocketDay === dayNumber
 
                       return (
                         <div
                           key={dayNumber}
                           onClick={() => isEditMode && isEditable && handleDayClick(dayNumber)}
                           className={cn(
-                            "relative flex aspect-square items-center justify-center rounded-2xl text-base font-semibold transition-all duration-300 group select-none",
+                            "relative flex aspect-square items-center justify-center rounded-2xl text-base font-semibold transition-all duration-300 group select-none hover:z-30",
+                            isRocketOpen && "z-50",
                             isCompleted
                               ? cn(habitColorWithShadow, "text-white scale-100 shadow-md ring-1 ring-white/10")
                               : "bg-muted/30 text-muted-foreground/40",
                             dayIsToday && !isCompleted && "ring-2 ring-primary ring-offset-2 ring-offset-background bg-background shadow-sm",
+                            isCreationDay && !isCompleted && "ring-2 ring-orange-400 ring-offset-1 bg-orange-400/10",
                             // Edit mode active styles
                             isEditMode && isEditable && "cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95",
                             isEditMode && isEditable && !isCompleted && "hover:bg-muted/60 ring-2 ring-primary/30 ring-offset-1 ring-offset-background",
@@ -447,6 +605,14 @@ export default function CalendarPage() {
                               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-primary opacity-75"></span>
                               <span className="relative inline-flex size-2 rounded-full bg-primary"></span>
                             </span>
+                          )}
+                          {isCreationDay && (
+                            <RocketIndicator
+                              description={t("calendar.habitStarted")}
+                              isCompleted={isCompleted}
+                              isOpen={isRocketOpen}
+                              onOpenChange={(open) => setOpenRocketDay(open ? dayNumber : null)}
+                            />
                           )}
                           {/* Subtle inner highlight for completed days */}
                           {isCompleted && (
