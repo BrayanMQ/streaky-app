@@ -531,6 +531,7 @@ export default function CalendarPage() {
                     className="size-9 rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
                     onClick={handlePreviousMonth}
                     disabled={isLoading}
+                    aria-label="Previous month"
                   >
                     <ChevronLeft className="size-5" />
                   </Button>
@@ -540,6 +541,7 @@ export default function CalendarPage() {
                     className="size-9 rounded-xl hover:bg-primary hover:text-white transition-all duration-300"
                     onClick={handleNextMonth}
                     disabled={isLoading}
+                    aria-label="Next month"
                   >
                     <ChevronRight className="size-5" />
                   </Button>

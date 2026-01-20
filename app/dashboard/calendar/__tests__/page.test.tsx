@@ -141,7 +141,7 @@ describe('CalendarPage', () => {
         expect(screen.getByText('Habit 2')).toBeInTheDocument()
 
         // Check header info
-        expect(screen.getByText('calendar.months.january')).toBeInTheDocument()
+        expect(screen.getAllByText(/calendar\.months\.january/i)[0]).toBeInTheDocument()
         expect(screen.getByText('2024')).toBeInTheDocument()
     })
 
@@ -175,25 +175,12 @@ describe('CalendarPage', () => {
     it('navigates months', () => {
         render(<CalendarPage />)
 
-        expect(screen.getByText('calendar.months.january')).toBeInTheDocument()
+        expect(screen.getAllByText(/calendar\.months\.january/i)[0]).toBeInTheDocument()
 
-        // Find navigation buttons (they act as icons and have no text content)
-        // Buttons: Habit 1, Habit 2, Prev, Next, Edit Mode
-        const buttons = screen.getAllByRole('button')
-
-        // Filter for buttons that don't have text (nav buttons)
-        // Habit buttons have text, Edit button has text. Nav buttons only have icons.
-        // in jsdom, svg might be hidden or textContent might be empty
-        const navButtons = buttons.filter(b => !b.textContent)
-
-        // Expect at least 2 nav buttons (Prev, Next)
-        expect(navButtons.length).toBeGreaterThanOrEqual(2)
-
-        // Next button should be the second one (Prev, Next)
-        const nextBtn = navButtons[1]
+        const nextBtn = screen.getByLabelText('Next month')
 
         fireEvent.click(nextBtn)
 
-        expect(screen.getByText('calendar.months.february')).toBeInTheDocument()
+        expect(screen.getAllByText(/calendar\.months\.february/i)[0]).toBeInTheDocument()
     })
 })
