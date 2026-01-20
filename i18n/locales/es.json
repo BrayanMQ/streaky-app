@@ -322,6 +322,18 @@
             "thu": "Jue",
             "fri": "Vie",
             "sat": "Sáb"
+        },
+        "editRestricted": "Solo puedes editar los últimos 3 días",
+        "habitMarked": "Hábito marcado",
+        "habitUnmarked": "Hábito desmarcado",
+        "toggleError": "No se pudo actualizar el hábito",
+        "habitNotCreatedYet": "Este hábito aún no existía en ese día",
+        "editMode": {
+            "title": "¿Olvidaste registrar un día?",
+            "description": "Activa la edición para actualizar tu progreso de los últimos 3 días.",
+            "descriptionLimited": "Este hábito es reciente. Solo puedes editar registros desde su fecha de creación.",
+            "enable": "Editar",
+            "active": "Editando"
         }
     },
     "stats": {

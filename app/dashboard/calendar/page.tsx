@@ -1,24 +1,27 @@
 "use client"
 
-import { useState, useEffect, useMemo, useRef } from "react"
+import { useState, useEffect, useMemo, useRef, useCallback } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Target, Zap, Trophy, Calendar as CalendarIcon } from "lucide-react"
+import { ChevronLeft, ChevronRight, CheckCircle2, XCircle, Target, Zap, Trophy, Calendar as CalendarIcon, Pencil } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useHabits } from "@/hooks/useHabits"
-import { useHabitLogs } from "@/hooks/useHabitLogs"
+import { useHabitLogs, useToggleHabitLog } from "@/hooks/useHabitLogs"
 import { getHabitColor } from "@/lib/habitColors"
 import { getLongestStreak, formatDateLocal } from "@/lib/streaks"
+import { canEditDay, getOldestEditableDate } from "@/lib/dates"
 import { Header } from "@/components/layout/Header"
 import { BottomNav } from "@/components/layout/BottomNav"
 import { useTranslation } from "react-i18next"
 import I18nProvider from "@/components/I18nProvider"
+import { toast } from "sonner"
 
 export default function CalendarPage() {
   const { t } = useTranslation()
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth())
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [selectedHabitId, setSelectedHabitId] = useState<string | null>(null)
+  const [isEditMode, setIsEditMode] = useState(false)
   const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const { habits, isLoading: isLoadingHabits } = useHabits()
@@ -156,7 +159,90 @@ export default function CalendarPage() {
     )
   }
 
+  // Get toggle functionality
+  const { toggleCompletion, isToggling } = useToggleHabitLog()
+
+  // Build date string for a given day number in the current month/year
+  const getDateString = useCallback((dayNumber: number): string => {
+    const month = String(selectedMonth + 1).padStart(2, '0')
+    const day = String(dayNumber).padStart(2, '0')
+    return `${selectedYear}-${month}-${day}`
+  }, [selectedMonth, selectedYear])
+
+  // Check if a day is editable (within last 3 days AND after habit creation)
+  const isDayEditable = useCallback((dayNumber: number): boolean => {
+    if (!selectedHabit) return false
+
+    const dateStr = getDateString(dayNumber)
+
+    // Check if within 3-day window
+    if (!canEditDay(dateStr)) {
+      return false
+    }
+
+    // Check if day is on or after habit creation date
+    const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+    const dayDate = dateStr
+
+    // Day must be on or after the habit was created
+    return dayDate >= habitCreatedDate
+  }, [getDateString, selectedHabit])
+
+  // Handle day click to toggle habit completion
+  const handleDayClick = useCallback(async (dayNumber: number) => {
+    if (!selectedHabitId) return
+
+    const dateStr = getDateString(dayNumber)
+
+    // Check if the day is within the 3-day window
+    if (!canEditDay(dateStr)) {
+      toast.info(t("calendar.editRestricted"))
+      return
+    }
+
+    // Check if the day is before habit creation
+    if (selectedHabit) {
+      const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+      if (dateStr < habitCreatedDate) {
+        toast.info(t("calendar.habitNotCreatedYet"))
+        return
+      }
+    }
+
+    // Must be in edit mode to toggle
+    if (!isEditMode) {
+      return
+    }
+
+    try {
+      const isCurrentlyCompleted = completionMap.get(dayNumber) === true
+      await toggleCompletion({
+        habitId: selectedHabitId,
+        date: dateStr,
+        completed: !isCurrentlyCompleted,
+      })
+
+      // Show success feedback
+      if (!isCurrentlyCompleted) {
+        toast.success(t("calendar.habitMarked"))
+      } else {
+        toast.info(t("calendar.habitUnmarked"))
+      }
+    } catch (error) {
+      console.error('Error toggling habit:', error)
+      toast.error(t("calendar.toggleError"))
+    }
+  }, [selectedHabitId, getDateString, completionMap, toggleCompletion, t, isEditMode])
+
   const isLoading = isLoadingHabits || isLoadingLogs
+
+  // Check if the current habit's editing window is limited by its creation date
+  const isCreationRestricted = useMemo(() => {
+    if (!selectedHabit) return false
+    const habitCreatedDate = formatDateLocal(selectedHabit.created_at)
+    const oldestEditable = getOldestEditableDate()
+    return habitCreatedDate > oldestEditable
+  }, [selectedHabit])
 
   // Edge case: No habits
   if (!isLoading && habits.length === 0) {
@@ -331,16 +417,28 @@ export default function CalendarPage() {
                       const dayNumber = i + 1
                       const isCompleted = completionMap.get(dayNumber) === true
                       const dayIsToday = isToday(dayNumber)
+                      const isEditable = isDayEditable(dayNumber)
 
                       return (
                         <div
                           key={dayNumber}
+                          onClick={() => isEditMode && isEditable && handleDayClick(dayNumber)}
                           className={cn(
-                            "relative flex aspect-square items-center justify-center rounded-2xl text-base font-semibold transition-all duration-500 group cursor-default select-none",
+                            "relative flex aspect-square items-center justify-center rounded-2xl text-base font-semibold transition-all duration-300 group select-none",
                             isCompleted
                               ? cn(habitColorWithShadow, "text-white scale-100 shadow-md ring-1 ring-white/10")
-                              : "bg-muted/30 text-muted-foreground/40 hover:bg-muted/50",
+                              : "bg-muted/30 text-muted-foreground/40",
                             dayIsToday && !isCompleted && "ring-2 ring-primary ring-offset-2 ring-offset-background bg-background shadow-sm",
+                            // Edit mode active styles
+                            isEditMode && isEditable && "cursor-pointer hover:scale-105 hover:shadow-lg active:scale-95",
+                            isEditMode && isEditable && !isCompleted && "hover:bg-muted/60 ring-2 ring-primary/30 ring-offset-1 ring-offset-background",
+                            isEditMode && isEditable && isCompleted && "ring-2 ring-white/40",
+                            // Edit mode: non-editable days
+                            isEditMode && !isEditable && "opacity-40 cursor-not-allowed",
+                            // Not in edit mode: all days look normal
+                            !isEditMode && "cursor-default",
+                            // Toggling state
+                            isToggling && "pointer-events-none opacity-50",
                           )}
                         >
                           {dayNumber}
@@ -360,6 +458,34 @@ export default function CalendarPage() {
                   </div>
                 )}
               </CardContent>
+
+              {/* Edit Mode Section */}
+              <div className="border-t border-border/40 px-6 py-4">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-foreground">
+                      {t("calendar.editMode.title")}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {isCreationRestricted
+                        ? t("calendar.editMode.descriptionLimited")
+                        : t("calendar.editMode.description")}
+                    </p>
+                  </div>
+                  <Button
+                    variant={isEditMode ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setIsEditMode(!isEditMode)}
+                    className={cn(
+                      "shrink-0 gap-2 transition-all duration-300",
+                      isEditMode && "bg-primary text-primary-foreground shadow-md"
+                    )}
+                  >
+                    <Pencil className="size-4" />
+                    {isEditMode ? t("calendar.editMode.active") : t("calendar.editMode.enable")}
+                  </Button>
+                </div>
+              </div>
             </Card>
           </div>
         </main>

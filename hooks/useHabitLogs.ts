@@ -6,6 +6,7 @@ import { createBrowserClient } from '@/lib/supabaseClient';
 import { useAuth } from '@/hooks/useAuth';
 import { formatDate } from '@/lib/habits';
 import { getTodayDateLocal, formatDateLocal } from '@/lib/streaks';
+import { canEditDay } from '@/lib/dates';
 import { habitsKeys } from '@/hooks/useHabits';
 import type { HabitLog, HabitLogInsert } from '@/types/database';
 import type { PostgrestError } from '@supabase/supabase-js';
@@ -687,6 +688,11 @@ export function useToggleHabitLog() {
     const targetDate = params.date
       ? validateAndNormalizeDate(params.date)
       : getTodayDateLocal();
+
+    // Defensive validation: ensure the date is within the editable window
+    if (!canEditDay(targetDate)) {
+      throw new Error('Cannot edit habits for this date. Only the last 3 days are editable.');
+    }
 
     // Get current log to determine toggle state
     // Try multiple query keys since different parts of the app may use different queries
