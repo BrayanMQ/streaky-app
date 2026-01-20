@@ -71,12 +71,14 @@ function getDaysAgoDate(days: number): string {
  * @param habitId - The habit ID
  * @param logs - Array of habit logs for the habit
  * @param days - Number of days to look back (default: 30)
+ * @param createdAt - The creation date of the habit in YYYY-MM-DD or ISO format
  * @returns Completion rate as a percentage (0-100)
  */
 export function getCompletionRate(
   habitId: string,
   logs: HabitLog[],
-  days: number = 30
+  days: number = 30,
+  createdAt?: string
 ): number {
   if (logs.length === 0) {
     return 0
@@ -94,21 +96,14 @@ export function getCompletionRate(
   // Count completed days
   const completedDays = logsInRange.filter((log) => log.completed).length
 
-  // Calculate rate: completed days / total days in range
-  // Use actual days in range (could be less than 'days' if habit is newer)
-  const startDateObj = parseDateLocal(startDate)
-  const todayDateObj = parseDateLocal(today)
-  const daysDiff = Math.floor(
-    (todayDateObj.getTime() - startDateObj.getTime()) / (1000 * 60 * 60 * 24)
-  ) + 1 // +1 to include both start and end dates
-
-  const totalDays = Math.min(days, daysDiff)
-  
-  if (totalDays === 0) {
+  // Calculate rate: completed days / total days in period
+  // We use the full 'days' parameter to show the coverage over the selected period
+  // This ensures consistency with the "X of Y days" label in the UI
+  if (days <= 0) {
     return 0
   }
 
-  return Math.round((completedDays / totalDays) * 100)
+  return Math.round((completedDays / days) * 100)
 }
 
 /**
@@ -147,7 +142,7 @@ export function getTotalDaysTracked(logs: HabitLog[]): number {
   }
 
   const uniqueDates = new Set<string>()
-  
+
   for (const log of logs) {
     const dateStr = formatDateLocal(log.date)
     uniqueDates.add(dateStr)
@@ -176,7 +171,7 @@ export function getAverageCompletionRate(
 
   for (const habit of habits) {
     const habitLogs = logsByHabitId.get(habit.id) || []
-    const rate = getCompletionRate(habit.id, habitLogs, days)
+    const rate = getCompletionRate(habit.id, habitLogs, days, habit.created_at)
     totalRate += rate
   }
 
