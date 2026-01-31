@@ -25,7 +25,7 @@ export default function SettingsPage() {
   const { t } = useTranslation()
   const router = useRouter()
   const { user, signOut, signOutPending } = useAuth()
-  const { settings, updateTheme, isUpdating: isUpdatingTheme } = useUserSettings()
+  const { settings, updateTheme, isUpdating: isUpdatingTheme, updateLanguage, isUpdatingLanguage } = useUserSettings()
   const { isInstallable, isInstalled, install: installPWA } = usePWAInstall()
 
   // Modal states
@@ -50,8 +50,16 @@ export default function SettingsPage() {
     }
   }
 
-  const handleLanguageChange = (lang: string) => {
+  const handleLanguageChange = async (lang: string) => {
+    // Optimistically update UI immediately
     i18n.changeLanguage(lang)
+
+    // Persist to database
+    try {
+      await updateLanguage(lang)
+    } catch (error) {
+      console.error("Error updating language:", error)
+    }
   }
 
   const currentTheme = settings?.theme || "system"
@@ -232,7 +240,7 @@ export default function SettingsPage() {
                   </div>
                   <Popover>
                     <PopoverTrigger asChild>
-                      <Button variant="outline" className="gap-2">
+                      <Button variant="outline" className="gap-2" disabled={isUpdatingLanguage}>
                         <span className="text-lg">{currentLanguage.flag}</span>
                         {t("settings.account.change")}
                       </Button>
@@ -242,7 +250,7 @@ export default function SettingsPage() {
                         {languages.map((lang) => (
                           <button
                             key={lang.code}
-                            disabled={lang.disabled}
+                            disabled={lang.disabled || isUpdatingLanguage}
                             onClick={() => handleLanguageChange(lang.code)}
                             className={cn(
                               "flex items-center gap-3 w-full px-3 py-2 text-sm font-medium rounded-md transition-colors group",
