@@ -14,6 +14,7 @@ export type UserSettings = {
   id: string;
   user_id: string;
   theme: 'light' | 'dark' | 'system';
+  language: string;
   created_at: string;
   updated_at: string;
 };
@@ -85,6 +86,7 @@ export function useUserSettings() {
           .insert({
             user_id: user.id,
             theme: 'system',
+            language: 'en',
           })
           .select()
           .single();
@@ -141,6 +143,35 @@ export function useUserSettings() {
     },
   });
 
+  // Mutation to update language
+  const updateLanguageMutation = useMutation({
+    mutationFn: async (language: string) => {
+      if (!user?.id) {
+        throw new Error('User must be authenticated');
+      }
+
+      const supabase = createBrowserClient();
+
+      // Update language in database
+      const { data, error: updateError } = await supabase
+        .from('user_settings')
+        .update({ language })
+        .eq('user_id', user.id)
+        .select()
+        .single();
+
+      if (updateError) {
+        throw updateError;
+      }
+
+      return data as UserSettings;
+    },
+    onSuccess: (data) => {
+      // Update cache with new settings
+      queryClient.setQueryData(userSettingsKeys.user(user?.id ?? null), data);
+    },
+  });
+
   // Sync theme from database to next-themes when settings load
   // This effect ensures next-themes is synchronized with the database theme
   useEffect(() => {
@@ -156,6 +187,32 @@ export function useUserSettings() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [settings?.theme, currentTheme]); // Include currentTheme to detect when it changes
+
+  // Sync language from database to i18next when settings load
+  // This effect ensures i18next is synchronized with the database language
+  // Runs on login and whenever settings change
+  useEffect(() => {
+    if (!settings?.language || !user?.id) {
+      // Don't sync if settings aren't loaded or user isn't authenticated
+      return;
+    }
+
+    // Import i18n dynamically to avoid circular dependencies
+    import('@/i18n').then((i18nModule) => {
+      const i18n = i18nModule.default;
+
+      // Always sync language from database when settings load
+      // This ensures language is restored on login
+      const currentLang = (i18n.language || 'en').split('-')[0];
+
+      if (settings.language !== currentLang) {
+        console.log(`[useUserSettings] Syncing language from DB: ${settings.language}`);
+        i18n.changeLanguage(settings.language);
+      }
+    }).catch((error) => {
+      console.error('[useUserSettings] Failed to sync language:', error);
+    });
+  }, [settings?.language, user?.id]);
 
   // Invalidate settings query when auth state changes
   useEffect(() => {
@@ -175,6 +232,9 @@ export function useUserSettings() {
     updateTheme: updateThemeMutation.mutateAsync,
     isUpdating: updateThemeMutation.isPending,
     updateError: updateThemeMutation.error as PostgrestError | null,
+    updateLanguage: updateLanguageMutation.mutateAsync,
+    isUpdatingLanguage: updateLanguageMutation.isPending,
+    updateLanguageError: updateLanguageMutation.error as PostgrestError | null,
   };
 }
 

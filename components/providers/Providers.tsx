@@ -7,6 +7,7 @@ import { ThemeProvider as NextThemesProvider } from 'next-themes';
 import { Toaster } from '@/components/ui/sonner';
 import { ServiceWorkerProvider } from './ServiceWorkerProvider';
 import { ThemeSync } from './ThemeSync';
+import { LanguageSync } from './LanguageSync';
 import { TopLoadingBar } from './TopLoadingBar';
 import { NetworkStatusProvider } from './NetworkStatusProvider';
 
@@ -64,6 +65,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
         disableTransitionOnChange
       >
         <ThemeSync />
+        <LanguageSync />
         <TopLoadingBar />
         <ServiceWorkerProvider>
           <NetworkStatusProvider>
